@@ -7,15 +7,20 @@ import { PersistGate } from 'redux-persist/integration/react';
 import './src/localization';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { ThemeProvider } from './src/theme/ThemeProvider';
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{
+      flex: 1
+    }}>
       <BottomSheetModalProvider>
         <Provider store={store}>
           <SafeAreaProvider>
             <PersistGate loading={null} persistor={persistor}>
-              <RootNavigator />
+              <ThemeProvider>
+                <RootNavigator />
+              </ThemeProvider>
             </PersistGate>
           </SafeAreaProvider>
         </Provider>

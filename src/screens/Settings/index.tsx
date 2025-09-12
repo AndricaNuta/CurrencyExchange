@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
-import { styles } from './styles';
+import { useStyles } from './styles';
 import { SUPPORTED, LanguageCode } from '../../localization/languages';
 import { useGetCurrenciesQuery } from '../../services/currencyApi';
 import { PickerBottomSheet } from '../../components/PickerBottomSheet';
@@ -16,7 +16,8 @@ import {ChevronRight,
   ArrowUpRight,} from 'react-native-feather';
 import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDefaultFrom, setDefaultTo } from '../../redux/slices/settingsSlice';
+import { setDefaultFrom, setDefaultTo, setThemePreference } from '../../redux/slices/settingsSlice';
+import { useTheme } from '../../theme/ThemeProvider';
 
 type RowProps = {
   title: string;
@@ -34,6 +35,8 @@ const Row = React.memo(function Row({
   iconLeft,
   disabled,
 }: RowProps) {
+  const styles = useStyles();
+  const tkn = useTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -50,7 +53,7 @@ const Row = React.memo(function Row({
         <Text style={styles.rowTitle}>{title}</Text>
         {!!subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
       </View>
-      {right ?? <ChevronRight color="#9CA3AF" />}
+      {right ?? <ChevronRight color={tkn.colors.muted} />}
     </Pressable>
   );
 });
@@ -60,13 +63,20 @@ export default function SettingsScreen() {
     t, i18n
   } = useTranslation();
   const currentLang = (i18n.language?.split('-')[0] ?? 'en') as LanguageCode;
-
+  const styles = useStyles();
+  const tkn = useTheme();
   const [rateAlerts, setRateAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const dispatch = useDispatch();
   const {
-    defaultFrom: from, defaultTo: to
-  } = useSelector(s => s.settings);
+    defaultFrom: from,
+    defaultTo: to,
+    themePreference
+  } = useSelector((s: any) => s.settings);
+  const isDark = themePreference === 'dark';
+
+  const onToggleDark = useCallback((v: boolean) => {
+    dispatch(setThemePreference(v ? 'dark' : 'light'));
+  }, [dispatch]);
 
   const {
     data: currencies
@@ -118,40 +128,30 @@ export default function SettingsScreen() {
     [currencyList, toQuery],
   );
 
-  const languageItems = useMemo(
-    () =>
-      filteredLangs.map(code => ({
-        key: code,
-        label: t(`settings.languageList.${code}`),
-        left: <Globe color="#2563EB" />,
-        right: currentLang === code ? <Check color="#0EA5E9" /> : undefined,
-      })),
-    [filteredLangs, currentLang, t],
-  );
-  const fromItems = useMemo(
-    () =>
-      fromFiltered.map(({
-        code, name
-      }) => ({
-        key: code,
-        label: `${name} (${code})`,
-        left: <ArrowUpLeft color="#7C3AED" />,
-        right: from === code ? <Check color="#7C3AED" /> : undefined,
-      })),
-    [fromFiltered, from],
-  );
-  const toItems = useMemo(
-    () =>
-      toFiltered.map(({
-        code, name
-      }) => ({
-        key: code,
-        label: `${name} (${code})`,
-        left: <ArrowDownLeft color="#EA580C" />,
-        right: to === code ? <Check color="#EA580C" /> : undefined,
-      })),
-    [toFiltered, to],
-  );
+  const languageItems = useMemo(() => filteredLangs.map(code => ({
+    key: code,
+    label: t(`settings.languageList.${code}`),
+    left: <Globe color={tkn.colors.tint} />,
+    right: currentLang === code ? <Check color={tkn.colors.tint} /> : undefined,
+  })), [filteredLangs, currentLang, t, tkn.colors.tint]);
+
+  const fromItems = useMemo(() => fromFiltered.map(({
+    code, name
+  }) => ({
+    key: code,
+    label: `${name} (${code})`,
+    left: <ArrowUpLeft color={tkn.colors.tint} />,
+    right: from === code ? <Check color={tkn.colors.tint} /> : undefined,
+  })), [fromFiltered, from, tkn.colors.tint]);
+
+  const toItems = useMemo(() => toFiltered.map(({
+    code, name
+  }) => ({
+    key: code,
+    label: `${name} (${code})`,
+    left: <ArrowDownLeft color={tkn.colors.tint} />,
+    right: to === code ? <Check color={tkn.colors.tint} /> : undefined,
+  })), [toFiltered, to, tkn.colors.tint]);
 
   type Mode = 'lang' | 'from' | 'to' | null;
   const modalRef = useRef<BottomSheetModal>(null);
@@ -237,9 +237,10 @@ export default function SettingsScreen() {
           onPress={() => presentMode('lang')}
           iconLeft={
             <View style={[styles.circleIcon, styles.languageIcon]}>
-              <Globe color="#2563EB" />
+              <Globe color={tkn.colors.tint} />
             </View>
           }
+
         />
       </View>
 
@@ -252,7 +253,7 @@ export default function SettingsScreen() {
           onPress={() => presentMode('from')}
           iconLeft={
             <View style={[styles.circleIcon, styles.fromIcon]}>
-              <ArrowUpRight color="#7C3AED" />
+              <ArrowUpRight color={tkn.colors.tint} />
             </View>
           }
         />
@@ -280,11 +281,12 @@ export default function SettingsScreen() {
             <Switch
               value={rateAlerts}
               onValueChange={setRateAlerts}
-              thumbColor="#fff"
+              thumbColor={tkn.colors.surface}
               trackColor={{
-                false: '#E6E8EC',
-                true: '#ff3b30'
+                false: tkn.colors.muted,
+                true: tkn.colors.success
               }}
+
             />
           }
           iconLeft={
@@ -304,13 +306,14 @@ export default function SettingsScreen() {
           title={t('settings.darkMode')}
           right={
             <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
-              thumbColor="#fff"
+              value={isDark}
+              onValueChange={onToggleDark}
+              thumbColor={tkn.colors.surface}
               trackColor={{
-                false: '#E6E8EC',
-                true: '#34C759'
+                false: tkn.colors.muted,
+                true: tkn.colors.success
               }}
+
             />
           }
           iconLeft={

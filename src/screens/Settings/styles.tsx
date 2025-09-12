@@ -1,67 +1,63 @@
 import { StyleSheet } from 'react-native';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
-    paddingTop: 60,
-    paddingHorizontal: 16,
+    backgroundColor: t.colors.bg,
+    paddingTop: t.spacing(15),
+    paddingHorizontal: t.spacing(4),
   },
   screenTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    color: t.colors.text,
+    marginBottom: t.spacing(2),
   },
   sectionHeader: {
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: t.spacing(4),
+    marginBottom: t.spacing(2),
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
-    color: '#6B7280',
+    color: t.colors.subtext,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingHorizontal: 12,
+    backgroundColor: t.colors.card,
+    borderRadius: t.radius.lg,
+    paddingHorizontal: t.spacing(3),
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    elevation: 2,
+    ...t.shadow.ios,
+    ...t.shadow.android,
   },
   row: {
     minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: t.spacing(2),
   },
   rowPressed: {
-    opacity: 0.6,
+    opacity: 0.6
   },
   leftIconWrap: {
-    marginRight: 10,
+    marginRight: t.spacing(2.5)
   },
   rowTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: t.colors.text
   },
   rowSubtitle: {
     marginTop: 2,
     fontSize: 13,
-    color: '#6B7280',
+    color: t.colors.subtext
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#ECEFF3',
-    marginHorizontal: -12,
+    backgroundColor: t.colors.border,
+    marginHorizontal: -t.spacing(3),
   },
   circleIcon: {
     width: 32,
@@ -70,22 +66,24 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   languageIcon: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: alpha(t.colors.tint, t.scheme === 'dark' ? 0.18 : 0.12)
   },
-  fromIcon: {
-    backgroundColor: '#F5F3FF',
+  fromIcon:     {
+    backgroundColor: alpha('#7C3AED', t.scheme === 'dark' ? 0.18 : 0.12)
   },
-  toIcon: {
-    backgroundColor: '#FFF7ED',
+  toIcon:       {
+    backgroundColor: alpha('#EA580C', t.scheme === 'dark' ? 0.18 : 0.12)
   },
-  notifIcon: {
-    backgroundColor: '#FEF2F2',
+  notifIcon:    {
+    backgroundColor: alpha(t.colors.danger, t.scheme === 'dark' ? 0.18 : 0.12)
   },
-  darkIcon: {
-    backgroundColor: '#111827',
+  darkIcon:     {
+    backgroundColor: t.scheme === 'dark' ? alpha('#FFFFFF', 0.10) : t.colors.icon
   },
+
   flex: {
-    flex: 1,
+    flex: 1
   },
-});
+}));
