@@ -1,0 +1,5 @@
+{
+    "settings": { "title": "Settings", "language": "Language" },
+    "langs": { "en": "English", "de": "Deutsch", "fr": "Français", "es": "Español" },
+    "comingSoon": "coming soon"
+  }
