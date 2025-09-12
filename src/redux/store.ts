@@ -12,10 +12,12 @@ import settingsReducer from './slices/settingsSlice';
 import historyReducer from './slices/historySlice';
 import { currencyApi } from '../services/currencyApi';
 import { reduxStorage } from '../services/mmkv';
+import exchangeReducer from './slices/exchangeSlice';
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
   history: historyReducer,
+  exchange: exchangeReducer,
   [currencyApi.reducerPath]: currencyApi.reducer,
 });
 
@@ -43,3 +45,5 @@ export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+export type AppThunk = (dispatch: AppDispatch, getState:
+  () => RootState) => void;

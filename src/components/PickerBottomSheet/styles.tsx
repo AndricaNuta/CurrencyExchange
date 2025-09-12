@@ -43,4 +43,20 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
   },
+  flex: {
+    flex: 1
+  },
+  flatlistContainerStyle:{
+    paddingBottom: 16,
+    flexGrow: 1
+  },
+  emptyListView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24
+  },
+  emptyListText: {
+    color: '#6B7280'
+  }
 });

@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { Text, View, Pressable } from 'react-native';
+import { Text, View, Pressable, useWindowDimensions } from 'react-native';
 import {BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetFlatList,
@@ -11,27 +11,48 @@ type Item = {
   key: string;
   label: string;
   left?: React.ReactNode;
-  right?: React.ReactNode;
+  right?: React.ReactNode
 };
+
 type Props = {
   title: string;
   items: Item[];
   onSelect: (key: string) => void;
-  search?: {
-    value: string;
-    set: (v: string) => void;
-    autoCapitalize?: 'none' | 'characters';
-  };
-  snapPoint?: string;
+  search?: { value: string; set: (v: string) => void; autoCapitalize?: 'none' | 'characters' };
+  snapPoints?: Array<number | `${number}%`>;
   onDismiss?: () => void;
+  initialIndex?: 0 | 1;
 };
 
 export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
-  ({
-    title, items, onSelect, search, snapPoint = '45%', onDismiss
-  }, ref) => {
-    const snapPoints = useMemo(() => [snapPoint], [snapPoint]);
-    const fast = useBottomSheetSpringConfigs({
+  (
+    {
+      title,
+      items,
+      onSelect,
+      search,
+      snapPoints,
+      onDismiss,
+      initialIndex = 0,
+    },
+    ref
+  ) => {
+    const {
+      height
+    } = useWindowDimensions();
+
+    // convert % → px and ensure we return [small,big]
+    const resolvedSnapPoints = useMemo(() => {
+      const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
+        number | `${number}%`
+      >;
+      const toPx = (v: number | `${number}%`) =>
+        typeof v === 'number' ? v : Math.round((parseFloat(v) / 100) * height);
+      const px = sp.map(toPx).sort((a, b) => a - b);
+      return px;
+    }, [snapPoints, height]);
+
+    const anim = useBottomSheetSpringConfigs({
       damping: 18,
       mass: 0.6,
       stiffness: 450,
@@ -54,17 +75,20 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
           {item.right}
         </Pressable>
       ),
-      [onSelect],
+      [onSelect]
     );
 
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={snapPoints}
-        animationConfigs={fast}
+        snapPoints={resolvedSnapPoints}
+        index={initialIndex}
+        enableDynamicSizing={false}
         enablePanDownToClose
+        animationConfigs={anim}
         onDismiss={onDismiss}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
@@ -88,12 +112,19 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
           data={items}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
+          style={styles.flex}
+          contentContainerStyle={styles.flatlistContainerStyle}
           keyboardShouldPersistTaps="handled"
           initialNumToRender={24}
           maxToRenderPerBatch={24}
           windowSize={7}
+          ListEmptyComponent={
+            <View style={styles.emptyListView}>
+              <Text style={styles.emptyListText}>No results</Text>
+            </View>
+          }
         />
       </BottomSheetModal>
     );
-  },
+  }
 );

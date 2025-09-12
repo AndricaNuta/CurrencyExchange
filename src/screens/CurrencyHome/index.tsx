@@ -1,36 +1,19 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import {View,
-  Text,
-  Pressable,
-  ActivityIndicator,} from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../redux/store';
-import { setFromCurrency, setToCurrency, swapCurrencies } from '../../redux/slices/settingsSlice';
+import type { RootState, AppDispatch } from '../../redux/store';
 import { addHistory } from '../../redux/slices/historySlice';
-import { launchImageLibrary } from 'react-native-image-picker';
-import TextRecognition from 'react-native-text-recognition';
 import { useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
 import { styles, previewStyles } from './styles';
-import { PickerBottomSheet } from '../../components/PickerBottomSheet'; // ⬅️ use the shared component
+import { PickerBottomSheet } from '../../components/PickerBottomSheet';
 import { CurrencySwapCard } from './CurrencySwapCard';
+import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
+import { resetToDefaults, setFrom, setTo, swap } from '../../redux/slices/exchangeSlice';
+import { launchImageLibrary } from 'react-native-image-picker';
+import TextRecognition from 'react-native-text-recognition';
 
-/* ---------- helpers (unchanged) ---------- */
-function useSortedCurrencyList(map?: Record<string, string>) {
-  return useMemo(
-    () =>
-      map
-        ? Object.entries(map)
-          .map(([code, name]) => ({
-            code,
-            name
-          }))
-          .sort((a, b) => a.code.localeCompare(b.code))
-        : [],
-    [map],
-  );
-}
 type Item = { code: string; name: string };
 const currencyToFlag: Record<string, string> = {
   USD: '🇺🇸',
@@ -56,119 +39,100 @@ const currencyToFlag: Record<string, string> = {
   ILS: '🇮🇱',
 };
 const flag = (code: string) => currencyToFlag[code] ?? '🌐';
-const fmt = (n: number, c: string, max = 2) => {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: c,
-      maximumFractionDigits: max,
-    }).format(n);
-  } catch {
-    return `${n.toFixed(max)} ${c}`;
-  }
-};
+
 const nowDate = () => {
   const d = new Date();
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(
-    2,
-    '0',
-  )}/${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 };
 
-/* ---------- OCR helpers (unchanged) ---------- */
 type Candidate = { raw: string; value: number; currency?: string; line?: string; score: number };
-// ... (keep your parseFlexibleAmount, detectPriceCandidates, etc.)
 
 export default function CurrencyConverterScreen() {
-  const nav = useNavigation<any>();
+  const nav   = useNavigation<any>();
   const route = useRoute<any>();
+  const dispatch = useDispatch<AppDispatch>();
 
-  // Redux settings
-  const from = useSelector((s: RootState) => s.settings.fromCurrency);
-  const to = useSelector((s: RootState) => s.settings.toCurrency);
-  const decimals = useSelector((s: RootState) => s.settings.decimals);
+  const {
+    from, to, initialized
+  } = useSelector((s: RootState) => s.exchange);
+  const {
+    defaultFrom, defaultTo, decimals
+  } = useSelector((s: RootState) => s.settings);
   const history = useSelector((s: RootState) => s.history.items);
-  const dispatch = useDispatch();
 
-  // Data
+  useEffect(() => {
+    if (!initialized) dispatch(resetToDefaults());
+  }, [initialized, dispatch]);
+
+  const effFrom = from ?? defaultFrom;
+  const effTo   = to   ?? defaultTo;
+
   const {
     data: currencies, isLoading, error
   } = useGetCurrenciesQuery();
   const list = useSortedCurrencyList(currencies);
+
   const {
     data: pair, isFetching, error: rateError
   } = useGetPairRateQuery(
     {
-      from,
-      to
+      from: effFrom,
+      to: effTo
     },
     {
+      skip: !effFrom || !effTo,
       refetchOnFocus: true,
-      refetchOnReconnect: true
-    },
+      refetchOnReconnect: true,
+    }
   );
 
-  // Local UI
   const [amount, setAmount] = useState('1000');
-
-  // ⬇️ NEW: BottomSheet refs + search state
-  const fromSheetRef = useRef<BottomSheetModal>(null);
-  const toSheetRef = useRef<BottomSheetModal>(null);
   const [fromQ, setFromQ] = useState('');
-  const [toQ, setToQ] = useState('');
+  const [toQ, setToQ]     = useState('');
 
   const filterByQuery = useCallback(
     (q: string) => (i: Item) =>
       !q ||
       i.code.toLowerCase().includes(q.toLowerCase()) ||
       i.name.toLowerCase().includes(q.toLowerCase()),
-    [],
+    []
   );
 
-  // Map currencies to PickerBottomSheet items (with flag on the left)
   const fromSheetItems = useMemo(
     () =>
-      list
-        .filter(filterByQuery(fromQ))
-        .map(({
-          code, name
-        }) => ({
-          key: code,
-          label: `${code} — ${name}`,
-          left: <Text>{flag(code)}</Text>,
-        })),
-    [list, fromQ, filterByQuery],
+      list.filter(filterByQuery(fromQ)).map(({
+        code, name
+      }) => ({
+        key: code,
+        label: `${code} — ${name}`,
+        left: <Text>{flag(code)}</Text>,
+      })),
+    [list, fromQ, filterByQuery]
   );
 
   const toSheetItems = useMemo(
     () =>
-      list
-        .filter(filterByQuery(toQ))
-        .map(({
-          code, name
-        }) => ({
-          key: code,
-          label: `${code} — ${name}`,
-          left: <Text>{flag(code)}</Text>,
-        })),
-    [list, toQ, filterByQuery],
+      list.filter(filterByQuery(toQ)).map(({
+        code, name
+      }) => ({
+        key: code,
+        label: `${code} — ${name}`,
+        left: <Text>{flag(code)}</Text>,
+      })),
+    [list, toQ, filterByQuery]
   );
 
-  // Preset from History
   useEffect(() => {
-    const p = route?.params?.preset as
-    { from: string; to: string; amount: number };
+    const p = route?.params?.preset as { from: string; to: string; amount: number } | undefined;
     if (p) {
-      dispatch(setFromCurrency(p.from));
-      dispatch(setToCurrency(p.to));
+      dispatch(setFrom(p.from));
+      dispatch(setTo(p.to));
       setAmount(String(p.amount));
     }
   }, [route?.params?.preset, dispatch]);
 
-  // Conversions
   const rate = pair?.rate ?? 0;
 
-  // OCR state (unchanged)
   const [picking, setPicking] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [pickErr, setPickErr] = useState<string | null>(null);
@@ -182,15 +146,10 @@ export default function CurrencyConverterScreen() {
         selectionLimit: 1
       });
       const asset = res?.assets?.[0];
-      if (!asset?.uri) {
-        setPicking(false);
-        return;
-      }
+      if (!asset?.uri) { setPicking(false); return; }
       const lines = await TextRecognition.recognize(asset.uri);
-      // @ts-expect-error keep your detectPriceCandidates implementation
-      const cands = detectPriceCandidates(
-        (lines ?? []).map((l: string) => l.replace(/\s+/g, ' ').trim()).filter(Boolean),
-      );
+      // @ts-expect-error: use your own detectPriceCandidates
+      const cands = detectPriceCandidates((lines ?? []).map((l: string) => l.replace(/\s+/g, ' ').trim()).filter(Boolean));
       setCandidates(cands.slice(0, 8));
     } catch (e: any) {
       setPickErr(String(e?.message ?? e));
@@ -202,25 +161,70 @@ export default function CurrencyConverterScreen() {
   const applyCandidate = useCallback(
     (c: Candidate) => {
       setAmount(String(c.value));
-      if (c.currency && c.currency !== from)
-        dispatch(setFromCurrency(c.currency));
+      if (c.currency && c.currency !== effFrom) dispatch(setFrom(c.currency));
       if (rate) {
-        dispatch(
-          addHistory({
-            source: 'gallery',
-            from: c.currency ?? from,
-            to,
-            amount: c.value,
-            converted: c.value * rate,
-            rate,
-          }),
-        );
+        dispatch(addHistory({
+          source: 'gallery',
+          from: c.currency ?? effFrom,
+          to: effTo,
+          amount: c.value,
+          converted: c.value * rate,
+          rate,
+        }));
       }
     },
-    [dispatch, from, to, rate],
+    [dispatch, effFrom, effTo, rate]
   );
+  type Mode = 'from' | 'to' | null;
+  const modalRef = useRef<BottomSheetModal>(null);
+  const [mode, setMode] = useState<Mode>(null);
+  const isOpenRef = useRef(false);
+  const pendingModeRef = useRef<Mode>(null);
 
-  const swap = () => dispatch(swapCurrencies());
+  const presentMode = useCallback((next: Exclude<Mode, null>) => {
+    if (!isOpenRef.current) {
+      setMode(next);
+      modalRef.current?.present();
+      isOpenRef.current = true;
+      return;
+    }
+    if (mode === next) {
+      modalRef.current?.present();
+      return;
+    }
+    pendingModeRef.current = next;
+    modalRef.current?.dismiss();
+  }, [mode]);
+
+  const handleDismiss = useCallback(() => {
+    isOpenRef.current = false;
+    const next = pendingModeRef.current as Exclude<Mode, null> | null;
+    if (next) {
+      pendingModeRef.current = null;
+      setMode(next);
+      requestAnimationFrame(() => {
+        modalRef.current?.present();
+        isOpenRef.current = true;
+      });
+    } else {
+      setMode(null);
+    }
+  }, []);
+
+  const sheetTitle = mode === 'from' ? 'Choose currency' : mode === 'to' ? 'Converted to' : '';
+  const sheetItems = mode === 'from' ? fromSheetItems : toSheetItems;
+  const sheetSearch =
+    mode === 'from'
+      ? {
+        value: fromQ,
+        set: setFromQ
+      }
+      : mode === 'to'
+        ? {
+          value: toQ,
+          set: setToQ
+        }
+        : undefined;
 
   if (isLoading) {
     return (
@@ -242,17 +246,17 @@ export default function CurrencyConverterScreen() {
     <View style={styles.screen}>
       {/* Card */}
       <CurrencySwapCard
-        from={from}
-        to={to}
+        from={effFrom}
+        to={effTo}
         amount={amount}
         onAmountChange={setAmount}
         decimals={decimals}
         rate={rate}
         isFetching={isFetching}
         rateError={!!rateError}
-        onOpenFrom={() => fromSheetRef.current?.present()}
-        onOpenTo={() => toSheetRef.current?.present()}
-        onSwap={swap}
+        onOpenFrom={() => presentMode('from')}
+        onOpenTo={() => presentMode('to')}
+        onSwap={() => dispatch(swap())}
         renderFlag={(code) => <Text>{flag(code)}</Text>}
       />
 
@@ -264,7 +268,7 @@ export default function CurrencyConverterScreen() {
               maximumFractionDigits: 2
             }).format(rate) : '—'}
           </Text>{' '}
-          {to}
+          {effTo}
         </Text>
         <View style={styles.timePill}>
           <Text style={styles.timeTxt}>{nowDate()}</Text>
@@ -285,8 +289,8 @@ export default function CurrencyConverterScreen() {
               key={h.id}
               style={previewStyles.row}
               onPress={() => {
-                dispatch(setFromCurrency(h.from));
-                dispatch(setToCurrency(h.to));
+                dispatch(setFrom(h.from));
+                dispatch(setTo(h.to));
                 setAmount(String(h.amount));
               }}
             >
@@ -305,13 +309,13 @@ export default function CurrencyConverterScreen() {
       <Pressable
         onPress={onPickImage}
         style={styles.pickBtn}
-        disabled={picking}>
+        disabled={picking}
+      >
         {picking ?
           <ActivityIndicator />
           :
-          <Text style={styles.pickTxt}>
-          📷 Add image
-          </Text>}
+          <Text style={styles.pickTxt}>📷 Add image</Text>
+        }
       </Pressable>
       {!!pickErr && <Text style={styles.err}>{pickErr}</Text>}
 
@@ -321,10 +325,10 @@ export default function CurrencyConverterScreen() {
           {candidates.map((c, i) => (
             <Pressable key={`${c.value}-${c.currency ?? 'UNK'}-${i}`} onPress={() => applyCandidate(c)} style={styles.candRow}>
               <Text style={styles.candMain}>{c.currency ? `${c.currency} ` : ''}{c.value.toFixed(2)}</Text>
-              {!!c.line &&
-              <Text style={styles.candLine} numberOfLines={1}>
-                {c.line}
-              </Text>}
+              {!!c.line
+               &&
+               <Text style={styles.candLine} numberOfLines={1}>{c.line}</Text>
+              }
             </Pressable>
           ))}
           <Text style={styles.hint}>Tap a value to fill the converter.</Text>
@@ -332,31 +336,17 @@ export default function CurrencyConverterScreen() {
       )}
 
       <PickerBottomSheet
-        ref={fromSheetRef}
-        title="Choose currency"
-        items={fromSheetItems}
-        search={{
-          value: fromQ,
-          set: setFromQ
-        }}
+        ref={modalRef}
+        title={sheetTitle}
+        items={sheetItems}
+        search={sheetSearch}
+        initialIndex={0}
         onSelect={(code) => {
-          dispatch(setFromCurrency(code));
-          fromSheetRef.current?.dismiss();
+          if (mode === 'from') dispatch(setFrom(code));
+          if (mode === 'to')   dispatch(setTo(code));
+          modalRef.current?.dismiss();
         }}
-      />
-
-      <PickerBottomSheet
-        ref={toSheetRef}
-        title="Converted to"
-        items={toSheetItems}
-        search={{
-          value: toQ,
-          set: setToQ
-        }}
-        onSelect={(code) => {
-          dispatch(setToCurrency(code));
-          toSheetRef.current?.dismiss();
-        }}
+        onDismiss={handleDismiss}
       />
     </View>
   );

@@ -14,6 +14,9 @@ import {ChevronRight,
   Moon,
   Check,
   ArrowUpRight,} from 'react-native-feather';
+import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
+import { useSelector, useDispatch } from 'react-redux';
+import { setDefaultFrom, setDefaultTo } from '../../redux/slices/settingsSlice';
 
 type RowProps = {
   title: string;
@@ -52,21 +55,6 @@ const Row = React.memo(function Row({
   );
 });
 
-function useSortedCurrencyList(map?: Record<string, string>) {
-  return useMemo(
-    () =>
-      map
-        ? Object.entries(map)
-          .map(([code, name]) => ({
-            code,
-            name
-          }))
-          .sort((a, b) => a.code.localeCompare(b.code))
-        : [],
-    [map],
-  );
-}
-
 export default function SettingsScreen() {
   const {
     t, i18n
@@ -75,8 +63,10 @@ export default function SettingsScreen() {
 
   const [rateAlerts, setRateAlerts] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [from, setFrom] = useState('USD');
-  const [to, setTo] = useState('EUR');
+  const dispatch = useDispatch();
+  const {
+    defaultFrom: from, defaultTo: to
+  } = useSelector(s => s.settings);
 
   const {
     data: currencies
@@ -337,17 +327,17 @@ export default function SettingsScreen() {
         title={titleForMode}
         items={itemsForMode}
         search={searchForMode}
-        onSelect={key => {
+        onSelect={(key) => {
           if (mode === 'lang') {
             i18n.changeLanguage(key as LanguageCode);
             setLangQuery('');
           }
           if (mode === 'from') {
-            setFrom(key);
+            dispatch(setDefaultFrom(key));
             setFromQuery('');
           }
           if (mode === 'to') {
-            setTo(key);
+            dispatch(setDefaultTo(key));
             setToQuery('');
           }
           modalRef.current?.dismiss();
