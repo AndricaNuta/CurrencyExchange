@@ -1,7 +1,9 @@
 import { MMKV } from 'react-native-mmkv';
 import { LanguageCode, SUPPORTED } from './languages';
 
-const kv = new MMKV({ id: 'i18n' });
+const kv = new MMKV({
+  id: 'i18n'
+});
 const KEY = 'language';
 
 export const loadStoredLanguage = (): LanguageCode | undefined => {

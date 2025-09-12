@@ -6,17 +6,20 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PersistGate } from 'redux-persist/integration/react';
 import './src/localization';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Provider store={store}>
-        <SafeAreaProvider>
+      <BottomSheetModalProvider>
+        <Provider store={store}>
+          <SafeAreaProvider>
             <PersistGate loading={null} persistor={persistor}>
-                <RootNavigator />
+              <RootNavigator />
             </PersistGate>
-        </SafeAreaProvider>
-      </Provider>
+          </SafeAreaProvider>
+        </Provider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

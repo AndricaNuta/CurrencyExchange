@@ -24,21 +24,33 @@ export default function HistoryScreen() {
 
       <FlatList
         data={items}
-        keyExtractor={(i) => i.id}
-        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-        ListEmptyComponent={<Text style={{ color: '#777' }}>No history yet.</Text>}
-        renderItem={({ item }) => (
+        keyExtractor={i => i.id}
+        ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+        ListEmptyComponent={
+          <Text style={styles.emptyMessage}>No history yet.</Text>
+        }
+        renderItem={({
+          item
+        }) => (
           <Pressable
             style={styles.row}
-            onPress={() => nav.navigate('Converter', {
-              preset: { from: item.from, to: item.to, amount: item.amount },
-            })}
+            onPress={() =>
+              nav.navigate('Converter', {
+                preset: {
+                  from: item.from,
+                  to: item.to,
+                  amount: item.amount
+                },
+              })
+            }
           >
             <Text style={styles.main}>
-              {item.amount.toFixed(2)} {item.from} → {item.converted.toFixed(2)} {item.to}
+              {item.amount.toFixed(2)} {item.from} → {item.converted.toFixed(2)}{' '}
+              {item.to}
             </Text>
             <Text style={styles.meta}>
-              {new Date(item.when).toLocaleString()} • {item.rate.toFixed(4)} ({item.source ?? 'manual'})
+              {new Date(item.when).toLocaleString()} • {item.rate.toFixed(4)} (
+              {item.source ?? 'manual'})
             </Text>
           </Pressable>
         )}

@@ -1,14 +1,12 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import {
-  persistReducer,
+import {persistReducer,
   persistStore,
   FLUSH,
   REHYDRATE,
   PAUSE,
   PERSIST,
   PURGE,
-  REGISTER,
-} from 'redux-persist';
+  REGISTER,} from 'redux-persist';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import settingsReducer from './slices/settingsSlice';
 import historyReducer from './slices/historySlice';
@@ -17,21 +15,21 @@ import { reduxStorage } from '../services/mmkv';
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
-  history: historyReducer,     
+  history: historyReducer,
   [currencyApi.reducerPath]: currencyApi.reducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: reduxStorage,
-  whitelist: ['settings','history', currencyApi.reducerPath],
+  whitelist: ['settings', 'history', currencyApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
-  middleware: (getDefault) =>
+  middleware: getDefault =>
     getDefault({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],

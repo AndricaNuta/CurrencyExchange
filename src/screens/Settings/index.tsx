@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
-import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { styles } from './styles';
 import { SUPPORTED, LanguageCode } from '../../localization/languages';
 import { useGetCurrenciesQuery } from '../../services/currencyApi';
-
-// icons
-import Feather from 'react-native-vector-icons/Feather';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { PickerBottomSheet } from '../../components/PickerBottomSheet';
+import {ChevronRight,
+  Globe,
+  ArrowUpLeft,
+  ArrowDownLeft,
+  Bell,
+  Moon,
+  Check,
+  ArrowUpRight,} from 'react-native-feather';
 
 type RowProps = {
   title: string;
@@ -18,71 +23,216 @@ type RowProps = {
   iconLeft?: React.ReactNode;
   disabled?: boolean;
 };
-const Row = ({ title, subtitle, right, onPress, iconLeft, disabled }: RowProps) => (
-  <Pressable
-    onPress={onPress}
-    disabled={disabled || !onPress}
-    style={({ pressed }) => [styles.row, pressed && onPress ? styles.rowPressed : null]}
-  >
-    {!!iconLeft && <View style={styles.leftIconWrap}>{iconLeft}</View>}
-    <View style={{ flex: 1 }}>
-      <Text style={styles.rowTitle}>{title}</Text>
-      {!!subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
-    </View>
-    {right ?? <Feather name="chevron-right" size={22} color="#9CA3AF" />}
-  </Pressable>
-);
+const Row = React.memo(function Row({
+  title,
+  subtitle,
+  right,
+  onPress,
+  iconLeft,
+  disabled,
+}: RowProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || !onPress}
+      style={({
+        pressed
+      }) => [
+        styles.row,
+        pressed && onPress ? styles.rowPressed : null,
+      ]}
+    >
+      {!!iconLeft && <View style={styles.leftIconWrap}>{iconLeft}</View>}
+      <View style={styles.flex}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        {!!subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+      </View>
+      {right ?? <ChevronRight color="#9CA3AF" />}
+    </Pressable>
+  );
+});
 
 function useSortedCurrencyList(map?: Record<string, string>) {
-  return React.useMemo(
+  return useMemo(
     () =>
       map
         ? Object.entries(map)
-            .map(([code, name]) => ({ code, name }))
-            .sort((a, b) => a.code.localeCompare(b.code))
+          .map(([code, name]) => ({
+            code,
+            name
+          }))
+          .sort((a, b) => a.code.localeCompare(b.code))
         : [],
-    [map]
+    [map],
   );
 }
 
 export default function SettingsScreen() {
-  const { t, i18n } = useTranslation();
+  const {
+    t, i18n
+  } = useTranslation();
   const currentLang = (i18n.language?.split('-')[0] ?? 'en') as LanguageCode;
 
-  // demo local state — wire to Redux/AsyncStorage later
-  const [rateAlerts, setRateAlerts] = React.useState(true);
-  const [darkMode, setDarkMode] = React.useState(false);
-  const [from, setFrom] = React.useState('USD');
-  const [to, setTo] = React.useState('EUR');
+  const [rateAlerts, setRateAlerts] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [from, setFrom] = useState('USD');
+  const [to, setTo] = useState('EUR');
 
-  const { data: currencies } = useGetCurrenciesQuery();
+  const {
+    data: currencies
+  } = useGetCurrenciesQuery();
   const currencyList = useSortedCurrencyList(currencies);
 
-  // bottom sheets
-  const langRef = React.useRef<BottomSheet>(null);
-  const fromRef = React.useRef<BottomSheet>(null);
-  const toRef = React.useRef<BottomSheet>(null);
-  const snapPoints = React.useMemo(() => ['45%', '80%'], []);
+  const [langQuery, setLangQuery] = useState('');
+  const [fromQuery, setFromQuery] = useState('');
+  const [toQuery, setToQuery] = useState('');
 
-  const [langQuery, setLangQuery] = React.useState('');
-  const [fromQuery, setFromQuery] = React.useState('');
-  const [toQuery, setToQuery] = React.useState('');
-
-  const open  = (ref: React.RefObject<BottomSheet>) => ref.current?.snapToIndex(1);
-  const close = (ref: React.RefObject<BottomSheet>) => ref.current?.close();
-
-  const languageName = (code: LanguageCode) => t(`langs.${code}`);
-  const currencyName = (code?: string) => (code && currencies?.[code]) ? `${currencies[code]} (${code})` : code ?? '';
-
-  const filteredLangs = React.useMemo(
-    () => SUPPORTED.filter(c => languageName(c).toLowerCase().includes(langQuery.toLowerCase())),
-    [langQuery, i18n.language]
+  const languageName = useCallback(
+    (code: LanguageCode) => t(`settings.languageList.${code}`),
+    [t],
+  );
+  const currencyName = useCallback(
+    (code?: string) =>
+      code && currencies?.[code] ? `${currencies[code]} (${code})` : code ?? '',
+    [currencies],
   );
 
-  const filterCurrencies = (q: string) =>
-    currencyList.filter(({ code, name }) =>
-      code.toLowerCase().includes(q.toLowerCase()) || name.toLowerCase().includes(q.toLowerCase())
-    );
+  const filteredLangs = useMemo(
+    () =>
+      SUPPORTED.filter(c =>
+        languageName(c).toLowerCase().includes(langQuery.toLowerCase()),
+      ),
+    [languageName, langQuery],
+  );
+
+  const fromFiltered = useMemo(
+    () =>
+      currencyList.filter(
+        ({
+          code, name
+        }) =>
+          code.toLowerCase().includes(fromQuery.toLowerCase()) ||
+          name.toLowerCase().includes(fromQuery.toLowerCase()),
+      ),
+    [currencyList, fromQuery],
+  );
+  const toFiltered = useMemo(
+    () =>
+      currencyList.filter(
+        ({
+          code, name
+        }) =>
+          code.toLowerCase().includes(toQuery.toLowerCase()) ||
+          name.toLowerCase().includes(toQuery.toLowerCase()),
+      ),
+    [currencyList, toQuery],
+  );
+
+  const languageItems = useMemo(
+    () =>
+      filteredLangs.map(code => ({
+        key: code,
+        label: t(`settings.languageList.${code}`),
+        left: <Globe color="#2563EB" />,
+        right: currentLang === code ? <Check color="#0EA5E9" /> : undefined,
+      })),
+    [filteredLangs, currentLang, t],
+  );
+  const fromItems = useMemo(
+    () =>
+      fromFiltered.map(({
+        code, name
+      }) => ({
+        key: code,
+        label: `${name} (${code})`,
+        left: <ArrowUpLeft color="#7C3AED" />,
+        right: from === code ? <Check color="#7C3AED" /> : undefined,
+      })),
+    [fromFiltered, from],
+  );
+  const toItems = useMemo(
+    () =>
+      toFiltered.map(({
+        code, name
+      }) => ({
+        key: code,
+        label: `${name} (${code})`,
+        left: <ArrowDownLeft color="#EA580C" />,
+        right: to === code ? <Check color="#EA580C" /> : undefined,
+      })),
+    [toFiltered, to],
+  );
+
+  type Mode = 'lang' | 'from' | 'to' | null;
+  const modalRef = useRef<BottomSheetModal>(null);
+  const [mode, setMode] = useState<Mode>(null);
+  const isOpenRef = useRef<boolean>(false);
+  const pendingModeRef = useRef<Mode>(null);
+
+  const presentMode = useCallback(
+    (next: Exclude<Mode, null>) => {
+      if (!isOpenRef.current) {
+        setMode(next);
+        modalRef.current?.present();
+        isOpenRef.current = true;
+        return;
+      }
+      if (mode === next) {
+        modalRef.current?.present();
+        return;
+      }
+      pendingModeRef.current = next;
+      modalRef.current?.dismiss();
+    },
+    [mode],
+  );
+
+  const handleDismiss = useCallback(() => {
+    isOpenRef.current = false;
+    const next = pendingModeRef.current as Exclude<Mode, null> | null;
+    if (next) {
+      pendingModeRef.current = null;
+      setMode(next);
+      requestAnimationFrame(() => {
+        modalRef.current?.present();
+        isOpenRef.current = true;
+      });
+    } else {
+      setMode(null);
+    }
+  }, []);
+
+  const titleForMode =
+    mode === 'lang'
+      ? t('settings.language')
+      : mode === 'from'
+        ? t('settings.defaultFrom')
+        : mode === 'to'
+          ? t('settings.defaultTo')
+          : '';
+  const itemsForMode =
+    mode === 'lang' ? languageItems : mode === 'from' ? fromItems : toItems;
+
+  const searchForMode =
+    mode === 'lang'
+      ? {
+        value: langQuery,
+        set: setLangQuery,
+        autoCapitalize: 'none' as const
+      }
+      : mode === 'from'
+        ? {
+          value: fromQuery,
+          set: setFromQuery,
+          autoCapitalize: 'characters' as const,
+        }
+        : mode === 'to'
+          ? {
+            value: toQuery,
+            set: setToQuery,
+            autoCapitalize: 'characters' as const,
+          }
+          : undefined;
 
   return (
     <View style={styles.container}>
@@ -94,10 +244,10 @@ export default function SettingsScreen() {
         <Row
           title={t('settings.language')}
           subtitle={languageName(currentLang)}
-          onPress={() => open(langRef)}
+          onPress={() => presentMode('lang')}
           iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: '#EFF6FF' }]}>
-              <Feather name="globe" size={16} color="#2563EB" />
+            <View style={[styles.circleIcon, styles.languageIcon]}>
+              <Globe color="#2563EB" />
             </View>
           }
         />
@@ -109,10 +259,10 @@ export default function SettingsScreen() {
         <Row
           title={t('settings.defaultFrom')}
           subtitle={currencyName(from)}
-          onPress={() => open(fromRef)}
+          onPress={() => presentMode('from')}
           iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: '#F5F3FF' }]}>
-              <Feather name="arrow-up-right" size={16} color="#7C3AED" />
+            <View style={[styles.circleIcon, styles.fromIcon]}>
+              <ArrowUpRight color="#7C3AED" />
             </View>
           }
         />
@@ -120,17 +270,19 @@ export default function SettingsScreen() {
         <Row
           title={t('settings.defaultTo')}
           subtitle={currencyName(to)}
-          onPress={() => open(toRef)}
+          onPress={() => presentMode('to')}
           iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: '#FFF7ED' }]}>
-              <Feather name="arrow-down-left" size={16} color="#EA580C" />
+            <View style={[styles.circleIcon, styles.toIcon]}>
+              <ArrowDownLeft color="#EA580C" />
             </View>
           }
         />
       </View>
 
       {/* Notifications */}
-      <Text style={styles.sectionHeader}>{t('settings.section.notifications')}</Text>
+      <Text style={styles.sectionHeader}>
+        {t('settings.section.notifications')}
+      </Text>
       <View style={styles.card}>
         <Row
           title={t('settings.exchangeRateAlerts')}
@@ -139,19 +291,24 @@ export default function SettingsScreen() {
               value={rateAlerts}
               onValueChange={setRateAlerts}
               thumbColor="#fff"
-              trackColor={{ false: '#E6E8EC', true: '#ff3b30' }}
+              trackColor={{
+                false: '#E6E8EC',
+                true: '#ff3b30'
+              }}
             />
           }
           iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: '#FEF2F2' }]}>
-              <Feather name="bell" size={16} color="#EF4444" />
+            <View style={[styles.circleIcon, styles.notifIcon]}>
+              <Bell color="#EF4444" />
             </View>
           }
         />
       </View>
 
       {/* Appearance */}
-      <Text style={styles.sectionHeader}>{t('settings.section.appearance')}</Text>
+      <Text style={styles.sectionHeader}>
+        {t('settings.section.appearance')}
+      </Text>
       <View style={styles.card}>
         <Row
           title={t('settings.darkMode')}
@@ -160,163 +317,43 @@ export default function SettingsScreen() {
               value={darkMode}
               onValueChange={setDarkMode}
               thumbColor="#fff"
-              trackColor={{ false: '#E6E8EC', true: '#34C759' }}
+              trackColor={{
+                false: '#E6E8EC',
+                true: '#34C759'
+              }}
             />
           }
           iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: '#111827' }]}>
-              <Feather name="moon" size={16} color="#fff" />
+            <View style={[styles.circleIcon, styles.darkIcon]}>
+              <Moon color="#fff" />
             </View>
           }
         />
       </View>
 
-      {/* Info (dark card style) */}
-      <Text style={styles.sectionHeader}>{t('settings.section.info')}</Text>
-      <View style={[styles.card, styles.cardDark]}>
-        <Row
-          title={t('settings.about')}
-          onPress={() => {}}
-          right={<Feather name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />}
-          iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Feather name="info" size={16} color="rgba(255,255,255,0.9)" />
-            </View>
+      {/* Modal (one instance) */}
+      <PickerBottomSheet
+        ref={modalRef}
+        title={titleForMode}
+        items={itemsForMode}
+        search={searchForMode}
+        onSelect={key => {
+          if (mode === 'lang') {
+            i18n.changeLanguage(key as LanguageCode);
+            setLangQuery('');
           }
-        />
-        <View style={[styles.divider, styles.dividerDark]} />
-        <Row
-          title={t('settings.version')}
-          right={<Text style={styles.infoValue}>1.0.0</Text>}
-          disabled
-          iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <MaterialCommunityIcons name="tag-outline" size={16} color="rgba(255,255,255,0.9)" />
-            </View>
+          if (mode === 'from') {
+            setFrom(key);
+            setFromQuery('');
           }
-        />
-        <View style={[styles.divider, styles.dividerDark]} />
-        <Row
-          title={t('settings.support')}
-          onPress={() => {}}
-          right={<Feather name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />}
-          iconLeft={
-            <View style={[styles.circleIcon, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Feather name="life-buoy" size={16} color="rgba(255,255,255,0.9)" />
-            </View>
+          if (mode === 'to') {
+            setTo(key);
+            setToQuery('');
           }
-        />
-      </View>
-
-      {/* ---------- LANGUAGE SHEET (with search + icons) ---------- */}
-      <BottomSheet ref={langRef} snapPoints={snapPoints} enablePanDownToClose>
-        <BottomSheetScrollView contentContainerStyle={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>{t('settings.language')}</Text>
-          <View style={styles.searchWrap}>
-            <Feather name="search" size={16} color="#6B7280" />
-            <BottomSheetTextInput
-              value={langQuery}
-              onChangeText={setLangQuery}
-              placeholder={t('common.search') || 'Search'}
-              style={styles.searchInput}
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-
-          {filteredLangs.map(code => {
-            const selected = currentLang === code;
-            return (
-              <Pressable
-                key={code}
-                style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
-                onPress={() => {
-                  i18n.changeLanguage(code);
-                  close(langRef);
-                  setLangQuery('');
-                }}
-              >
-                <View style={[styles.circleIcon, { backgroundColor: '#EFF6FF', marginRight: 12 }]}>
-                  <Feather name="globe" size={16} color="#2563EB" />
-                </View>
-                <Text style={[styles.sheetRowText, { flex: 1 }]}>{languageName(code)}</Text>
-                {selected ? <Feather name="check" size={18} color="#0EA5E9" /> : null}
-              </Pressable>
-            );
-          })}
-        </BottomSheetScrollView>
-      </BottomSheet>
-
-      {/* ---------- FROM CURRENCY SHEET ---------- */}
-      <BottomSheet ref={fromRef} snapPoints={snapPoints} enablePanDownToClose>
-        <BottomSheetScrollView contentContainerStyle={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>{t('settings.defaultFrom')}</Text>
-          <View style={styles.searchWrap}>
-            <Feather name="search" size={16} color="#6B7280" />
-            <BottomSheetTextInput
-              value={fromQuery}
-              onChangeText={setFromQuery}
-              placeholder={t('common.search') || 'Search'}
-              style={styles.searchInput}
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="characters"
-            />
-          </View>
-
-          {filterCurrencies(fromQuery).map(({ code, name }) => (
-            <Pressable
-              key={`from-${code}`}
-              style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
-              onPress={() => {
-                setFrom(code);
-                close(fromRef);
-                setFromQuery('');
-              }}
-            >
-              <View style={[styles.circleIcon, { backgroundColor: '#F5F3FF', marginRight: 12 }]}>
-                <Feather name="arrow-up-right" size={16} color="#7C3AED" />
-              </View>
-              <Text style={[styles.sheetRowText, { flex: 1 }]}>{`${name} (${code})`}</Text>
-              {from === code ? <Feather name="check" size={18} color="#7C3AED" /> : null}
-            </Pressable>
-          ))}
-        </BottomSheetScrollView>
-      </BottomSheet>
-
-      {/* ---------- TO CURRENCY SHEET ---------- */}
-      <BottomSheet ref={toRef} snapPoints={snapPoints} enablePanDownToClose>
-        <BottomSheetScrollView contentContainerStyle={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>{t('settings.defaultTo')}</Text>
-          <View style={styles.searchWrap}>
-            <Feather name="search" size={16} color="#6B7280" />
-            <BottomSheetTextInput
-              value={toQuery}
-              onChangeText={setToQuery}
-              placeholder={t('common.search') || 'Search'}
-              style={styles.searchInput}
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="characters"
-            />
-          </View>
-
-          {filterCurrencies(toQuery).map(({ code, name }) => (
-            <Pressable
-              key={`to-${code}`}
-              style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
-              onPress={() => {
-                setTo(code);
-                close(toRef);
-                setToQuery('');
-              }}
-            >
-              <View style={[styles.circleIcon, { backgroundColor: '#FFF7ED', marginRight: 12 }]}>
-                <Feather name="arrow-down-left" size={16} color="#EA580C" />
-              </View>
-              <Text style={[styles.sheetRowText, { flex: 1 }]}>{`${name} (${code})`}</Text>
-              {to === code ? <Feather name="check" size={18} color="#EA580C" /> : null}
-            </Pressable>
-          ))}
-        </BottomSheetScrollView>
-      </BottomSheet>
+          modalRef.current?.dismiss();
+        }}
+        onDismiss={handleDismiss}
+      />
     </View>
   );
 }

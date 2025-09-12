@@ -1,5 +1,26 @@
 {
-    "settings": { "title": "Settings", "language": "Language" },
-    "langs": { "en": "English", "de": "Deutsch", "fr": "Français", "es": "Español" },
-    "comingSoon": "coming soon"
+  "settings": {
+    "title": "Settings",
+    "section": {
+      "general": "General",
+      "defaults": "Default Currencies",
+      "notifications": "Notifications",
+      "appearance": "Appearance",
+      "info": "Info"
+    },
+    "language": "Language",
+    "languageList": {
+      "en": "English",
+      "de": "Deutsche",
+      "fr": "franc",
+      "es": "Spanish"
+    },
+    "defaultFrom": "From",
+    "defaultTo": "To",
+    "exchangeRateAlerts": "Exchange Rate Alerts",
+    "darkMode": "Dark Mode",
+    "about": "About Currency Converter",
+    "version": "Version",
+    "support": "Support"
   }
+}
