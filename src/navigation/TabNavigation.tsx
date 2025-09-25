@@ -16,7 +16,7 @@ import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopo
 import { pickImageAndDetectPrices } from '../ocr/pickImageAndDetectPrices';
 import type {RootStackParamList,
   MainTabParamList,} from './RootStackParamList';
-  import { takePhotoAndDetectPrices } from '../ocr/takePhotoAndDetectPrices';
+import { takePhotoAndDetectPrices } from '../ocr/takePhotoAndDetectPrices';
 
 const {
   width: SCREEN_W
@@ -137,8 +137,8 @@ export default function TabNavigation() {
       <ScanActionsPopover
         visible={scanOpen}
         onClose={() => setScanOpen(false)}
-        onLive={() => {
-          setScanOpen(false); /* TODO */
+        onLive={() => { setScanOpen(false);
+          stackNav.navigate('LiveScan');
         }}
         onCamera={onTakePhoto}
         onGallery={onPickImage}

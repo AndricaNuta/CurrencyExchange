@@ -9,4 +9,5 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   TabNavigation: undefined;
   ScanPreview: { uri: string; candidates: Candidate[] };
+  LiveScan: undefined;
 };

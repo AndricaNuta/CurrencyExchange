@@ -14,6 +14,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigation from './TabNavigation';
 import ScanPreviewScreen from '../screens/ScanResult/ScanPreviewScreen';
 import type { RootStackParamList } from './RootStackParamList';
+import LiveScanScreen from '../screens/LiveScanScreen/indes';
 
 export const navRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -68,6 +69,18 @@ export default function RootNavigator() {
           <Stack.Screen
             name="ScanPreview"
             component={ScanPreviewScreen}
+            options={{
+              headerShown: true,
+              title: 'Preview',
+              presentation: 'fullScreenModal',
+              headerStyle: { backgroundColor: tokens.card },
+              headerTintColor: tokens.text,
+              contentStyle: { backgroundColor: tokens.bg },
+            }}
+          />
+          <Stack.Screen
+            name="LiveScan"
+            component={LiveScanScreen}
             options={{
               headerShown: true,
               title: 'Preview',
