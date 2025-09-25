@@ -162,12 +162,14 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
     backgroundColor: '#F3F4F7',
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    justifyContent:'center',
+    flexDirection:'row',
+    flex:1,
   },
   convMain: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#111'
   },
   convMeta: {
     fontSize: 10,
@@ -182,5 +184,19 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 2
+  },
+  // add these
+  imageWrap: {
+    flex: 1,
+    position: 'relative',
+  },
+  box: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: '#FFD400',
+    borderRadius: 4,
+  },
+  pill: {
+    flex:1,
   },
 });
