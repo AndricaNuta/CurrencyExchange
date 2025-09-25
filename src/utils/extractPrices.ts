@@ -1,3 +1,4 @@
+import { Candidate } from '../ocr/pickImageAndDetectPrices';
 import type { OCRResult, OCRWord } from '../types/PriceOCR';
 
 const PRICE_RE = /(?:(?:€|\$|£|RON|Ron|ron|LEI|Lei|lei)\s*)?\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*(?:€|\$|£|RON|Ron|ron|LEI|Lei|lei)?/;
@@ -109,3 +110,18 @@ export function mapBoxToView(
   };
 }
 
+
+export function priceHitToCandidate
+(h: PriceHit, fallbackCurrency: string): Candidate {
+  const amount = Number(h.amountRaw.replace(',', '.')) || 0;
+
+  return {
+    raw: h.priceText,
+    value: amount,
+    currency: (h.currency ?? fallbackCurrency).toUpperCase(),
+    line: h.lineText,
+    label: h.lineText,
+    lineIndex: h.lineIndex,
+    score: 1,
+  };
+}

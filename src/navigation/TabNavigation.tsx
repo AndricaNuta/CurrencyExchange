@@ -16,6 +16,7 @@ import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopo
 import { pickImageAndDetectPrices } from '../ocr/pickImageAndDetectPrices';
 import type {RootStackParamList,
   MainTabParamList,} from './RootStackParamList';
+  import { takePhotoAndDetectPrices } from '../ocr/takePhotoAndDetectPrices';
 
 const {
   width: SCREEN_W
@@ -28,6 +29,21 @@ export default function TabNavigation() {
   const insets = useSafeAreaInsets();
   const stackNav = useNavigation<StackNav>();
   const [scanOpen, setScanOpen] = useState(false);
+  const onTakePhoto = React.useCallback(async () => {
+    setScanOpen(false);
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const res = await takePhotoAndDetectPrices(8);
+      if (res?.asset?.uri && res.candidates?.length) {
+        stackNav.navigate('ScanPreview', {
+          uri: res.asset.uri!,
+          candidates: res.candidates!,
+        });
+      }
+    } catch (e) {
+      console.warn('[OCR] camera failed', e);
+    }
+  }, [stackNav]);
 
   const onPickImage = React.useCallback(async () => {
     setScanOpen(false);
@@ -124,9 +140,7 @@ export default function TabNavigation() {
         onLive={() => {
           setScanOpen(false); /* TODO */
         }}
-        onCamera={() => {
-          setScanOpen(false); /* TODO */
-        }}
+        onCamera={onTakePhoto}
         onGallery={onPickImage}
       />
     </View>
