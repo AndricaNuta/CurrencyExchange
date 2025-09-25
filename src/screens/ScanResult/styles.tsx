@@ -168,8 +168,8 @@ export const styles = StyleSheet.create({
     flex:1,
   },
   convMain: {
-    fontSize: 10,
     fontWeight: '700',
+    color:'black'
   },
   convMeta: {
     fontSize: 10,
@@ -188,14 +188,14 @@ export const styles = StyleSheet.create({
   // add these
   imageWrap: {
     flex: 1,
-    position: 'relative',
   },
   box: {
     position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#FFD400',
-    borderRadius: 4,
+    borderWidth: 0,
+    borderColor: '#FFC83D',
+    borderRadius: 10,
   },
+
   pill: {
     flex:1,
   },
