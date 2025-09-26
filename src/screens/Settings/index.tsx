@@ -1,6 +1,5 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './styles';
 import { SUPPORTED, LanguageCode } from '../../localization/languages';
@@ -8,7 +7,6 @@ import { useGetCurrenciesQuery } from '../../services/currencyApi';
 import { PickerBottomSheet } from '../../components/PickerBottomSheet';
 import {ChevronRight,
   Globe,
-  ArrowUpLeft,
   ArrowDownLeft,
   Bell,
   Moon,
@@ -18,6 +16,8 @@ import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDefaultFrom, setDefaultTo, setThemePreference } from '../../redux/slices/settingsSlice';
 import { useTheme } from '../../theme/ThemeProvider';
+import { currencyFlag } from '../../utils/currencyFlag';
+import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
 
 type RowProps = {
   title: string;
@@ -135,62 +135,36 @@ export default function SettingsScreen() {
     right: currentLang === code ? <Check color={tkn.colors.tint} /> : undefined,
   })), [filteredLangs, currentLang, t, tkn.colors.tint]);
 
-  const fromItems = useMemo(() => fromFiltered.map(({
-    code, name
-  }) => ({
-    key: code,
-    label: `${name} (${code})`,
-    left: <ArrowUpLeft color={tkn.colors.tint} />,
-    right: from === code ? <Check color={tkn.colors.tint} /> : undefined,
-  })), [fromFiltered, from, tkn.colors.tint]);
-
-  const toItems = useMemo(() => toFiltered.map(({
-    code, name
-  }) => ({
-    key: code,
-    label: `${name} (${code})`,
-    left: <ArrowDownLeft color={tkn.colors.tint} />,
-    right: to === code ? <Check color={tkn.colors.tint} /> : undefined,
-  })), [toFiltered, to, tkn.colors.tint]);
-
-  type Mode = 'lang' | 'from' | 'to' | null;
-  const modalRef = useRef<BottomSheetModal>(null);
-  const [mode, setMode] = useState<Mode>(null);
-  const isOpenRef = useRef<boolean>(false);
-  const pendingModeRef = useRef<Mode>(null);
-
-  const presentMode = useCallback(
-    (next: Exclude<Mode, null>) => {
-      if (!isOpenRef.current) {
-        setMode(next);
-        modalRef.current?.present();
-        isOpenRef.current = true;
-        return;
-      }
-      if (mode === next) {
-        modalRef.current?.present();
-        return;
-      }
-      pendingModeRef.current = next;
-      modalRef.current?.dismiss();
-    },
-    [mode],
+  const fromItems = useMemo(
+    () => fromFiltered.map(({
+      code, name
+    }) => ({
+      key: code,
+      label: `${name} (${code})`,
+      left: <Text>{currencyFlag(code)}</Text>,
+      right: from === code ? <Check color={tkn.colors.tint} /> : undefined,
+    })),
+    [fromFiltered, from, tkn.colors.tint]
   );
 
-  const handleDismiss = useCallback(() => {
-    isOpenRef.current = false;
-    const next = pendingModeRef.current as Exclude<Mode, null> | null;
-    if (next) {
-      pendingModeRef.current = null;
-      setMode(next);
-      requestAnimationFrame(() => {
-        modalRef.current?.present();
-        isOpenRef.current = true;
-      });
-    } else {
-      setMode(null);
-    }
-  }, []);
+  const toItems = useMemo(
+    () => toFiltered.map(({
+      code, name
+    }) => ({
+      key: code,
+      label: `${name} (${code})`,
+      left: <Text>{currencyFlag(code)}</Text>,
+      right: to === code ? <Check color={tkn.colors.tint} /> : undefined,
+    })),
+    [toFiltered, to, tkn.colors.tint]
+  );
+
+  const {
+    modalRef,
+    mode,
+    presentMode,
+    handleDismiss
+  } = useCurrencyPicker();
 
   const titleForMode =
     mode === 'lang'

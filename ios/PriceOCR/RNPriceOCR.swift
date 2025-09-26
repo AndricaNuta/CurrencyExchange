@@ -17,23 +17,9 @@ class RNPriceOCR: NSObject {
                          resolver resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
     // --- Load image ---
-    let fileURL = URL(string: uri.hasPrefix("file://") ? uri : "file://\(uri)")
-    guard let url = fileURL,
-          let uiImage = UIImage(contentsOfFile: url.path),
-          let cgOriginal = uiImage.cgImage else {
-      reject("E_IMAGE", "Cannot load image at \(uri)", nil)
-      return
+ guard let (cgImage, orientation) = loadCGImage(uri, lightPreproc: false) else {
+      reject("E_IMAGE", "Cannot load image at \(uri)", nil); return
     }
-
-    // Preprocess (helps small white-on-black menus). NOTE: this produces an upright CGImage.
-    let cgPre = self.preprocessedCGImage(from: uiImage)
-    let cgImage = cgPre ?? cgOriginal
-
-    // 🔴 IMPORTANT: orientation must match the pixel buffer we're sending to Vision.
-    // If we used the preprocessed CGImage, it is already upright -> pass .up.
-    let orientation: CGImagePropertyOrientation =
-      (cgPre != nil) ? .up : CGImagePropertyOrientation(uiImage.imageOrientation)
-
     // --- Vision request ---
     let req = VNRecognizeTextRequest { [weak self] r, e in
       guard let self = self else { return }
@@ -186,13 +172,16 @@ class RNPriceOCR: NSObject {
     }
 
     // Tuning
-    req.recognitionLevel = .accurate
+    req.recognitionLevel = VNRequestTextRecognitionLevel.accurate
     req.usesLanguageCorrection = true
-    if #available(iOS 16.0, *) {
+   if #available(iOS 16.0, *) {
       req.revision = VNRecognizeTextRequestRevision3
     }
-    req.recognitionLanguages = ["en_US", "ro_RO", "es_ES"]
-    req.minimumTextHeight = 0.008 // 0.008–0.012 often best for menus
+    req.recognitionLanguages = ["en_US","ro_RO","es_ES"]
+    req.minimumTextHeight = 0.004  // was 0.008; helps tiny glyphs
+    if #available(iOS 15.0, *) {
+      req.customWords = ["EUR","RON","LEI","lei","€","$","£"]
+    } // 0.008–0.012 often best for menus
 
     let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: [:])
     DispatchQueue.global(qos: .userInitiated).async {
@@ -200,8 +189,70 @@ class RNPriceOCR: NSObject {
       catch { reject("E_OCR", "Perform failed: \(error.localizedDescription)", error) }
     }
   }
+@objc(detectTextInImageLive:resolver:rejecter:)
+func detectTextInImageLive(_ uri: String,
+                           resolver resolve: @escaping RCTPromiseResolveBlock,
+                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+  guard let load = self.loadCGImage(uri, lightPreproc: true) else {
+    reject("E_IMAGE", "Cannot load image at \(uri)", nil); return
+  }
+  let (cgImage, orientation) = load
 
+  let req = VNRecognizeTextRequest { [weak self] r, e in
+    guard let self = self else { return }
+    if let e = e { reject("E_OCR", "Vision error: \(e.localizedDescription)", e); return }
+    guard let obs = r.results as? [VNRecognizedTextObservation] else {
+      resolve(self.emptyResult(width: cgImage.width, height: cgImage.height)); return
+    }
+    resolve(self.packageResults(obs, width: cgImage.width, height: cgImage.height))
+  }
+
+  // 🔁 Live profile: favor accuracy (menus/price columns often small)
+  req.recognitionLevel = .accurate
+  req.usesLanguageCorrection = true
+  if #available(iOS 16.0, *) { req.revision = VNRecognizeTextRequestRevision3 }
+  req.recognitionLanguages = ["en_US","ro_RO","es_ES"]
+  req.minimumTextHeight = 0.008
+
+  // Optional: nudge the recognizer toward price tokens
+  if #available(iOS 15.0, *) {
+    req.customWords = ["EUR","RON","LEI","lei","€","$","£"]
+  }
+
+  // ❌ Remove ROI for now (it was clipping some lines)
+
+  let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: [:])
+  DispatchQueue.global(qos: .userInitiated).async {
+    do { try handler.perform([req]) }
+    catch { reject("E_OCR", "Perform failed: \(error.localizedDescription)", error) }
+  }
+}
   // MARK: - Helpers
+private func upscaleIfNeeded(_ cg: CGImage, minSide: CGFloat = 1200) -> CGImage {
+  let w = CGFloat(cg.width), h = CGFloat(cg.height)
+  let s = min(w, h)
+guard s < minSide else { return cg }
+let ci = CIImage(cgImage: cg)
+  let scale = minSide / s
+  let filt = CIFilter(name: "CILanczosScaleTransform")!
+  filt.setValue(ci, forKey: kCIInputImageKey)
+  filt.setValue(scale, forKey: kCIInputScaleKey)
+  filt.setValue(1.0,   forKey: kCIInputAspectRatioKey)
+  let out = filt.outputImage!.applyingFilter("CISharpenLuminance", parameters: ["inputSharpness": 0.35])
+  return CIContext().createCGImage(out, from: out.extent) ?? cg
+}
+  private func loadCGImage(_ uri: String, lightPreproc: Bool = false) -> (CGImage, CGImagePropertyOrientation)? {
+    let fileURL = URL(string: uri.hasPrefix("file://") ? uri : "file://\(uri)")
+    guard let url = fileURL,
+          let uiImage = UIImage(contentsOfFile: url.path),
+          let cgOriginal = uiImage.cgImage else { return nil }
+
+let cgPre = self.preprocessedCGImage(from: uiImage)
+let cgBase = cgPre ?? cgOriginal
+let cgImage = self.upscaleIfNeeded(cgBase, minSide: 1200)
+let orientation: CGImagePropertyOrientation = (cgPre != nil) ? .up : CGImagePropertyOrientation(uiImage.imageOrientation)
+    return (cgImage, orientation)
+  }
 
   private func emptyResult(width: Int, height: Int) -> [String: Any] {
     ["width": width, "height": height, "rotation": 0, "words": [], "lines": [], "prices": []]
@@ -213,7 +264,76 @@ class RNPriceOCR: NSObject {
     let y = 1.0 - rect.origin.y - rect.size.height
     return ["x": x, "y": y, "width": rect.size.width, "height": rect.size.height]
   }
+private func packageResults(
+  _ obs: [VNRecognizedTextObservation],
+  width: Int,
+  height: Int
+) -> [String: Any] {
 
+  var lines: [[String: Any]] = []
+  var prices: [[String: Any]] = []
+
+  let priceRegex = try! NSRegularExpression(
+    pattern: #"(?:(?:€|\$|£|RON|Ron|ron|LEI|Lei|lei)\s*)?-?\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*(?:€|\$|£|RON|Ron|ron|LEI|Lei|lei)?"#,
+    options: []
+  )
+
+  for (lineIndex, o) in obs.enumerated() {
+    guard let cand = o.topCandidates(3).first else { continue }
+    let lineRect = o.boundingBox
+
+    lines.append([
+      "text": cand.string,
+      "box": rectToBox(rect: lineRect),
+      "quad": rectToQuad(rect: lineRect),
+      "lineIndex": lineIndex,
+      "blockIndex": 0
+    ])
+
+    let ns = cand.string as NSString
+    let whole = NSRange(location: 0, length: ns.length)
+
+    priceRegex.enumerateMatches(in: cand.string, options: [], range: whole) { m, _, _ in
+      guard let m = m, m.range.length > 0,
+            let r = Range(m.range, in: cand.string),
+            let priceObs = try? cand.boundingBox(for: r) else { return }
+
+      let priceRect = priceObs.boundingBox
+      let priceText = ns.substring(with: m.range).trimmingCharacters(in: .whitespaces)
+
+      // label on the same line, left of price
+      let beforeNS = NSRange(location: 0, length: m.range.location)
+      var labelText = ""
+      var labelRect: CGRect?
+      if beforeNS.length > 0,
+         let r2 = Range(beforeNS, in: cand.string),
+         let beforeObs = try? cand.boundingBox(for: r2) {
+        labelRect = beforeObs.boundingBox
+        let rawLeft = ns.substring(with: beforeNS)
+        labelText = rawLeft.replacingOccurrences(of: #"[ \t.\-·:•…]+$"#, with: "", options: .regularExpression)
+      }
+
+      var payload: [String: Any] = [
+        "text": priceText,
+        "confidence": cand.confidence,
+        "box": rectToBox(rect: priceRect),
+        "quad": rectToQuad(rect: priceRect),
+        "lineIndex": lineIndex,
+        "lineText": cand.string,
+        "lineBox": rectToBox(rect: lineRect)
+      ]
+      if let l = labelRect, !labelText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        payload["labelText"] = labelText
+        payload["labelBox"]  = rectToBox(rect: l)
+      }
+      prices.append(payload)
+    }
+  }
+
+  // simple left-pairing fallback (optional, copy from your main fn if needed)
+
+  return ["width": width, "height": height, "rotation": 0, "words": [], "lines": lines, "prices": prices]
+}
   private func rectToQuad(rect: CGRect) -> [String: Any] {
     let x = rect.origin.x
     let w = rect.size.width
@@ -227,13 +347,21 @@ class RNPriceOCR: NSObject {
     ]
   }
 
-  private func preprocessedCGImage(from ui: UIImage) -> CGImage? {
-    guard let ci = CIImage(image: ui) else { return ui.cgImage }
-    let contrasted = ci
-      .applyingFilter("CIColorControls", parameters: ["inputContrast": 1.18])
-      .applyingFilter("CISharpenLuminance", parameters: ["inputSharpness": 0.45])
-    return CIContext().createCGImage(contrasted, from: contrasted.extent)
-  }
+private func preprocessedCGImage(from ui: UIImage) -> CGImage? {
+  guard var ci = CIImage(image: ui) else { return ui.cgImage }
+  // Auto-invert if overall dark
+  let avg = ci.applyingFilter("CIAreaAverage", parameters: [kCIInputExtentKey: CIVector(cgRect: ci.extent)])
+  var pixel = [UInt8](repeating: 0, count: 4)
+  CIContext().render(avg, toBitmap: &pixel, rowBytes: 4, bounds: CGRect(x:0, y:0, width:1, height:1), format: .RGBA8, colorSpace: nil)
+  let luminance = 0.2126*Double(pixel[0]) + 0.7152*Double(pixel[1]) + 0.0722*Double(pixel[2])
+  if luminance < 90 { ci = ci.applyingFilter("CIColorInvert") }
+
+  let boosted = ci
+    .applyingFilter("CIColorControls", parameters: ["inputContrast": 1.2, "inputBrightness": 0, "inputSaturation": 1.0])
+    .applyingFilter("CISharpenLuminance", parameters: ["inputSharpness": 0.45])
+
+  return CIContext().createCGImage(boosted, from: boosted.extent)
+}
 }
 
 // Orientation bridge

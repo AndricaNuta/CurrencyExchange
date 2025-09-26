@@ -14,7 +14,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigation from './TabNavigation';
 import ScanPreviewScreen from '../screens/ScanResult/ScanPreviewScreen';
 import type { RootStackParamList } from './RootStackParamList';
-import LiveScanScreen from '../screens/LiveScanScreen/indes';
+import LiveScanScreen from '../screens/LiveScanScreen';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 export const navRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -58,6 +59,7 @@ export default function RootNavigator() {
     <>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <NavigationContainer ref={navRef} theme={navTheme}>
+      <BottomSheetModalProvider>
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -91,6 +93,7 @@ export default function RootNavigator() {
             }}
           />
         </Stack.Navigator>
+        </BottomSheetModalProvider>
       </NavigationContainer>
     </>
   );

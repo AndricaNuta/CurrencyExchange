@@ -1,37 +1,37 @@
 import { StyleSheet } from 'react-native';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((t) => ({
   screen: {
     flex: 1,
-    backgroundColor: '#F6F7F9',
-    padding: 20,
-    paddingTop: 90
+    backgroundColor: t.colors.bg,
+    padding: t.spacing(5),
+    paddingTop: t.spacing(22),
   },
+
+  // Card & blocks
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: t.colors.card,
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: {
-      width: 0,
-      height: 6
-    },
-    elevation: 3,
+    ...t.shadow.ios,
+    ...t.shadow.android,
     overflow: 'visible',
   },
   block: {
-    padding: 20
+    padding: t.spacing(5),
   },
   blockTop: {
     borderTopLeftRadius: 24,
-    borderTopRightRadius: 24
+    borderTopRightRadius: 24,
   },
   blockBottom: {
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    paddingTop: 28,
+    paddingTop: t.spacing(7),
   },
+
+  // Headers / labels
   blockHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -39,31 +39,36 @@ export const styles = StyleSheet.create({
   },
   blockLabel: {
     fontSize: 15,
-    color: '#6A6F7A',
-    fontWeight: '600'
+    color: t.colors.subtext,
+    fontWeight: '600',
   },
+
+  // Inputs / values
   bigInput: {
     fontSize: 40,
     fontWeight: '800',
     marginTop: 8,
     paddingVertical: 0,
-    color: '#111',
+    color: t.colors.text,
   },
   bigConverted: {
     fontSize: 40,
     fontWeight: '800',
     marginTop: 8,
-    color: '#111',
+    color: t.colors.text,
   },
   subAmount: {
     marginTop: 6,
-    color: '#8A8F98',
-    fontSize: 14
+    color: t.colors.subtext,
+    fontSize: 14,
   },
+
+  // Pills
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F7',
+    backgroundColor:
+      t.scheme === 'dark' ? alpha('#FFFFFF', 0.08) : alpha('#111827', 0.06),
     borderRadius: 22,
     paddingHorizontal: 14,
     height: 36,
@@ -75,107 +80,103 @@ export const styles = StyleSheet.create({
   pillCode: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111'
+    color: t.colors.text
   },
-  pillChevron: {
-    fontSize: 14,
-    color: '#6A6F7A'
-  },
+
+  // Swap button
   swapCircle: {
     position: 'absolute',
     alignSelf: 'center',
     top: '40%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: t.colors.surface,
     borderRadius: 40,
     width: 64,
     height: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#F0F1F4',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 4
-    },
-    elevation: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    ...t.shadow.ios,
+    ...t.shadow.android,
   },
-  swapArrow: {
-    fontSize: 20,
-    color: '#3C3F44'
-  },
+
+  // Rate row
   rateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 14,
-    paddingHorizontal: 6,
+    marginTop: t.spacing(3.5),
+    paddingHorizontal: t.spacing(1.5),
   },
   rateText: {
-    color: '#6A6F7A'
+    color: t.colors.subtext
   },
   rateStrong: {
-    color: '#2AAE2A',
+    color: t.colors.success,
     fontWeight: '800'
   },
   timePill: {
-    backgroundColor: '#EEEEF2',
+    backgroundColor:
+      t.scheme === 'dark' ? alpha('#FFFFFF', 0.08) : alpha('#111827', 0.06),
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
   },
   timeTxt: {
     fontSize: 12,
-    color: '#6A6F7A'
+    color: t.colors.subtext
   },
 
+  // Misc (OCR, errors)
   pickBtn: {
-    marginTop: 12,
-    paddingVertical: 12,
+    marginTop: t.spacing(3),
+    paddingVertical: t.spacing(3),
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: t.colors.surface,
   },
   pickTxt: {
     fontSize: 16,
-    fontWeight: '600'
+    fontWeight: '600',
+    color: t.colors.text
   },
   err: {
     marginTop: 8,
-    color: '#c00'
+    color: t.colors.danger
   },
+
   detectCard: {
-    marginTop: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
+    marginTop: t.spacing(3),
+    padding: t.spacing(3),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: t.colors.surface,
   },
   subTitle: {
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 8
+    marginBottom: 8,
+    color: t.colors.text
   },
   candRow: {
     paddingVertical: 6
   },
   candMain: {
     fontSize: 16,
-    fontWeight: '600'
+    fontWeight: '600',
+    color: t.colors.text
   },
   candLine: {
     fontSize: 12,
-    color: '#666'
+    color: t.colors.subtext
   },
   hint: {
     marginTop: 8,
     fontSize: 12,
-    color: '#666'
+    color: t.colors.subtext
   },
 
   center: {
@@ -185,187 +186,10 @@ export const styles = StyleSheet.create({
   },
   dim: {
     marginTop: 8,
-    color: '#6A6F7A'
+    color: t.colors.subtext
   },
   error: {
-    color: '#B00020',
+    color: t.colors.danger,
     marginTop: 8
   },
-});
-
-export const previewStyles = StyleSheet.create({
-  wrap: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  title: {
-    fontWeight: '700'
-  },
-  link: {
-    color: '#6A6F7A'
-  },
-  row: {
-    paddingVertical: 6
-  },
-  main: {
-    fontWeight: '600'
-  },
-  meta: {
-    color: '#777',
-    fontSize: 12,
-    marginTop: 2
-  },
-});
-
-export const popoverStyles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.12)'
-  },
-  cardWrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 110,
-    alignItems: 'center',
-  },
-  card: {
-    width: 260,
-    borderRadius: 16,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 10
-    },
-    elevation: 6,
-    paddingVertical: 6,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  rowPressed: {
-    backgroundColor: '#F6F7FA'
-  },
-  icon: {
-    width: 26,
-    fontSize: 18
-  },
-  text: {
-    fontSize: 15,
-    fontWeight: '600'
-  },
-});
-
-export const fabStyles = StyleSheet.create({
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#6F5AE6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 6
-    },
-    elevation: 4,
-  },
-  plus: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '800',
-    lineHeight: 28
-  },
-});
-
-export const pickerStyles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    maxHeight: '80%',
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
-  },
-  grabber: {
-    alignSelf: 'center',
-    width: 48,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#E5E7EB',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  search: {
-    backgroundColor: '#F3F4F7',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  flag: {
-    fontSize: 18,
-    marginRight: 10
-  },
-  rowPrimary: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111'
-  },
-  rowSecondary: {
-    fontSize: 12,
-    color: '#6A6F7A',
-    marginTop: 2
-  },
-  chev: {
-    fontSize: 20,
-    color: '#B8BCC6',
-    marginLeft: 8
-  },
-  close: {
-    alignSelf: 'center',
-    marginTop: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  closeTxt: {
-    color: '#6A6F7A',
-    fontWeight: '600'
-  },
-});
+}));

@@ -1,70 +1,99 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
-import { styles } from './styles';
-import {ArrowDown, ChevronDown, RefreshCw} from 'react-native-feather';
+import React, { useRef, useState } from 'react';
+import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated, Easing } from 'react-native';
+import { ChevronDown, RefreshCw } from 'react-native-feather';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
+
+const useCardStyles = makeStyles((t) => ({
+  card:{ backgroundColor:t.colors.card, borderRadius:24, ...t.shadow.ios, ...t.shadow.android },
+  block:{ padding:t.spacing(5) },
+  blockTop:{ borderTopLeftRadius:24, borderTopRightRadius:24 },
+  blockBottom:{ borderBottomLeftRadius:24, borderBottomRightRadius:24, paddingTop:t.spacing(7) },
+  blockHeader:{ flexDirection:'row', alignItems:'center', justifyContent:'space-between' },
+  blockLabel:{ fontSize:15, color:t.colors.subtext, fontWeight:'600' },
+  bigInput:{ fontSize:40, fontWeight:'800', marginTop:8, paddingVertical:0, color:t.colors.text },
+  bigConverted:{ fontSize:40, fontWeight:'800', marginTop:8, color:t.colors.text },
+  subAmount:{ marginTop:6, color:t.colors.subtext, fontSize:14 },
+  pill:{
+    flexDirection:'row', alignItems:'center',
+    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.08) : alpha('#111827',0.06),
+    borderRadius:22, paddingHorizontal:14, height:36, gap:8,
+  },
+  pillFlag:{ fontSize:16 },
+  pillCode:{ fontSize:14, fontWeight:'700', color:t.colors.text },
+  swapCircle:{
+    position:'absolute', alignSelf:'center', top:'40%',
+    backgroundColor:t.colors.surface, borderRadius:40, width:64, height:64,
+    alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:t.colors.border,
+    ...t.shadow.ios, ...t.shadow.android,
+  },
+  error:{ color:t.colors.danger, marginTop:8 },
+}));
 
 type Props = {
-  from: string;
-  to: string;
-  amount: string;
+  from: string; to: string; amount: string;
   onAmountChange: (v: string) => void;
-  decimals: number;
-  rate?: number;
-  isFetching?: boolean;
-  rateError?: boolean;
-  onOpenFrom: () => void;
-  onOpenTo: () => void;
-  onSwap: () => void;
+  decimals: number; rate?: number; isFetching?: boolean; rateError?: boolean;
+  onOpenFrom: () => void; onOpenTo: () => void; onSwap: () => void;
   renderFlag?: (code: string) => React.ReactNode;
 };
 
 const fmt = (n: number, c: string, max = 2) => {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: c,
-      maximumFractionDigits: max,
-    }).format(n);
-  } catch {
-    return `${n.toFixed(max)} ${c}`;
-  }
+  try { return new Intl.NumberFormat(undefined,{ style:'currency', currency:c, maximumFractionDigits:max }).format(n); }
+  catch { return `${n.toFixed(max)} ${c}`; }
 };
 
-export const CurrencySwapCard: React.FC<Props> = ({
-  from,
-  to,
-  amount,
-  onAmountChange,
-  decimals,
-  rate,
-  isFetching,
-  rateError,
-  onOpenFrom,
-  onOpenTo,
-  onSwap,
-  renderFlag,
-}) => {
+export const CurrencySwapCard: React.FC<Props> = (props) => {
+  const s = useCardStyles();
+  const { from, to, amount, onAmountChange, decimals, rate, isFetching, rateError, onOpenFrom, onOpenTo, onSwap, renderFlag } = props;
+
   const amtNum = Number(amount.replace(',', '.')) || 0;
   const converted = (rate ?? 0) * amtNum;
 
+  // --- Swap animation ---
+  const spin = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
+  const [animating, setAnimating] = useState(false);
+
+  const rotation = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const handleSwapPress = () => {
+    if (animating) return;
+    setAnimating(true);
+
+    spin.setValue(0);
+    pulse.setValue(1);
+
+    const midway = setTimeout(() => { onSwap(); }, 200);
+
+    Animated.parallel([
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.5, duration: 220, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue:1, duration: 120, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      ]),
+    ]).start(() => {
+      clearTimeout(midway);
+      setAnimating(false);
+    });
+  };
+
   return (
-    <View style={styles.card}>
-      {/* Top: Amount */}
-      <View style={[styles.block, styles.blockTop]}>
-        <View style={styles.blockHeader}>
-          <Text style={styles.blockLabel}>Amount</Text>
-          <Pressable style={styles.pill} onPress={onOpenFrom}>
-            <Text style={styles.pillFlag}>
-              {renderFlag ? renderFlag(from) : from}
-            </Text>
-            <Text style={styles.pillCode}>{from}</Text>
+    <View style={s.card}>
+      <View style={[s.block, s.blockTop]}>
+        <View style={s.blockHeader}>
+          <Text style={s.blockLabel}>Amount</Text>
+          <Pressable style={s.pill} onPress={onOpenFrom} accessibilityRole="button" accessibilityLabel="Change from currency">
+            <Text style={s.pillFlag}>{renderFlag ? renderFlag(from) : from}</Text>
+            <Text style={s.pillCode}>{from}</Text>
             <ChevronDown/>
           </Pressable>
         </View>
@@ -74,25 +103,30 @@ export const CurrencySwapCard: React.FC<Props> = ({
           onChangeText={onAmountChange}
           keyboardType={Platform.select({ ios: 'decimal-pad', android: 'numeric' })}
           placeholder="0"
-          style={styles.bigInput}
+          style={s.bigInput}
+          placeholderTextColor="#9CA3AF"
         />
-        <Text style={styles.subAmount}>{fmt(amtNum, from, decimals)}</Text>
+        <Text style={s.subAmount}>{fmt(amtNum, from, decimals)}</Text>
       </View>
 
-      {/* Swap */}
-      <Pressable onPress={onSwap} style={styles.swapCircle}>
-        <RefreshCw/>
+      <Pressable
+        onPress={handleSwapPress}
+        style={s.swapCircle}
+        accessibilityRole="button"
+        accessibilityLabel="Swap currencies"
+        disabled={animating}
+      >
+        <Animated.View style={{ transform: [{ rotate: rotation }, { scale: pulse }] }}>
+          <RefreshCw />
+        </Animated.View>
       </Pressable>
 
-      {/* Bottom: Converted */}
-      <View style={[styles.block, styles.blockBottom]}>
-        <View style={styles.blockHeader}>
-          <Text style={styles.blockLabel}>Converted to</Text>
-          <Pressable style={styles.pill} onPress={onOpenTo}>
-            <Text style={styles.pillFlag}>
-              {renderFlag ? renderFlag(to) : to}
-            </Text>
-            <Text style={styles.pillCode}>{to}</Text>
+      <View style={[s.block, s.blockBottom]}>
+        <View style={s.blockHeader}>
+          <Text style={s.blockLabel}>Converted to</Text>
+          <Pressable style={s.pill} onPress={onOpenTo} accessibilityRole="button" accessibilityLabel="Change to currency">
+            <Text style={s.pillFlag}>{renderFlag ? renderFlag(to) : to}</Text>
+            <Text style={s.pillCode}>{to}</Text>
             <ChevronDown/>
           </Pressable>
         </View>
@@ -100,16 +134,13 @@ export const CurrencySwapCard: React.FC<Props> = ({
         {isFetching ? (
           <ActivityIndicator />
         ) : rateError ? (
-          <Text style={styles.error}>Couldn’t fetch rate.</Text>
+          <Text style={s.error}>Couldn’t fetch rate.</Text>
         ) : (
           <>
-            <Text style={styles.bigConverted}>
-              {new Intl.NumberFormat(undefined, {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals,
-              }).format(converted)}
+            <Text style={s.bigConverted}>
+              {new Intl.NumberFormat(undefined,{ minimumFractionDigits:decimals, maximumFractionDigits:decimals }).format(converted)}
             </Text>
-            <Text style={styles.subAmount}>{fmt(converted, to, decimals)}</Text>
+            <Text style={s.subAmount}>{fmt(converted, to, decimals)}</Text>
           </>
         )}
       </View>

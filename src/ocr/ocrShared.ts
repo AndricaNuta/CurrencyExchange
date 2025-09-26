@@ -1,7 +1,4 @@
-// ocr/takePhotoAndDetectPrices.ts
-import { launchCamera, type Asset } from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';
-import TextRecognition from 'react-native-text-recognition';
 
 export type Candidate = {
   raw: string;
@@ -13,10 +10,9 @@ export type Candidate = {
   score: number;
 };
 
-// --- copy these helpers from your pick file (or export them) ---
-const SYMBOL_TO_CODE: Record<string, string> = {
+export const SYMBOL_TO_CODE: Record<string, string> = {
   '€':'EUR',
-  $:'USD',
+  '$':'USD',
   '£':'GBP',
   '¥':'JPY',
   '₺':'TRY',
@@ -25,9 +21,15 @@ const SYMBOL_TO_CODE: Record<string, string> = {
   '₹':'INR',
   lei:'RON'
 };
-const CODE_SET = new Set(['EUR','USD','GBP','JPY','RON','CHF','CAD','AUD','NZD','PLN','HUF','SEK','NOK','DKK','CZK','TRY','BGN','RSD','UAH','ILS','AED','SAR','INR']);
 
-function parseFlexibleAmount(raw: string): number | null {
+export const ISO_CODES = [
+  'EUR','USD','GBP','JPY','RON','CHF','CAD','AUD','NZD',
+  'PLN','HUF','SEK','NOK','DKK','CZK','TRY','BGN','RSD',
+  'UAH','ILS','AED','SAR','INR'
+];
+export const CODE_SET = new Set(ISO_CODES);
+
+export function parseFlexibleAmount(raw: string): number | null {
   let s = raw.replace(/\s+/g, '').replace(/[^\d.,-]/g, '');
   if (!s) return null;
   const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
@@ -35,23 +37,25 @@ function parseFlexibleAmount(raw: string): number | null {
   if (lc !== -1 && ld !== -1) dec = lc > ld ? ',' : '.';
   else if (lc !== -1) dec = /,\d{2}$/.test(s) ? ',' : null;
   else if (ld !== -1) dec = /\.\d{2}$/.test(s) ? '.' : null;
+
   if (dec === ',') s = s.replace(/\./g, '').replace(',', '.');
   else if (dec === '.') s = s.replace(/,/g, '');
   else s = s.replace(/[.,](?=\d{3}(\D|$))/g, '');
+
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
-function isSectionHeader(t: string) {
-  const s = t.trim();
-  return !!s && /^[A-Z][A-Z\s\-&]{3,}$/.test(s) && !/\d/.test(s);
-}
-function cleanLabel(s: string) {
-  return s.replace(/[\.\-·•\u2022]+$/, '').replace(/\s{2,}/g, ' ').trim();
-}
-function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
+
+export function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
   const out: Candidate[] = [];
   const norm = lines.map(l => l.replace(/\s+/g, ' ').trim());
   const re = /(?:([€$£¥₩₺₪₹])|\b([A-Z]{3})\b|\blei\.?\b)?\s*-?\s*(\d[\d.,]*)\s*(?:([€$£¥₩₺₪₹])|\b([A-Z]{3})\b|\blei\.?\b)?/gi;
+
+  const isSectionHeader = (t: string) => {
+    const s = t.trim();
+    return !!s && /^[A-Z][A-Z\s\-&]{3,}$/.test(s) && !/\d/.test(s);
+  };
+  const cleanLabel = (s: string) => s.replace(/[\.\-·•\u2022]+$/, '').replace(/\s{2,}/g, ' ').trim();
 
   norm.forEach((line, i) => {
     if (!line) return;
@@ -62,8 +66,8 @@ function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
 
       let currency: string | undefined;
       const sym = m[1] || m[4];
-      if (sym) currency = SYMBOL_TO_CODE[sym] ?? currency;
       const code = m[2] || m[5];
+      if (sym) currency = SYMBOL_TO_CODE[sym] ?? currency;
       if (!currency && code && CODE_SET.has(code)) currency = code;
       if (!currency && /lei\.?/i.test(raw)) currency = 'RON';
 
@@ -76,7 +80,10 @@ function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
           if (!/\d[\d.,]*\s*$/.test(prev)) { label = cleanLabel(prev); break; }
         }
       }
-      let score = 1 + (currency ? 2 : 0) + (/\d{2}\b/.test(raw) ? 1 : 0) + (label ? 1 : 0);
+
+      const score = 1 + (currency ? 2 : 0)
+      + (/\d{2}\b/.test(raw) ? 1 : 0)
+      + (label ? 1 : 0);
       out.push({
         raw,
         value,
@@ -97,66 +104,28 @@ function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
   }
   return [...map.values()].sort((a, b) => b.score - a.score);
 }
-async function normalizeForOCR(asset: Asset, maxDim = 2048) {
-  // keep aspect ratio, bake orientation, output JPEG
+
+export async function normalizeForOCR(
+  asset: { uri: string; width?: number; height?: number },
+  maxDim = 2048,
+  minDim = 1200
+) {
   const w = asset.width ?? maxDim;
   const h = asset.height ?? maxDim;
-  const landscape = w >= h;
-  const targetW = landscape ? maxDim : Math.round((maxDim * w) / h);
-  const targetH = landscape ? Math.round((maxDim * h) / w) : maxDim;
+  const minSide = Math.min(w, h);
+  const targetMin = Math.max(minSide, minDim);
+  const scale = targetMin / minSide;
+  const targetW = Math.round(w * scale);
+  const targetH = Math.round(h * scale);
 
   const out = await ImageResizer.createResizedImage(
-      asset.uri!,
-      targetW,
-      targetH,
-      'JPEG',
-      92,     // quality
-      0,      // rotation (EXIF will be applied automatically)
-      undefined,
-      false,  // keepMeta
-      {
-        onlyScaleDown: true
-      }
+    asset.uri, targetW, targetH, 'JPEG', 92, 0, undefined, false, {
+      onlyScaleDown: false
+    }
   );
-
   return {
     uri: out.uri,
     width: out.width,
     height: out.height
-  };
-// --- main function ---
-}
-export async function takePhotoAndDetectPrices(limit = 8) {
-  const res = await launchCamera({
-    mediaType: 'photo',
-    quality: 1,
-    includeExtra: true,
-    saveToPhotos: false,
-    cameraType: 'back',
-    presentationStyle: 'fullScreen',
-  });
-  const asset = res?.assets?.[0];
-  if (!asset?.uri) return null;
-
-  // ✅ Normalize so OCR + overlay use the same orientation/size
-  const norm = await normalizeForOCR(asset);
-
-  // OCR on the normalized JPEG
-  const rawLines = await TextRecognition.recognize(norm.uri);
-  const lines = (rawLines ?? [])
-    .map(l => l.replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
-
-  const candidates = detectPriceCandidatesWithLabels(lines).slice(0, limit);
-
-  // Return normalized dims so your overlay math is correct
-  return {
-    asset: {
-      ...asset,
-      uri: norm.uri,
-      width: norm.width,
-      height: norm.height
-    } as Asset,
-    candidates,
   };
 }

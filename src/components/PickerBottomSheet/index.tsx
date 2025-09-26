@@ -5,7 +5,8 @@ import {BottomSheetModal,
   BottomSheetFlatList,
   useBottomSheetSpringConfigs,} from '@gorhom/bottom-sheet';
 import { Search } from 'react-native-feather';
-import { styles } from './styles';
+import { usePickerStyles } from './styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Item = {
   key: string;
@@ -40,7 +41,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
     const {
       height
     } = useWindowDimensions();
-
+    const styles = usePickerStyles();
     // convert % → px and ensure we return [small,big]
     const resolvedSnapPoints = useMemo(() => {
       const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
@@ -75,11 +76,12 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
           {item.right}
         </Pressable>
       ),
-      [onSelect]
+      [onSelect, styles.left, styles.row, styles.rowLabel, styles.rowPressed]
     );
-
+    const insets = useSafeAreaInsets();
     return (
       <BottomSheetModal
+        topInset={insets.top + 8}
         ref={ref}
         snapPoints={resolvedSnapPoints}
         index={initialIndex}
