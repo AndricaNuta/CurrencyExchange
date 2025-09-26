@@ -12,6 +12,7 @@ import { resetToDefaults, setFrom, setTo, swap } from '../../redux/slices/exchan
 import { currencyFlag } from '../../utils/currencyFlag';
 import { filterByQuery } from '../../utils/filtersCurrency';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
+import { useTranslation } from 'react-i18next';
 
 const nowDate = () => {
   const d = new Date();
@@ -22,7 +23,9 @@ export default function CurrencyConverterScreen() {
   const styles = useStyles();
   const route = useRoute<any>();
   const dispatch = useDispatch<AppDispatch>();
-
+  const {
+    t
+  } = useTranslation();
   const {
     from, to, initialized
   } = useSelector((s: RootState) => s.exchange);
@@ -108,7 +111,9 @@ export default function CurrencyConverterScreen() {
 
   const rate = pair?.rate ?? 0;
 
-  const sheetTitle = mode === 'from' ? 'Choose currency' : mode === 'to' ? 'Converted to' : '';
+  const sheetTitle =
+    mode === 'from' ? t('common.chooseCurrency') :
+      mode === 'to'   ? t('converter.convertedTo') : '';
   const sheetItems = mode === 'from' ? fromSheetItems : toSheetItems;
   const sheetSearch =
     mode === 'from'
@@ -127,14 +132,14 @@ export default function CurrencyConverterScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator />
-        <Text style={styles.dim}>Loading currencies…</Text>
+        <Text style={styles.dim}>{t('common.loadingCurrencies')}</Text>
       </View>
     );
   }
   if (error || !list.length) {
     return (
       <View style={styles.center}>
-        <Text>Couldn’t load currencies.</Text>
+        <Text>{t('common.couldntLoadCurrencies')}</Text>
       </View>
     );
   }
@@ -159,7 +164,7 @@ export default function CurrencyConverterScreen() {
 
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
-          Mid-market rate <Text style={styles.rateStrong}>
+            {t('converter.midMarketRate')}{' '} <Text style={styles.rateStrong}>
               {rate ? new Intl.NumberFormat(undefined, {
                 maximumFractionDigits: 2
               }).format(rate) : '—'}

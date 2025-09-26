@@ -1,0 +1,42 @@
+ {
+    "welcome_header": "",
+    "settings": {
+        "title": "إعدادات",
+        "section": {
+            "general": "عام",
+            "defaults": "العملات الافتراضية",
+            "notifications": "إشعارات",
+            "appearance": "مظهر",
+            "info": "معلومات"
+        },
+        "language": "لغة",
+        "defaultFrom": "من",
+        "defaultTo": "ل",
+        "exchangeRateAlerts": "تنبيهات أسعار الصرف",
+        "darkMode": "الوضع المظلم",
+        "about": "حول محول العملات",
+        "version": "إصدار",
+        "support": "يدعم"
+    },
+    "common": {
+        "search": "يبحث",
+        "chooseCurrency": "اختر العملة",
+        "convertedTo": "تم تحويله إلى",
+        "item": "غرض",
+        "loadingCurrencies": "جاري تحميل العملات…",
+        "couldntLoadCurrencies": "لم يتمكن من تحميل العملات."
+    },
+    "converter": {
+        "midMarketRate": "سعر السوق المتوسط",
+        "rateLabel": "معدل:",
+        "rateError": "خطأ المعدل",
+        "amount": "كمية",
+        "convertedTo": "تم تحويله إلى",
+        "couldNotFetchRate": "لم أتمكن من جلب المعدل."
+    },
+    "scan": {
+        "detectedPrices": "الأسعار المكتشفة",
+        "noValuesDetected": "لم يتم اكتشاف أي قيم.",
+        "tapValueToLoad": "انقر فوق القيمة لتحميلها في المحول أعلاه."
+    }
+};

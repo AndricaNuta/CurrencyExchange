@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Настройки",
+        "section": {
+            "general": "Общи",
+            "defaults": "Валути по подразбиране",
+            "notifications": "Известия",
+            "appearance": "Външен вид",
+            "info": "Информация"
+        },
+        "language": "Език",
+        "defaultFrom": "От",
+        "defaultTo": "До",
+        "exchangeRateAlerts": "Сигнали за валутен курс",
+        "darkMode": "Тъмен режим",
+        "about": "Относно конвертора на валути",
+        "version": "Версия",
+        "support": "Поддръжка"
+    },
+    "common": {
+        "search": "Търсене",
+        "chooseCurrency": "Изберете валута",
+        "convertedTo": "Преобразувано в",
+        "item": "Елемент",
+        "loadingCurrencies": "Зареждане на валути…",
+        "couldntLoadCurrencies": "Не можаха да се заредят валути."
+    },
+    "converter": {
+        "midMarketRate": "Среден пазарен курс",
+        "rateLabel": "Оценка:",
+        "rateError": "Грешка в скоростта",
+        "amount": "Сума",
+        "convertedTo": "Преобразувано в",
+        "couldNotFetchRate": "Не можа да се извлече процентът."
+    },
+    "scan": {
+        "detectedPrices": "Открити цени",
+        "noValuesDetected": "Не са открити стойности.",
+        "tapValueToLoad": "Докоснете стойност, за да я заредите в конвертора по-горе."
+    }
+};

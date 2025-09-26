@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Instellings",
+        "section": {
+            "general": "Algemeen",
+            "defaults": "Standaardgeldeenhede",
+            "notifications": "Kennisgewings",
+            "appearance": "Voorkoms",
+            "info": "Inligting"
+        },
+        "language": "Taal",
+        "defaultFrom": "Van",
+        "defaultTo": "Aan",
+        "exchangeRateAlerts": "Wisselkoerswaarskuwings",
+        "darkMode": "Donkermodus",
+        "about": "Oor Valuta-omskakelaar",
+        "version": "Weergawe",
+        "support": "Ondersteuning"
+    },
+    "common": {
+        "search": "Soek",
+        "chooseCurrency": "Kies geldeenheid",
+        "convertedTo": "Omgeskakel na",
+        "item": "Item",
+        "loadingCurrencies": "Laai geldeenhede…",
+        "couldntLoadCurrencies": "Kon nie geldeenhede laai nie."
+    },
+    "converter": {
+        "midMarketRate": "Middelmarkkoers",
+        "rateLabel": "Koers:",
+        "rateError": "Koersfout",
+        "amount": "Bedrag",
+        "convertedTo": "Omgeskakel na",
+        "couldNotFetchRate": "Kon nie koers haal nie."
+    },
+    "scan": {
+        "detectedPrices": "Opgespoorde pryse",
+        "noValuesDetected": "Geen waardes opgespoor nie.",
+        "tapValueToLoad": "Tik op 'n waarde om dit in die omskakelaar hierbo te laai."
+    }
+};

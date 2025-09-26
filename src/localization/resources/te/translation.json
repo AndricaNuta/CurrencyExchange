@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "సెట్టింగులు",
+        "section": {
+            "general": "జనరల్",
+            "defaults": "డిఫాల్ట్ కరెన్సీలు",
+            "notifications": "నోటిఫికేషన్‌లు",
+            "appearance": "స్వరూపం",
+            "info": "సమాచారం"
+        },
+        "language": "భాష",
+        "defaultFrom": "నుండి",
+        "defaultTo": "కు",
+        "exchangeRateAlerts": "మార్పిడి రేటు హెచ్చరికలు",
+        "darkMode": "డార్క్ మోడ్",
+        "about": "కరెన్సీ కన్వర్టర్ గురించి",
+        "version": "వెర్షన్",
+        "support": "మద్దతు"
+    },
+    "common": {
+        "search": "వెతకండి",
+        "chooseCurrency": "కరెన్సీని ఎంచుకోండి",
+        "convertedTo": "మార్చబడింది",
+        "item": "అంశం",
+        "loadingCurrencies": "కరెన్సీలను లోడ్ చేస్తోంది…",
+        "couldntLoadCurrencies": "కరెన్సీలను లోడ్ చేయడం సాధ్యం కాలేదు."
+    },
+    "converter": {
+        "midMarketRate": "మిడ్-మార్కెట్ రేటు",
+        "rateLabel": "రేటు:",
+        "rateError": "రేటు లోపం",
+        "amount": "మొత్తం",
+        "convertedTo": "మార్చబడింది",
+        "couldNotFetchRate": "రేటును పొందలేకపోయాము."
+    },
+    "scan": {
+        "detectedPrices": "గుర్తించబడిన ధరలు",
+        "noValuesDetected": "విలువలు ఏవీ గుర్తించబడలేదు.",
+        "tapValueToLoad": "పైన ఉన్న కన్వర్టర్‌లోకి విలువను లోడ్ చేయడానికి దానిపై నొక్కండి."
+    }
+};

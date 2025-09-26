@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated
 import { ChevronDown, RefreshCw } from 'react-native-feather';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
 const useCardStyles = makeStyles((t) => ({
   card:{ backgroundColor:t.colors.card, borderRadius:24, ...t.shadow.ios, ...t.shadow.android },
@@ -45,6 +46,7 @@ const fmt = (n: number, c: string, max = 2) => {
 
 export const CurrencySwapCard: React.FC<Props> = (props) => {
   const s = useCardStyles();
+  const { t } = useTranslation();
   const { from, to, amount, onAmountChange, decimals, rate, isFetching, rateError, onOpenFrom, onOpenTo, onSwap, renderFlag } = props;
 
   const amtNum = Number(amount.replace(',', '.')) || 0;
@@ -90,7 +92,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
     <View style={s.card}>
       <View style={[s.block, s.blockTop]}>
         <View style={s.blockHeader}>
-          <Text style={s.blockLabel}>Amount</Text>
+          <Text style={s.blockLabel}>{t('converter.amount')}</Text>
           <Pressable style={s.pill} onPress={onOpenFrom} accessibilityRole="button" accessibilityLabel="Change from currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(from) : from}</Text>
             <Text style={s.pillCode}>{from}</Text>
@@ -123,7 +125,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
 
       <View style={[s.block, s.blockBottom]}>
         <View style={s.blockHeader}>
-          <Text style={s.blockLabel}>Converted to</Text>
+          <Text style={s.blockLabel}>{t('converter.convertedTo')}</Text>
           <Pressable style={s.pill} onPress={onOpenTo} accessibilityRole="button" accessibilityLabel="Change to currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(to) : to}</Text>
             <Text style={s.pillCode}>{to}</Text>
@@ -134,7 +136,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
         {isFetching ? (
           <ActivityIndicator />
         ) : rateError ? (
-          <Text style={s.error}>Couldn’t fetch rate.</Text>
+          <Text style={s.error}>{t('converter.couldNotFetchRate')}</Text>
         ) : (
           <>
             <Text style={s.bigConverted}>

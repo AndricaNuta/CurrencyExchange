@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Nastavení",
+        "section": {
+            "general": "Generál",
+            "defaults": "Výchozí měny",
+            "notifications": "Oznámení",
+            "appearance": "Vzhled",
+            "info": "Informace"
+        },
+        "language": "Jazyk",
+        "defaultFrom": "Z",
+        "defaultTo": "Na",
+        "exchangeRateAlerts": "Upozornění na směnné kurzy",
+        "darkMode": "Tmavý režim",
+        "about": "O převodníku měn",
+        "version": "Verze",
+        "support": "Podpora"
+    },
+    "common": {
+        "search": "Vyhledávání",
+        "chooseCurrency": "Vyberte měnu",
+        "convertedTo": "Převedeno na",
+        "item": "Položka",
+        "loadingCurrencies": "Načítání měn…",
+        "couldntLoadCurrencies": "Nepodařilo se načíst měny."
+    },
+    "converter": {
+        "midMarketRate": "Střední tržní sazba",
+        "rateLabel": "Hodnotit:",
+        "rateError": "Chyba rychlosti",
+        "amount": "Množství",
+        "convertedTo": "Převedeno na",
+        "couldNotFetchRate": "Nepodařilo se načíst sazbu."
+    },
+    "scan": {
+        "detectedPrices": "Zjištěné ceny",
+        "noValuesDetected": "Nebyly zjištěny žádné hodnoty.",
+        "tapValueToLoad": "Klepnutím na hodnotu ji načtěte do převodníku výše."
+    }
+};

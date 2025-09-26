@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Nustatymai",
+        "section": {
+            "general": "Bendra",
+            "defaults": "Numatytosios valiutos",
+            "notifications": "Pranešimai",
+            "appearance": "Išvaizda",
+            "info": "Informacija"
+        },
+        "language": "Kalba",
+        "defaultFrom": "Iš",
+        "defaultTo": "Į",
+        "exchangeRateAlerts": "Valiutos kurso įspėjimai",
+        "darkMode": "Tamsusis režimas",
+        "about": "Apie valiutų konverterį",
+        "version": "Versija",
+        "support": "Pagalba"
+    },
+    "common": {
+        "search": "Paieška",
+        "chooseCurrency": "Pasirinkite valiutą",
+        "convertedTo": "Konvertuota į",
+        "item": "Prekė",
+        "loadingCurrencies": "Įkeliamos valiutos…",
+        "couldntLoadCurrencies": "Nepavyko įkelti valiutų."
+    },
+    "converter": {
+        "midMarketRate": "Vidutinė rinkos palūkanų norma",
+        "rateLabel": "Įvertinimas:",
+        "rateError": "Įvertinimo klaida",
+        "amount": "Suma",
+        "convertedTo": "Konvertuota į",
+        "couldNotFetchRate": "Nepavyko gauti įkainio."
+    },
+    "scan": {
+        "detectedPrices": "Aptiktos kainos",
+        "noValuesDetected": "Nerasta jokių verčių.",
+        "tapValueToLoad": "Palieskite reikšmę, kad ją įkeltumėte į aukščiau esantį keitiklį."
+    }
+};

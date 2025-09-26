@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "Hello world!",
+    "settings": {
+        "title": "Settings",
+        "section": {
+            "general": "General",
+            "defaults": "Default Currencies",
+            "notifications": "Notifications",
+            "appearance": "Appearance",
+            "info": "Info"
+        },
+        "language": "Language",
+        "defaultFrom": "From",
+        "defaultTo": "To",
+        "exchangeRateAlerts": "Exchange Rate Alerts",
+        "darkMode": "Dark Mode",
+        "about": "About Currency Converter",
+        "version": "Version",
+        "support": "Support"
+    },
+    "common": {
+        "search": "Search",
+        "chooseCurrency": "Choose currency",
+        "convertedTo": "Converted to",
+        "item": "Item",
+        "loadingCurrencies": "Loading currencies…",
+        "couldntLoadCurrencies": "Couldn’t load currencies."
+    },
+    "converter": {
+        "midMarketRate": "Mid-market rate",
+        "rateLabel": "Rate:",
+        "rateError": "Rate error",
+        "amount": "Amount",
+        "convertedTo": "Converted to",
+        "couldNotFetchRate": "Couldn’t fetch rate."
+    },
+    "scan": {
+        "detectedPrices": "Detected prices",
+        "noValuesDetected": "No values detected.",
+        "tapValueToLoad": "Tap a value to load it into the converter above."
+    }
+};

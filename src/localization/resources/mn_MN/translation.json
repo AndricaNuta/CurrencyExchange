@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Тохиргоо",
+        "section": {
+            "general": "Генерал",
+            "defaults": "Өгөгдмөл валютууд",
+            "notifications": "Мэдэгдэл",
+            "appearance": "Гадаад төрх",
+            "info": "Мэдээлэл"
+        },
+        "language": "Хэл",
+        "defaultFrom": "-аас",
+        "defaultTo": "руу",
+        "exchangeRateAlerts": "Валютын ханшийн сэрэмжлүүлэг",
+        "darkMode": "Харанхуй горим",
+        "about": "Валютын хөрвүүлэгчийн тухай",
+        "version": "Хувилбар",
+        "support": "Дэмжлэг"
+    },
+    "common": {
+        "search": "Хайх",
+        "chooseCurrency": "Валют сонгоно уу",
+        "convertedTo": "руу хөрвүүлсэн",
+        "item": "Зүйл",
+        "loadingCurrencies": "Валютыг ачаалж байна...",
+        "couldntLoadCurrencies": "Валютыг ачаалж чадсангүй."
+    },
+    "converter": {
+        "midMarketRate": "Зах зээлийн дундаж ханш",
+        "rateLabel": "Үнэлгээ:",
+        "rateError": "Үнийн алдаа",
+        "amount": "Дүн",
+        "convertedTo": "руу хөрвүүлсэн",
+        "couldNotFetchRate": "Үнийг дуудаж чадсангүй."
+    },
+    "scan": {
+        "detectedPrices": "Илэрсэн үнэ",
+        "noValuesDetected": "Ямар ч утгыг илрүүлсэнгүй.",
+        "tapValueToLoad": "Дээрх хөрвүүлэгч рүү ачаалахын тулд утгыг товшино уу."
+    }
+};

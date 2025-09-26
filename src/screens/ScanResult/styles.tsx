@@ -1,3 +1,4 @@
+// styles.ts
 import { Dimensions, StyleSheet } from 'react-native';
 
 const {
@@ -7,89 +8,12 @@ const {
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000'
-  },
-  miniRow: {
-    marginBottom: 8,
-  },
-  miniTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  miniLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-    color: '#6B7280', // use theme subtext if available
-  },
-  swapBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-  },
-  swapTxt: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B7280',
+    backgroundColor: '#000',
   },
 
-  miniInputs: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-
-  // smaller pill (like home, but subtle)
-  pillSm: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 30,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F7', // use theme: dark → alpha(white,0.08)
-  },
-  pillSmFlag: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  pillSmCode: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  miniInput: {
-    minWidth: 90,
-    flexShrink: 1,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    fontSize: 24,          // down from 40
-    fontWeight: '800',
-    color: '#111',         // theme text
-  },
-  miniInputPlaceholder: { color: '#9CA3AF' },
-
-  arrow: {
-    marginHorizontal: 2,
-    fontSize: 14,
-    color: '#6B7280',
-  },
-
-  miniReadout: {
-    marginTop: 6,
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#111',         // theme text
-  },
-
-  rateNote: {
-    marginTop: 2,
-    fontSize: 11,
-    color: '#6B7280',      // theme subtext
+  // image & overlays
+  imageWrap: {
+    flex: 1
   },
   img: {
     position: 'absolute',
@@ -100,6 +24,19 @@ export const styles = StyleSheet.create({
     width: W,
     height: H,
   },
+  overlayBox: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: '#FFC83D',
+    borderRadius: 10,
+  },
+  pillCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // close button
   close: {
     position: 'absolute',
     top: 60,
@@ -108,112 +45,41 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.80)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 18,
-    fontWeight: '700'
+    fontWeight: '700',
   },
 
+  // bottom sheet
   handle: {
     backgroundColor: '#D1D5DB'
   },
   sheetContent: {
     paddingHorizontal: 16,
     paddingBottom: 32,
-    paddingTop: 8
+    paddingTop: 8,
+  },
+  sheetBackground: {
+    backgroundColor: '#FFF'
+  },
+  fadeBehind: {
+    opacity: 0.94,
+    transform: [{
+      scale: 0.995
+    }],
   },
 
-  /* Mini converter */
-  miniRow: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-    marginBottom: 12,
-  },
-  miniTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  miniLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#333'
-  },
-  swapBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FAFAFA',
-  },
-  swapTxt: {
-    fontSize: 16,
-    color: '#3C3F44'
-  },
-
-  miniInputs: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  fromBox: {
-    flex: 1,
-    paddingRight: 8
-  },
-  toBox: {
-    flex: 1,
-    paddingLeft: 8,
-    alignItems: 'flex-end'
-  },
-  ccy: {
-    fontSize: 12,
-    color: '#6A6F7A',
-    fontWeight: '700'
-  },
-  toCcy: {
-    textAlign: 'right'
-  },
-  miniInput: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#111',
-    paddingVertical: 0,
-    marginTop: 2,
-  },
-  miniConverted: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#111',
-    marginTop: 2,
-    textAlign: 'right',
-  },
-  arrow: {
-    marginHorizontal: 6,
-    fontSize: 18,
-    color: '#9AA0A6'
-  },
-  rateNote: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#8A8F98'
-  },
-
-  /* Detected list */
+  // converter row
   title: {
     fontSize: 16,
     fontWeight: '700',
-    marginTop: 8,
-    marginBottom: 6
+    marginTop: 20,
+    marginBottom: 6,
   },
   row: {
     flexDirection: 'row',
@@ -221,64 +87,24 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
+
   },
-  main: {
-    fontSize: 16,
-    fontWeight: '700'
+  itemTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111',
+    overflow:'scroll',
+    left:5,
   },
   meta: {
     fontSize: 12,
     color: '#666',
-    marginTop: 2
+    marginTop: 2,
   },
   hint: {
     fontSize: 12,
     color: '#999',
     marginTop: 10,
-    textAlign: 'center'
-  },
-
-  /* Converted pill */
-  convPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F7',
-    alignItems: 'center',
-    justifyContent:'center',
-    flexDirection:'row',
-    flex:1,
-  },
-  convMain: {
-    fontWeight: '700',
-    color:'black'
-  },
-  convMeta: {
-    fontSize: 10,
-    color: '#6A6F7A'
-  },
-  itemTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111'
-  },
-  itemSub: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2
-  },
-  // add these
-  imageWrap: {
-    flex: 1,
-  },
-  box: {
-    position: 'absolute',
-    borderWidth: 0,
-    borderColor: '#FFC83D',
-    borderRadius: 10,
-  },
-
-  pill: {
-    flex:1,
+    textAlign: 'center',
   },
 });

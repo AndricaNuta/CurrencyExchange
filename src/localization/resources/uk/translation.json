@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Налаштування",
+        "section": {
+            "general": "Загальне",
+            "defaults": "Валюти за замовчуванням",
+            "notifications": "Сповіщення",
+            "appearance": "Зовнішній вигляд",
+            "info": "Інформація"
+        },
+        "language": "Мова",
+        "defaultFrom": "Від",
+        "defaultTo": "До",
+        "exchangeRateAlerts": "Сповіщення про обмінний курс",
+        "darkMode": "Темний режим",
+        "about": "Про конвертер валют",
+        "version": "Версія",
+        "support": "Підтримка"
+    },
+    "common": {
+        "search": "Пошук",
+        "chooseCurrency": "Виберіть валюту",
+        "convertedTo": "Перетворено на",
+        "item": "Елемент",
+        "loadingCurrencies": "Завантаження валют…",
+        "couldntLoadCurrencies": "Не вдалося завантажити валюти."
+    },
+    "converter": {
+        "midMarketRate": "Середньоринкова ставка",
+        "rateLabel": "Оцінка:",
+        "rateError": "Похибка швидкості",
+        "amount": "Сума",
+        "convertedTo": "Перетворено на",
+        "couldNotFetchRate": "Не вдалося отримати дані про коефіцієнт."
+    },
+    "scan": {
+        "detectedPrices": "Виявлені ціни",
+        "noValuesDetected": "Значень не виявлено.",
+        "tapValueToLoad": "Торкніться значення, щоб завантажити його в конвертер вище."
+    }
+};

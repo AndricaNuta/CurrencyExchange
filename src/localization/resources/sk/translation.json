@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Nastavenia",
+        "section": {
+            "general": "Všeobecné",
+            "defaults": "Predvolené meny",
+            "notifications": "Upozornenia",
+            "appearance": "Vzhľad",
+            "info": "Informácie"
+        },
+        "language": "Jazyk",
+        "defaultFrom": "Od",
+        "defaultTo": "Do",
+        "exchangeRateAlerts": "Upozornenia na výmenné kurzy",
+        "darkMode": "Tmavý režim",
+        "about": "O prevodníku mien",
+        "version": "Verzia",
+        "support": "Podpora"
+    },
+    "common": {
+        "search": "Hľadať",
+        "chooseCurrency": "Vyberte menu",
+        "convertedTo": "Prevedené na",
+        "item": "Položka",
+        "loadingCurrencies": "Načítavajú sa meny…",
+        "couldntLoadCurrencies": "Nepodarilo sa načítať meny."
+    },
+    "converter": {
+        "midMarketRate": "Stredná trhová sadzba",
+        "rateLabel": "Sadzba:",
+        "rateError": "Chyba rýchlosti",
+        "amount": "Suma",
+        "convertedTo": "Prevedené na",
+        "couldNotFetchRate": "Nepodarilo sa načítať mieru."
+    },
+    "scan": {
+        "detectedPrices": "Zistené ceny",
+        "noValuesDetected": "Neboli zistené žiadne hodnoty.",
+        "tapValueToLoad": "Klepnutím na hodnotu ju načítate do prevodníka vyššie."
+    }
+};

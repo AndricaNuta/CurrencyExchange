@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "tetapan",
+        "section": {
+            "general": "Umum",
+            "defaults": "Mata Wang Lalai",
+            "notifications": "Pemberitahuan",
+            "appearance": "Penampilan",
+            "info": "info"
+        },
+        "language": "Bahasa",
+        "defaultFrom": "daripada",
+        "defaultTo": "Kepada",
+        "exchangeRateAlerts": "Makluman Kadar Pertukaran",
+        "darkMode": "Mod Gelap",
+        "about": "Mengenai Penukar Mata Wang",
+        "version": "Versi",
+        "support": "Sokongan"
+    },
+    "common": {
+        "search": "Cari",
+        "chooseCurrency": "Pilih mata wang",
+        "convertedTo": "Ditukar kepada",
+        "item": "item",
+        "loadingCurrencies": "Memuatkan mata wang…",
+        "couldntLoadCurrencies": "Tidak dapat memuatkan mata wang."
+    },
+    "converter": {
+        "midMarketRate": "Kadar pasaran pertengahan",
+        "rateLabel": "Kadar:",
+        "rateError": "Ralat kadar",
+        "amount": "Jumlah",
+        "convertedTo": "Ditukar kepada",
+        "couldNotFetchRate": "Tidak dapat mengambil kadar."
+    },
+    "scan": {
+        "detectedPrices": "Harga yang dikesan",
+        "noValuesDetected": "Tiada nilai dikesan.",
+        "tapValueToLoad": "Ketik nilai untuk memuatkannya ke dalam penukar di atas."
+    }
+};

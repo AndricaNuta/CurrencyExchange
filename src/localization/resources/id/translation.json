@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Pengaturan",
+        "section": {
+            "general": "Umum",
+            "defaults": "Mata Uang Default",
+            "notifications": "Pemberitahuan",
+            "appearance": "Penampilan",
+            "info": "Informasi"
+        },
+        "language": "Bahasa",
+        "defaultFrom": "Dari",
+        "defaultTo": "Ke",
+        "exchangeRateAlerts": "Peringatan Nilai Tukar",
+        "darkMode": "Mode Gelap",
+        "about": "Tentang Konverter Mata Uang",
+        "version": "Versi",
+        "support": "Mendukung"
+    },
+    "common": {
+        "search": "Mencari",
+        "chooseCurrency": "Pilih mata uang",
+        "convertedTo": "Dikonversi ke",
+        "item": "Barang",
+        "loadingCurrencies": "Memuat mata uang…",
+        "couldntLoadCurrencies": "Tidak dapat memuat mata uang."
+    },
+    "converter": {
+        "midMarketRate": "Tarif pasar menengah",
+        "rateLabel": "Kecepatan:",
+        "rateError": "Tingkat kesalahan",
+        "amount": "Jumlah",
+        "convertedTo": "Dikonversi ke",
+        "couldNotFetchRate": "Tidak dapat mengambil nilai."
+    },
+    "scan": {
+        "detectedPrices": "Harga terdeteksi",
+        "noValuesDetected": "Tidak ada nilai yang terdeteksi.",
+        "tapValueToLoad": "Ketuk nilai untuk memuatnya ke konverter di atas."
+    }
+};

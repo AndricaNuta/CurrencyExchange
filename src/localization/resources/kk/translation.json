@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Параметрлер",
+        "section": {
+            "general": "Жалпы",
+            "defaults": "Әдепкі валюталар",
+            "notifications": "Хабарландырулар",
+            "appearance": "Сыртқы түрі",
+            "info": "Ақпарат"
+        },
+        "language": "Тіл",
+        "defaultFrom": "бастап",
+        "defaultTo": "Кімге",
+        "exchangeRateAlerts": "Валюта бағамы туралы ескертулер",
+        "darkMode": "Қараңғы режим",
+        "about": "Валюта конвертері туралы",
+        "version": "Нұсқа",
+        "support": "Қолдау"
+    },
+    "common": {
+        "search": "Іздеу",
+        "chooseCurrency": "Валютаны таңдаңыз",
+        "convertedTo": "-ге түрлендірілді",
+        "item": "Элемент",
+        "loadingCurrencies": "Валюталар жүктелуде…",
+        "couldntLoadCurrencies": "Валюталар жүктелмеді."
+    },
+    "converter": {
+        "midMarketRate": "Орташа нарықтық мөлшерлеме",
+        "rateLabel": "Бағасы:",
+        "rateError": "Баға қатесі",
+        "amount": "Сома",
+        "convertedTo": "-ге түрлендірілді",
+        "couldNotFetchRate": "Бағаны алу мүмкін болмады."
+    },
+    "scan": {
+        "detectedPrices": "Анықталған бағалар",
+        "noValuesDetected": "Мәндер анықталмады.",
+        "tapValueToLoad": "Жоғарыдағы түрлендіргішке жүктеу үшін мәнді түртіңіз."
+    }
+};

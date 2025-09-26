@@ -8,8 +8,7 @@ import {Image,
 import {useNavigation,
   useRoute,
   type RouteProp,} from '@react-navigation/native';
-import BottomSheet, { BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { styles } from './styles';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
@@ -28,6 +27,7 @@ import { currencyFlag } from '../../utils/currencyFlag';
 import { filterByQuery } from '../../utils/filtersCurrency';
 import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
 import { PickerBottomSheet } from '../../components/PickerBottomSheet';
+import { useTranslation } from 'react-i18next';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -35,19 +35,20 @@ export default function ScanPreviewScreen() {
   const {
     uri, candidates
   } = route.params;
-
-  // global currency settings
+  const {
+    t
+  } = useTranslation();
   const from = useSelector((s: RootState) => s.exchange.from);
   const to = useSelector((s: RootState) => s.exchange.to);
   const decimals = useSelector((s: RootState) => s.settings.decimals);
   const dispatch = useDispatch();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // mini-converter local state (prefill with first detected value)
   const [miniAmt, setMiniAmt] = useState(() => {
     const first = candidates?.[0]?.value;
     return first != null ? String(first) : '';
   });
-
   // keep the mini amount in sync when a new image is opened
   useEffect(() => {
     const first = candidates?.[0]?.value;
@@ -115,7 +116,10 @@ export default function ScanPreviewScreen() {
     [list, toQ]
   );
 
-  const sheetTitle = mode === 'from' ? 'Choose currency' : mode === 'to' ? 'Converted to' : '';
+  const sheetTitle =
+      mode === 'from' ? t('common.chooseCurrency') :
+        mode === 'to'   ? t('converter.convertedTo') :
+          '';
   const sheetItems = mode === 'from' ? fromSheetItems : toSheetItems;
   const sheetSearch =
     mode === 'from'
@@ -168,8 +172,17 @@ export default function ScanPreviewScreen() {
       cancelled = true;
     };
   }, [uri]);
-
-  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+  const renderBackdrop = (props: BottomSheetBackdropProps) => (
+    <BottomSheetBackdrop
+      {...props}
+      appearsOnIndex={0}
+      disappearsOnIndex={-1}
+      opacity={0.35}      // 0.30–0.45 feels right
+      pressBehavior="close"
+    />
+  );
+  const clamp = (v: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, v));
 
   const inflateBox = (
     left: number,
@@ -235,7 +248,7 @@ export default function ScanPreviewScreen() {
 
   return (
     <BottomSheetModalProvider>
-+      <View style={styles.root}>
+      <View style={styles.root}>
         {/* full-screen image */}
         <View
           style={[
@@ -261,10 +274,15 @@ export default function ScanPreviewScreen() {
           {/* Overlays */}
           {ocr &&
           ocr.prices.map((p, i) => {
-            const b = mapBoxToView(p.box, ocr.width, ocr.height, imgLayout.w, imgLayout.h);
+            const b = mapBoxToView(
+              p.box,
+              ocr.width,
+              ocr.height,
+              imgLayout.w,
+              imgLayout.h);
             const {
               currency, value
-            } = parsePrice(p.text, 'EUR');
+            } = parsePrice(p.text, from);
 
             // Tweak these to taste
             const INFLATE_PX = 6;
@@ -372,7 +390,8 @@ export default function ScanPreviewScreen() {
           index={1}
           snapPoints={snaps}
           handleIndicatorStyle={styles.handle}
-
+          style={pickerOpen ? styles.fadeBehind : null}
+          backgroundStyle={styles.sheetBackground}
         >
           <BottomSheetScrollView
             contentContainerStyle={styles.sheetContent}
@@ -391,25 +410,25 @@ export default function ScanPreviewScreen() {
               renderFlag={(code) => <Text>{currencyFlag(code)}</Text>}
               onOpenFrom={() => {
                 Keyboard.dismiss();
-                // OPEN PICKER AS MODAL ON TOP
+                setPickerOpen(true);
                 presentMode('from');
               }}
               onOpenTo={() => {
                 Keyboard.dismiss();
-                // OPEN PICKER AS MODAL ON TOP
+                setPickerOpen(true);
                 presentMode('to');
               }}
             />
 
-            {/* --- Detected prices list (already converted) --- */}
-            <Text style={styles.title}>Detected prices</Text>
+            {/*  Detected prices list (already converted)
+            <Text style={styles.title}>{t('scan.detectedPrices')}</Text> */}
             {ocr?.prices?.length ? (
               ocr.prices.map((p, i) => {
                 const {
                   currency, value
                 } = parsePrice(p.text, from);
-                const title = (p as any).labelText || p.lineText || 'Item';
-
+                const title = (p as any).labelText || p.lineText || t('common.item');
+                const fromCcy: string = (currency ?? from) as string;
                 return (
                   <Pressable
                     key={`${p.lineIndex}-${i}`}
@@ -417,7 +436,7 @@ export default function ScanPreviewScreen() {
                       onPickCandidate({
                         raw: p.text,
                         value,
-                        currency: (currency ?? from).toUpperCase(),
+                        currency: fromCcy.toUpperCase(),
                         line: title,
                         label: title,
                         lineIndex: p.lineIndex,
@@ -427,7 +446,7 @@ export default function ScanPreviewScreen() {
                     style={styles.row}
                   >
                     <View style={{
-                      flex: 1
+                      width:'65%'
                     }}>
                       <Text style={styles.itemTitle} numberOfLines={1}>
                         {title}
@@ -436,7 +455,7 @@ export default function ScanPreviewScreen() {
 
                     <ConvertedPill
                       amount={value}
-                      fromCurrency={currency ?? from}
+                      fromCurrency={fromCcy}
                       toCurrency={to}
                       decimals={decimals}
                     />
@@ -444,16 +463,15 @@ export default function ScanPreviewScreen() {
                 );
               })
             ) : (
-              <Text style={styles.meta}>No values detected.</Text>
+              <Text style={styles.meta}>{t('scan.noValuesDetected')}</Text>
             )}
 
             <Text style={styles.hint}>
-              Tap a value to load it into the converter above.
+              {t('scan.tapValueToLoad')}
             </Text>
           </BottomSheetScrollView>
         </BottomSheet>
 
-        {/* MODAL PICKER OVERLAY (PORTALS ABOVE EVERYTHING) */}
         <PickerBottomSheet
           ref={modalRef}
           title={sheetTitle}
@@ -465,7 +483,8 @@ export default function ScanPreviewScreen() {
             if (mode === 'to') dispatch(setTo(code));
             modalRef.current?.dismiss();
           }}
-          onDismiss={handleDismiss}
+          onDismiss={() => { setPickerOpen(false); handleDismiss(); }}
+          backdropComponent={renderBackdrop}
         />
       </View>
     </BottomSheetModalProvider>

@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated
 import { ChevronDown, RefreshCw } from 'react-native-feather';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   from: string; to: string; amount: string;
@@ -15,22 +16,24 @@ type Props = {
 const useStyles = makeStyles((t) => ({
   column: {
     width: '100%',
-    backgroundColor: t.colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: t.colors.border,
-    paddingHorizontal: t.spacing(4),
-    paddingVertical: t.spacing(3),
+
     flexDirection: 'column',
     alignItems: 'flex-start',
     gap: t.spacing(3),
     overflow: 'hidden',
+    marginBottom: 10,
   },
   row: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'flex-start',
     overflow: 'hidden',
+    backgroundColor: t.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: t.colors.border,
+    paddingHorizontal: t.spacing(4),
+    paddingVertical: t.spacing(3),
   },
   // two vertical stacks (left/right)
   col: {
@@ -100,7 +103,7 @@ const useStyles = makeStyles((t) => ({
   sub: {
     fontSize: 12,
     color: t.colors.subtext,
-    marginTop: 2
+    left:10,
   },
   error: {
     fontSize: 12,
@@ -109,23 +112,15 @@ const useStyles = makeStyles((t) => ({
   },
 }));
 
-const fmt = (n: number, c: string, max = 2) => {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: c,
-      maximumFractionDigits: max
-    }).format(n);
-  } catch {
-    return `${n.toFixed(max)} ${c}`;
-  }
-};
 
 export const CurrencySwapRow: React.FC<Props> = ({
   from, to, amount, onAmountChange, decimals, rate, isFetching, rateError,
   onOpenFrom, onOpenTo, onSwap, renderFlag,
 }) => {
   const s = useStyles();
+  const {
+    t
+  } = useTranslation();
   const amtNum = Number(amount.replace(',', '.')) || 0;
   const convertedNum = (rate ?? 0) * amtNum;
 
@@ -238,7 +233,10 @@ export const CurrencySwapRow: React.FC<Props> = ({
         {/* RIGHT column: TO + converted */}
         <View style={[s.col, s.rightCol]}>
           <Pressable onPress={onOpenTo} hitSlop={12} style={s.pill} accessibilityRole="button" accessibilityLabel="Change to currency">
-            <View>{renderFlag ? renderFlag(to) : <Text style={s.pillCode}>{to}</Text>}</View>
+            <View>
+              {renderFlag ? renderFlag(to) :
+                <Text style={s.pillCode}>{to}</Text>}
+            </View>
             <Text style={s.pillCode} numberOfLines={1} ellipsizeMode="tail">{to}</Text>
             <ChevronDown pointerEvents="none" />
           </Pressable>
@@ -247,7 +245,7 @@ export const CurrencySwapRow: React.FC<Props> = ({
             {isFetching ? (
               <ActivityIndicator />
             ) : rateError ? (
-              <Text style={s.error}>Rate error</Text>
+              <Text style={s.error}>{t('converter.rateError')}</Text>
             ) : (
               <Text style={s.converted} numberOfLines={1} ellipsizeMode="tail">
                 {convertedStr}
@@ -258,7 +256,7 @@ export const CurrencySwapRow: React.FC<Props> = ({
       </View>
 
       <Text style={s.sub} numberOfLines={1} ellipsizeMode="tail">
-        Rate:{' '}
+        {t('converter.rateLabel')}{' '}
         {rate
           ? new Intl.NumberFormat(undefined, {
             maximumFractionDigits: 4

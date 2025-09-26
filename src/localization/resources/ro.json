@@ -1,0 +1,41 @@
+{
+    "settings": {
+        "title": "Setări",
+        "section": {
+            "general": "General",
+            "defaults": "Valute implicite",
+            "notifications": "Notificări",
+            "appearance": "Aspect",
+            "info": "Informații"
+        },
+        "language": "Limbă",
+        "defaultFrom": "Din",
+        "defaultTo": "La",
+        "exchangeRateAlerts": "Alerte privind cursul de schimb",
+        "darkMode": "Mod întunecat",
+        "about": "Despre convertorul valutar",
+        "version": "Versiune",
+        "support": "Sprijin"
+    },
+    "common": {
+        "search": "Căutare",
+        "chooseCurrency": "Alegeți moneda",
+        "convertedTo": "Convertit în",
+        "item": "Articol",
+        "loadingCurrencies": "Se încarcă monedele…",
+        "couldntLoadCurrencies": "Nu s-au putut încărca monedele."
+    },
+    "converter": {
+        "midMarketRate": "Rată medie a pieței",
+        "rateLabel": "Rată:",
+        "rateError": "Eroare de rată",
+        "amount": "Cantitate",
+        "convertedTo": "Convertit în",
+        "couldNotFetchRate": "Nu s-a putut prelua rata."
+    },
+    "scan": {
+        "detectedPrices": "Prețuri detectate",
+        "noValuesDetected": "Nu au fost detectate valori.",
+        "tapValueToLoad": "Atingeți o valoare pentru a o încărca în convertorul de mai sus."
+    }
+};

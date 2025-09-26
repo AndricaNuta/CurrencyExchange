@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "सेटिंग्ज",
+        "section": {
+            "general": "सामान्य",
+            "defaults": "डीफॉल्ट चलने",
+            "notifications": "सूचना",
+            "appearance": "देखावा",
+            "info": "माहिती"
+        },
+        "language": "भाषा",
+        "defaultFrom": "पासून",
+        "defaultTo": "करण्यासाठी",
+        "exchangeRateAlerts": "विनिमय दर सूचना",
+        "darkMode": "गडद मोड",
+        "about": "चलन परिवर्तक बद्दल",
+        "version": "आवृत्ती",
+        "support": "आधार"
+    },
+    "common": {
+        "search": "शोध",
+        "chooseCurrency": "चलन निवडा",
+        "convertedTo": "मध्ये रूपांतरित केले",
+        "item": "आयटम",
+        "loadingCurrencies": "चलने लोड करत आहे…",
+        "couldntLoadCurrencies": "चलने लोड करता आली नाहीत."
+    },
+    "converter": {
+        "midMarketRate": "मध्यम बाजार दर",
+        "rateLabel": "दर:",
+        "rateError": "रेट त्रुटी",
+        "amount": "रक्कम",
+        "convertedTo": "मध्ये रूपांतरित केले",
+        "couldNotFetchRate": "दर मिळवता आला नाही."
+    },
+    "scan": {
+        "detectedPrices": "आढळलेल्या किमती",
+        "noValuesDetected": "कोणतीही मूल्ये आढळली नाहीत.",
+        "tapValueToLoad": "वरील कन्व्हर्टरमध्ये लोड करण्यासाठी मूल्यावर टॅप करा."
+    }
+};

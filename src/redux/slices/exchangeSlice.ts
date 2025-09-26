@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { AppThunk, RootState } from '../store';
 
 interface ExchangeState {
-  from: string | null;
-  to: string | null;
+  from: string;
+  to: string;
   initialized: boolean;
 }
 
 const initialState: ExchangeState = {
-  from: null,
-  to: null,
+  from: 'EUR',
+  to: 'USD',
   initialized: false,
 };
 

@@ -1,7 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from './resources/en.json';
-import es from './resources/es.json';
+import {en, es, bg, ro} from './resources';
 import {FALLBACK,
   detectDeviceLanguage,
   normalizeToSupported,
@@ -18,6 +17,12 @@ i18n.use(initReactI18next).init({
     },
     es: {
       translation: es
+    },
+    bg: {
+      translation: bg
+    },
+    ro: {
+      translation: ro
     },
   },
   lng: initial,

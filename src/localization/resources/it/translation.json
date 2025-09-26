@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Impostazioni",
+        "section": {
+            "general": "Generale",
+            "defaults": "Valute predefinite",
+            "notifications": "Notifiche",
+            "appearance": "Aspetto",
+            "info": "Informazioni"
+        },
+        "language": "Lingua",
+        "defaultFrom": "Da",
+        "defaultTo": "A",
+        "exchangeRateAlerts": "Avvisi sul tasso di cambio",
+        "darkMode": "Modalità scura",
+        "about": "Informazioni sul convertitore di valuta",
+        "version": "Versione",
+        "support": "Supporto"
+    },
+    "common": {
+        "search": "Ricerca",
+        "chooseCurrency": "Scegli la valuta",
+        "convertedTo": "Convertito in",
+        "item": "Articolo",
+        "loadingCurrencies": "Caricamento valute in corso…",
+        "couldntLoadCurrencies": "Impossibile caricare le valute."
+    },
+    "converter": {
+        "midMarketRate": "Tasso medio di mercato",
+        "rateLabel": "Valutare:",
+        "rateError": "Errore di valutazione",
+        "amount": "Quantità",
+        "convertedTo": "Convertito in",
+        "couldNotFetchRate": "Impossibile recuperare la tariffa."
+    },
+    "scan": {
+        "detectedPrices": "Prezzi rilevati",
+        "noValuesDetected": "Nessun valore rilevato.",
+        "tapValueToLoad": "Tocca un valore per caricarlo nel convertitore qui sopra."
+    }
+};

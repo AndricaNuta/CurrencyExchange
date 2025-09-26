@@ -3,10 +3,12 @@ import { Text, View, Pressable, useWindowDimensions } from 'react-native';
 import {BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetFlatList,
-  useBottomSheetSpringConfigs,} from '@gorhom/bottom-sheet';
+  useBottomSheetSpringConfigs,
+  BottomSheetBackdropProps,} from '@gorhom/bottom-sheet';
 import { Search } from 'react-native-feather';
 import { usePickerStyles } from './styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 type Item = {
   key: string;
@@ -23,6 +25,7 @@ type Props = {
   snapPoints?: Array<number | `${number}%`>;
   onDismiss?: () => void;
   initialIndex?: 0 | 1;
+  backdropComponent?: (props: BottomSheetBackdropProps) => React.ReactNode;
 };
 
 export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
@@ -35,6 +38,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
       snapPoints,
       onDismiss,
       initialIndex = 0,
+      backdropComponent
     },
     ref
   ) => {
@@ -42,6 +46,9 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
       height
     } = useWindowDimensions();
     const styles = usePickerStyles();
+    const {
+      t
+    } = useTranslation();
     // convert % → px and ensure we return [small,big]
     const resolvedSnapPoints = useMemo(() => {
       const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
@@ -91,6 +98,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
         onDismiss={onDismiss}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
+        backdropComponent={backdropComponent}
       >
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
@@ -101,7 +109,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
               <BottomSheetTextInput
                 value={search.value}
                 onChangeText={search.set}
-                placeholder="Search"
+                placeholder={t('common.search')}
                 placeholderTextColor="#9CA3AF"
                 style={styles.searchInput}
                 autoCapitalize={search.autoCapitalize ?? 'none'}

@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Parametrlər",
+        "section": {
+            "general": "General",
+            "defaults": "Defolt Valyutalar",
+            "notifications": "Bildirişlər",
+            "appearance": "Görünüş",
+            "info": "Məlumat"
+        },
+        "language": "Dil",
+        "defaultFrom": "From",
+        "defaultTo": "Kimə",
+        "exchangeRateAlerts": "Valyuta məzənnəsi xəbərdarlığı",
+        "darkMode": "Qaranlıq rejim",
+        "about": "Valyuta çeviricisi haqqında",
+        "version": "Versiya",
+        "support": "Dəstək"
+    },
+    "common": {
+        "search": "Axtar",
+        "chooseCurrency": "Valyuta seçin",
+        "convertedTo": "çevrildi",
+        "item": "Maddə",
+        "loadingCurrencies": "Valyutalar yüklənir...",
+        "couldntLoadCurrencies": "Valyutaları yükləmək mümkün olmadı."
+    },
+    "converter": {
+        "midMarketRate": "Orta bazar dərəcəsi",
+        "rateLabel": "Qiymət:",
+        "rateError": "Qiymətləndirmə xətası",
+        "amount": "Məbləğ",
+        "convertedTo": "çevrildi",
+        "couldNotFetchRate": "Qiyməti əldə etmək mümkün olmadı."
+    },
+    "scan": {
+        "detectedPrices": "Aşkar edilmiş qiymətlər",
+        "noValuesDetected": "Heç bir dəyər aşkarlanmadı.",
+        "tapValueToLoad": "Yuxarıdakı çeviriciyə yükləmək üçün dəyərə toxunun."
+    }
+};

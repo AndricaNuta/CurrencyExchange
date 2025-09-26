@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "设置",
+        "section": {
+            "general": "一般的",
+            "defaults": "默认货币",
+            "notifications": "通知",
+            "appearance": "外貌",
+            "info": "信息"
+        },
+        "language": "语言",
+        "defaultFrom": "从",
+        "defaultTo": "到",
+        "exchangeRateAlerts": "汇率警报",
+        "darkMode": "黑暗模式",
+        "about": "关于货币转换器",
+        "version": "版本",
+        "support": "支持"
+    },
+    "common": {
+        "search": "搜索",
+        "chooseCurrency": "选择货币",
+        "convertedTo": "转换为",
+        "item": "物品",
+        "loadingCurrencies": "正在加载货币...",
+        "couldntLoadCurrencies": "无法加载货币。"
+    },
+    "converter": {
+        "midMarketRate": "中间市场利率",
+        "rateLabel": "速度：",
+        "rateError": "速率误差",
+        "amount": "数量",
+        "convertedTo": "转换为",
+        "couldNotFetchRate": "无法获取利率。"
+    },
+    "scan": {
+        "detectedPrices": "检测到的价格",
+        "noValuesDetected": "未检测到任何值。",
+        "tapValueToLoad": "点击一个值将其加载到上面的转换器中。"
+    }
+};

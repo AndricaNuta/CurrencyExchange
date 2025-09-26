@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "সেটিংস",
+        "section": {
+            "general": "সাধারণ",
+            "defaults": "ডিফল্ট মুদ্রা",
+            "notifications": "বিজ্ঞপ্তি",
+            "appearance": "চেহারা",
+            "info": "তথ্য"
+        },
+        "language": "ভাষা",
+        "defaultFrom": "থেকে",
+        "defaultTo": "থেকে",
+        "exchangeRateAlerts": "বিনিময় হার সতর্কতা",
+        "darkMode": "ডার্ক মোড",
+        "about": "মুদ্রা রূপান্তরকারী সম্পর্কে",
+        "version": "সংস্করণ",
+        "support": "সমর্থন"
+    },
+    "common": {
+        "search": "অনুসন্ধান করুন",
+        "chooseCurrency": "মুদ্রা বেছে নিন",
+        "convertedTo": "রূপান্তরিত",
+        "item": "আইটেম",
+        "loadingCurrencies": "মুদ্রা লোড হচ্ছে...",
+        "couldntLoadCurrencies": "মুদ্রা লোড করা যায়নি।"
+    },
+    "converter": {
+        "midMarketRate": "মাঝারি বাজার দর",
+        "rateLabel": "হার:",
+        "rateError": "রেট ত্রুটি",
+        "amount": "পরিমাণ",
+        "convertedTo": "রূপান্তরিত",
+        "couldNotFetchRate": "রেট আনা যায়নি।"
+    },
+    "scan": {
+        "detectedPrices": "শনাক্ত করা দাম",
+        "noValuesDetected": "কোন মান সনাক্ত করা যায়নি।",
+        "tapValueToLoad": "উপরের কনভার্টারে লোড করার জন্য একটি মান ট্যাপ করুন।"
+    }
+};

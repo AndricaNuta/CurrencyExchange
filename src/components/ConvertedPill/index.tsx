@@ -49,7 +49,8 @@ export function ConvertedPill({
 const styles = StyleSheet.create({
   convMeta: {
     fontSize: 10,
-    color: '#6A6F7A'
+    color: '#6A6F7A',
+    left:3
   },
   convMain: {
     fontWeight: '700',

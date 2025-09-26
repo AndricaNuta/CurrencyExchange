@@ -1,0 +1,42 @@
+export default {
+    "welcome_header": "",
+    "settings": {
+        "title": "Asetukset",
+        "section": {
+            "general": "Yleistä",
+            "defaults": "Oletusvaluutat",
+            "notifications": "Ilmoitukset",
+            "appearance": "Ulkonäkö",
+            "info": "Tiedot"
+        },
+        "language": "Kieli",
+        "defaultFrom": "Alkaen",
+        "defaultTo": "Kohti",
+        "exchangeRateAlerts": "Valuuttakurssihälytykset",
+        "darkMode": "Tumma tila",
+        "about": "Tietoja valuuttamuuntimesta",
+        "version": "Versio",
+        "support": "Tukea"
+    },
+    "common": {
+        "search": "Haku",
+        "chooseCurrency": "Valitse valuutta",
+        "convertedTo": "Muunnettu muotoon",
+        "item": "Tuote",
+        "loadingCurrencies": "Ladataan valuuttoja…",
+        "couldntLoadCurrencies": "Valuttojen lataaminen epäonnistui."
+    },
+    "converter": {
+        "midMarketRate": "Keskihinta",
+        "rateLabel": "Hinta:",
+        "rateError": "Nopeusvirhe",
+        "amount": "Määrä",
+        "convertedTo": "Muunnettu muotoon",
+        "couldNotFetchRate": "Hinnan nouto epäonnistui."
+    },
+    "scan": {
+        "detectedPrices": "Havaitut hinnat",
+        "noValuesDetected": "Ei havaittuja arvoja.",
+        "tapValueToLoad": "Napauta arvoa ladataksesi sen yllä olevaan muuntimeen."
+    }
+};
