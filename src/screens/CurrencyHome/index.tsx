@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback } fro
 import { useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
-import { useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
+import { useGetBaseTableQuery, useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
 import { useStyles } from './styles';
 import { PickerBottomSheet } from '../../components/PickerBottomSheet';
 import { CurrencySwapCard } from './CurrencySwapCard';
@@ -13,6 +13,10 @@ import { currencyFlag } from '../../utils/currencyFlag';
 import { filterByQuery } from '../../utils/filtersCurrency';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
 import { useTranslation } from 'react-i18next';
+import { useConnectivity } from '../../hooks/useConnectivity';
+import { useRatesStatus } from '../../hooks/useRatesStatus';
+import { alpha } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const nowDate = () => {
   const d = new Date();
@@ -26,6 +30,7 @@ export default function CurrencyConverterScreen() {
   const {
     t
   } = useTranslation();
+  const theme = useTheme();
   const {
     from, to, initialized
   } = useSelector((s: RootState) => s.exchange);
@@ -44,7 +49,20 @@ export default function CurrencyConverterScreen() {
     data: currencies, isLoading, error
   } = useGetCurrenciesQuery();
   const list = useSortedCurrencyList(currencies);
+  useGetBaseTableQuery({
+    base: effFrom
+  }, {
+    skip: !effFrom
+  });
+  const {
+    online
+  } = useConnectivity();
+  const {
+    hasBase, staleHours, lastDate
+  } = useRatesStatus(effFrom);
 
+  const isOffline = online === false;
+  const isStale = typeof staleHours === 'number' && staleHours > 24;
   const {
     data: pair, isFetching, error: rateError
   } = useGetPairRateQuery(
@@ -175,7 +193,50 @@ export default function CurrencyConverterScreen() {
             <Text style={styles.timeTxt}>{nowDate()}</Text>
           </View>
         </View>
-
+        <View style={{
+          flexDirection: 'row',
+          gap: 8
+        }}>
+          {isOffline && (
+            <View style={{
+              paddingHorizontal: 10,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: alpha(theme.colors.danger, 0.12),
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                color: theme.colors.danger,
+                fontSize: 12,
+                fontWeight: '700'
+              }}>
+          Offline
+              </Text>
+            </View>
+          )}
+          {/*isStale && (
+            <View style={{
+              paddingHorizontal: 10,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: alpha(theme.colors.muted, 0.15),
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                color: theme.colors.subtext,
+                fontSize: 12,
+                fontWeight: '700'
+              }}>
+          Stale • {Math.floor(staleHours!)}h
+              </Text>
+            </View>
+          )
+          <View style={styles.timePill}>
+            <Text style={styles.timeTxt}>
+              {lastDate ?? nowDate()}
+            </Text>
+          </View>*/}
+        </View>
         {/* Recent preview
       {!!history.length && (
         <View style={previewStyles.wrap}>

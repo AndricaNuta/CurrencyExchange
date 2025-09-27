@@ -13,7 +13,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheet
 import { useScanStyles } from './styles';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
+import { useGetBaseTableQuery, useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
 import type { RootStackParamList } from '../../navigation/RootStackParamList';
 import type { OCRResult } from '../../types/PriceOCR';
 import type { Candidate } from '../../ocr/ocrShared';
@@ -65,6 +65,12 @@ export default function ScanPreviewScreen() {
     setMiniAmt(first != null ? String(first) : '');
   }, [candidates, uri]);
 
+  const defaultFrom = useSelector((s: RootState) => s.settings.defaultFrom);
+  useGetBaseTableQuery({
+    base: defaultFrom
+  }, {
+    skip: !defaultFrom
+  });
   // base rate for the current global from → to
   const {
     data: basePair, isFetching, isError

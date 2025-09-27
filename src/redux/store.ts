@@ -13,18 +13,20 @@ import historyReducer from './slices/historySlice';
 import { currencyApi } from '../services/currencyApi';
 import { reduxStorage } from '../services/mmkv';
 import exchangeReducer from './slices/exchangeSlice';
+import  ratesCacheReducer  from './slices/ratesCacheSlice';
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
   history: historyReducer,
   exchange: exchangeReducer,
+  ratesCache: ratesCacheReducer,
   [currencyApi.reducerPath]: currencyApi.reducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: reduxStorage,
-  whitelist: ['settings', 'history', currencyApi.reducerPath],
+  whitelist: ['settings', 'ratesCache', currencyApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
