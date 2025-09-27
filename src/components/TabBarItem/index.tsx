@@ -1,32 +1,11 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { makeStyles } from '../../theme/ThemeProvider';
 
-type Props = {
-  label: string;
-  selected?: boolean;
-  onPress: () => void;
-  style?: ViewStyle;
-};
+const iconFor = (label: string) => label === 'Converter' ? '💱' :
+  label === 'History' ? '🕘' : label === 'Settings' ? '⚙️' : '❖';
 
-const iconFor = (label: string) => {
-  if (label === 'Converter') return '💱';
-  if (label === 'History')   return '🕘';
-  if (label === 'Settings')  return '⚙️';
-  return '❖';
-};
-
-export const TabBarItem: React.FC<Props> = ({
-  label, selected, onPress, style
-}) => (
-  <TouchableOpacity onPress={onPress} style={[S.tabItem, style]} activeOpacity={0.8}>
-    <Text style={{
-      fontSize: 18
-    }}>{iconFor(label)}</Text>
-    <Text style={[S.tabLabel, selected && S.tabLabelActive]}>{label}</Text>
-  </TouchableOpacity>
-);
-
-const S = StyleSheet.create({
+const useStyles = makeStyles(t => StyleSheet.create({
   tabItem: {
     flex: 1,
     alignItems: 'center',
@@ -34,11 +13,30 @@ const S = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 12,
-    color: '#7d7b7d',
+    color: t.colors.muted,
     marginTop: 4
   },
-  tabLabelActive: {
-    color: '#6F5AE6',
+  active: {
+    color: t.colors.tint,
     fontWeight: '600'
   },
-});
+}));
+
+export const TabBarItem = ({
+  label, selected, onPress, style
+}: { label: string;
+    selected?: boolean;
+    onPress: () => void; style?: any; }) => {
+  const s = useStyles();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[s.tabItem, style]}
+      activeOpacity={0.8}>
+      <Text style={{
+        fontSize: 18
+      }}>{iconFor(label)}</Text>
+      <Text style={[s.tabLabel, selected && s.active]}>{label}</Text>
+    </TouchableOpacity>
+  );
+};

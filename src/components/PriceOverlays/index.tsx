@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
-import { mapBoxToView } from '../../utils/extractPrices'; // for static images (contain + letterbox)
-import { mapBoxToCoverView } from '../../utils/boxMap';    // for live camera (cover + crop)
+import { mapBoxToView } from '../../utils/extractPrices';
+import { mapBoxToCoverView } from '../../utils/boxMap';
 import { parsePrice } from '../../utils/parsePrice';
 import { ConvertedPill } from '../ConvertedPill';
 import type { OCRResult } from '../../types/PriceOCR';
+import { useTheme } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
 const clamp = (v:number, min:number, max:number) => Math.min(max, Math.max(min, v));
 
@@ -25,6 +27,10 @@ export default function PriceOverlays({
   yOffset?: number;
   inflate?: number; minW?: number; minH?: number;
 }) {
+  const t = useTheme();
+  const selectionBorder = alpha(t.colors.tint, 0.9);
+  const normalBorder = 'transparent';
+  const pillBg = t.scheme === 'dark' ? alpha(t.colors.card, 0.92) : alpha('#FFFFFF', 0.96);
   if (!ocr || !imgW || !imgH) return null;
 
   return (
@@ -40,7 +46,6 @@ export default function PriceOverlays({
           left = b.left; top = b.top + yOffset; w = b.width; h = b.height;
         }
 
-        // inflate + clamp
         left -= inflate; top -= inflate; w += inflate*2; h += inflate*2;
         if (w < minW) { const a=(minW-w)/2; left-=a; w=minW; }
         if (h < minH) { const a=(minH-h)/2; top -=a; h=minH; }
@@ -52,6 +57,7 @@ export default function PriceOverlays({
         const pillW = clamp(w * 0.9, 44, Math.min(180, w - 6));
         const pillH = clamp(h * 0.9, 20, Math.min(44,  h - 6));
         const font  = clamp(pillH * 0.42, 9, 18);
+        const isSelected = false;
 
         return (
           <Pressable
@@ -68,7 +74,9 @@ export default function PriceOverlays({
             style={{
               position: 'absolute',
               left, top, width: w, height: h,
-              borderWidth: 1, borderColor: '#FFC83D', borderRadius: 10,
+              borderWidth: 1,
+              borderColor: isSelected ? selectionBorder : normalBorder,
+              borderRadius: 10,
             }}
           >
             <View
@@ -91,7 +99,7 @@ export default function PriceOverlays({
                   paddingHorizontal: Math.min(8, pillW * 0.18),
                   paddingVertical:   Math.min(4, pillH * 0.25),
                   borderRadius: pillH * 0.35,
-                  backgroundColor: 'rgba(255,255,255,0.96)',
+                  backgroundColor: pillBg,
                 }}
                 textStyle={{ fontSize: font }}
               />

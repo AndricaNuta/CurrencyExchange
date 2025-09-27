@@ -1,5 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
 const flags: Record<string, string> = {
   USD: '🇺🇸',
@@ -25,27 +27,14 @@ const flags: Record<string, string> = {
   ILS: '🇮🇱',
 };
 
-export default function CurrencyPill({
-  code,
-  onPress,
-}: {
-  code: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} style={S.pill}>
-      <Text style={S.flag}>{flags[code] ?? '🌐'}</Text>
-      <Text style={S.code}>{code}</Text>
-      <Text style={S.chev}>▾</Text>
-    </Pressable>
-  );
-}
-const S = StyleSheet.create({
+const useStyles = makeStyles(t => StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#F3F4F7',
+    backgroundColor: t.scheme === 'dark'
+      ? alpha('#FFFFFF', 0.08)
+      : alpha('#111827', 0.06),
     borderRadius: 22,
     height: 36,
     paddingHorizontal: 12,
@@ -55,9 +44,24 @@ const S = StyleSheet.create({
   },
   code: {
     fontSize: 14,
-    fontWeight: '700'
+    fontWeight: '700',
+    color: t.colors.text
   },
   chev: {
-    color: '#6A6F7A'
+    color: t.colors.subtext
   },
-});
+}));
+
+export default function CurrencyPill({
+  code,
+  onPress,
+}: { code: string; onPress: () => void; }) {
+  const s = useStyles();
+  return (
+    <Pressable onPress={onPress} style={s.pill}>
+      <Text style={s.flag}>{flags[code] ?? '🌐'}</Text>
+      <Text style={s.code}>{code}</Text>
+      <Text style={s.chev}>▾</Text>
+    </Pressable>
+  );
+}

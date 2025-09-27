@@ -1,17 +1,76 @@
-// styles.ts
-import { Dimensions, StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
 const {
   width: W, height: H
 } = Dimensions.get('window');
 
-export const styles = StyleSheet.create({
+export const useScanStyles = makeStyles(t => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: t.colors.bg
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: t.colors.tint
+  },
+  detectedHeader: {
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  detectedTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: t.colors.text
+  },
+  stickyHeader: {
+    backgroundColor: t.colors.surface,
+    paddingBottom: 8
+  },
+  topHudWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    width: '100%',
+    zIndex: 30,
+    paddingHorizontal: 30
+  },
+  topHud: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  topHudDim: {
+    opacity: 0.85
   },
 
-  // image & overlays
+  eyeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    height: 32,
+    borderRadius: 16
+  },
+  eyeChipInactive: {
+    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.06) : alpha('#111827',0.06)
+  },
+  eyeChipActive: {
+    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.10) : alpha('#111827',0.10)
+  },
+  eyeChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: t.colors.text
+  },
+
   imageWrap: {
     flex: 1
   },
@@ -22,89 +81,80 @@ export const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: W,
-    height: H,
-  },
-  overlayBox: {
-    position: 'absolute',
-    borderWidth: 1,
-    borderColor: '#FFC83D',
-    borderRadius: 10,
-  },
-  pillCenter: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: H
   },
 
-  // close button
+  rowSelected: {
+    borderColor: alpha(t.colors.tint, 0.9),
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: alpha(t.colors.tint, 0.10),
+  },
+
   close: {
-    position: 'absolute',
-    top: 60,
-    right: 16,
-    zIndex: 20,
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.80)',
+    backgroundColor: t.scheme==='dark' ? alpha('#000',0.35) : alpha('#FFFFFF',0.80),
     alignItems: 'center',
     justifyContent: 'center',
+    ...t.shadow.ios,
+    ...t.shadow.android,
   },
   closeText: {
-    color: '#000',
+    color: t.scheme==='dark' ? t.colors.text : '#000',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '700'
   },
 
-  // bottom sheet
   handle: {
-    backgroundColor: '#D1D5DB'
+    backgroundColor: t.colors.sheetHandle
   },
   sheetContent: {
     paddingHorizontal: 16,
     paddingBottom: 32,
-    paddingTop: 8,
+    paddingTop: 8
   },
   sheetBackground: {
-    backgroundColor: '#FFF'
+    backgroundColor: t.colors.surface
   },
+
   fadeBehind: {
     opacity: 0.94,
     transform: [{
       scale: 0.995
-    }],
+    }]
   },
 
-  // converter row
   title: {
     fontSize: 16,
     fontWeight: '700',
     marginTop: 20,
     marginBottom: 6,
+    color: t.colors.text
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
-
+    borderBottomColor: t.colors.border
   },
   itemTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111',
-    overflow:'scroll',
-    left:5,
+    color: t.colors.text,
+    left: 5
   },
   meta: {
     fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+    color: t.colors.subtext,
+    marginTop: 2
   },
   hint: {
     fontSize: 12,
-    color: '#999',
+    color: t.colors.muted,
     marginTop: 10,
-    textAlign: 'center',
+    textAlign: 'center'
   },
-});
+}));

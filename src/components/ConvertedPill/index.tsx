@@ -1,15 +1,34 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useGetPairRateQuery } from "../../services/currencyApi";
+import { Text, View, StyleSheet } from 'react-native';
+import { useGetPairRateQuery } from '../../services/currencyApi';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
-export function ConvertedPill({
-  amount,
-  fromCurrency,
-  toCurrency,
-  decimals,
-  containerStyle,
-  textStyle,
-}: {
+const useStyles = makeStyles(t => StyleSheet.create({
+  pill: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: t.scheme === 'dark'
+      ? alpha('#FFFFFF', 0.08)
+      : alpha('#111827', 0.06),
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  main: {
+    fontWeight: '700',
+    color: t.colors.text,
+  },
+  meta: {
+    fontSize: 10,
+    color: t.colors.subtext,
+    marginLeft: 3,
+  },
+}));
+
+export function ConvertedPill(props: {
   amount: number;
   fromCurrency: string;
   toCurrency: string;
@@ -17,6 +36,10 @@ export function ConvertedPill({
   containerStyle?: any;
   textStyle?: any;
 }) {
+  const {
+    amount, fromCurrency, toCurrency, decimals, containerStyle, textStyle
+  } = props;
+  const s = useStyles();
   const {
     data
   } = useGetPairRateQuery({
@@ -27,9 +50,9 @@ export function ConvertedPill({
   const converted = rate ? amount * rate : 0;
 
   return (
-    <View style={[styles.convPill, containerStyle]}>
+    <View style={[s.pill, containerStyle]}>
       <Text
-        style={[styles.convMain, textStyle]}
+        style={[s.main, textStyle]}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.5}
@@ -41,29 +64,7 @@ export function ConvertedPill({
           }).format(converted)
           : '…'}
       </Text>
-      <Text style={styles.convMeta}>{toCurrency}</Text>
+      <Text style={s.meta}>{toCurrency}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  convMeta: {
-    fontSize: 10,
-    color: '#6A6F7A',
-    left:3
-  },
-  convMain: {
-    fontWeight: '700',
-    color:'black'
-  },
-  convPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F7',
-    alignItems: 'center',
-    justifyContent:'center',
-    flexDirection:'row',
-    flex:1,
-  },
-});

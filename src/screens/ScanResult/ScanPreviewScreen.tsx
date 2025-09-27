@@ -4,12 +4,13 @@ import {Image,
   Text,
   View,
   Keyboard,
-  Dimensions,} from 'react-native';
+  Dimensions,
+  Switch} from 'react-native';
 import {useNavigation,
   useRoute,
   type RouteProp,} from '@react-navigation/native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { styles } from './styles';
+import { useScanStyles } from './styles';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
@@ -28,6 +29,11 @@ import { filterByQuery } from '../../utils/filtersCurrency';
 import { useSortedCurrencyList } from '../../utils/useSortedCurrencyList';
 import { PickerBottomSheet } from '../../components/PickerBottomSheet';
 import { useTranslation } from 'react-i18next';
+import ZoomableCanvas from '../../components/ZoomableCanvas';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Eye, EyeOff } from 'react-native-feather';
+import { alpha } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -38,12 +44,16 @@ export default function ScanPreviewScreen() {
   const {
     t
   } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const styles = useScanStyles();
+  const theme = useTheme();
   const from = useSelector((s: RootState) => s.exchange.from);
   const to = useSelector((s: RootState) => s.exchange.to);
   const decimals = useSelector((s: RootState) => s.settings.decimals);
   const dispatch = useDispatch();
   const [pickerOpen, setPickerOpen] = useState(false);
-
+  const priceId = (p: any) =>
+    `${p.lineIndex}|${Math.round(p.box.left)}:${Math.round(p.box.top)}|${p.text}`;
   // mini-converter local state (prefill with first detected value)
   const [miniAmt, setMiniAmt] = useState(() => {
     const first = candidates?.[0]?.value;
@@ -236,43 +246,56 @@ export default function ScanPreviewScreen() {
     typeof s === 'string' && s.endsWith('%') ? (parseFloat(s) / 100) * screenH : Number(s)
   );
   const minSnapPx = Math.min(...snapsPx);
-
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
   // final available height for the image area
-
-  const onPickCandidate = (c: Candidate) => {
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const onPickCandidate = (c: Candidate, id: string) => {
     setMiniAmt(c.value.toFixed(2));
-    if (c.currency && c.currency !== from) {
-      dispatch(setFrom(c.currency));
-    }
+    if (c.currency && c.currency !== from) dispatch(setFrom(c.currency));
+    setSelectedId(id); // <-- single source of truth for selection
+  };
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [sheetIndex, setSheetIndex] = useState(0);
+  const handleSeeAll = () => {
+    setShowAll(true);
+    // snap to the largest point to reveal the full list
+    sheetRef.current?.snapToIndex(snaps.length - 1);
   };
 
+  const handleSeeLess = () => {
+    setShowAll(false);
+    // return to bottom (first) snap
+    sheetRef.current?.snapToIndex(0);
+  };
   return (
     <BottomSheetModalProvider>
       <View style={styles.root}>
         {/* full-screen image */}
-        <View
-          style={[
-            styles.imageWrap,
-            {
-              bottom: minSnapPx, // instead of a hardcoded value
-            },
-          ]}
-          onLayout={e => {
-            const {
-              width, height
-            } = e.nativeEvent.layout;
-            setImgLayout({
-              w: width,
-              h: height
-            });
-          }}
-        >
-          <Image source={{
-            uri
-          }} style={styles.img} resizeMode="contain" />
+        <ZoomableCanvas>
+          <View
+            style={[
+              styles.imageWrap,
+              {
+                bottom: minSnapPx, // instead of a hardcoded value
+              },
+            ]}
+            onLayout={e => {
+              const {
+                width, height
+              } = e.nativeEvent.layout;
+              setImgLayout({
+                w: width,
+                h: height
+              });
+            }}
+          >
+            <Image source={{
+              uri
+            }} style={styles.img} resizeMode="contain" />
 
-          {/* Overlays */}
-          {ocr &&
+            {/* Overlays */}
+            {!showOriginal && ocr &&
           ocr.prices.map((p, i) => {
             const b = mapBoxToView(
               p.box,
@@ -310,7 +333,8 @@ export default function ScanPreviewScreen() {
             const {
               left, top, width: vw, height: vh
             } = rect;
-
+            const id = priceId(p);
+            const isSelected = selectedId === id;
             const boxStyle = {
               position: 'absolute' as const,
               left,
@@ -318,7 +342,7 @@ export default function ScanPreviewScreen() {
               width: vw,
               height: vh,
               borderWidth: 1,
-              borderColor: '#FFC83D',
+              borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
               borderRadius: 10,
             };
 
@@ -338,7 +362,7 @@ export default function ScanPreviewScreen() {
                     label: p.lineText,
                     lineIndex: p.lineIndex,
                     score: 1,
-                  })
+                  }, id,)
                 }
                 style={boxStyle}
                 hitSlop={12}
@@ -367,7 +391,7 @@ export default function ScanPreviewScreen() {
                       paddingHorizontal: Math.min(8, pillW * 0.18),
                       paddingVertical: Math.min(4, pillH * 0.25),
                       borderRadius: pillH * 0.35,
-                      backgroundColor: 'rgba(255,255,255,0.96)',
+                      backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
                     }}
                     textStyle={{
                       fontSize: font,
@@ -377,17 +401,41 @@ export default function ScanPreviewScreen() {
               </Pressable>
             );
           })}
-        </View>
+          </View>
+        </ZoomableCanvas>
 
         {/* Close */}
-        <Pressable style={styles.close} onPress={() => nav.goBack()}>
-          <Text style={styles.closeText}>✕</Text>
-        </Pressable>
+        {!pickerOpen && (
+          <View pointerEvents="box-none" style={[styles.topHudWrap, {
+            top: insets.top + 40
+          }]}>
+            <View style={[styles.topHud, sheetIndex === 2 && styles.topHudDim]}>
+              <Pressable
+                style={[styles.eyeChip, showOriginal ?
+                  styles.eyeChipActive
+                  : styles.eyeChipInactive]}
+                onPress={() => setShowOriginal(v => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={showOriginal ? 'Show overlays' : 'Show original'}
+              >
+                {showOriginal
+                  ? <EyeOff width={16} height={16} color={theme.colors.icon} />
+                  : <Eye    width={16} height={16} color={theme.colors.icon} />
+                }
+                <Text style={styles.eyeChipText}>{showOriginal ? 'Original' : 'Converted'}</Text>
+              </Pressable>
+
+              <Pressable style={styles.close} onPress={() => nav.goBack()}>
+                <Text style={styles.closeText}>✕</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* bottom sheet with mini converter + detected list */}
         <BottomSheet
           ref={sheetRef}
-          index={1}
+          index={0}
           snapPoints={snaps}
           handleIndicatorStyle={styles.handle}
           style={pickerOpen ? styles.fadeBehind : null}
@@ -396,6 +444,7 @@ export default function ScanPreviewScreen() {
           <BottomSheetScrollView
             contentContainerStyle={styles.sheetContent}
             keyboardShouldPersistTaps="handled"
+            stickyHeaderIndices={[0]}
           >
             <CurrencySwapRow
               from={from}
@@ -419,7 +468,23 @@ export default function ScanPreviewScreen() {
                 presentMode('to');
               }}
             />
-
+            <View style={styles.detectedHeader}>
+              <Text style={styles.detectedTitle}>
+                {/*t('scan.detectedPrices', {
+                  count: ocr?.prices?.length ?? 0
+                })*/}
+                Detected {ocr?.prices?.length} prices
+              </Text>
+              {(ocr?.prices?.length ?? 0) > 2 && (
+                <Pressable
+                  onPress={showAll ? handleSeeLess : handleSeeAll}
+                  hitSlop={8}>
+                  <Text style={styles.seeAll}>
+                    {showAll ? t('common.seeLess') : t('common.seeAll')}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
             {/*  Detected prices list (already converted)
             <Text style={styles.title}>{t('scan.detectedPrices')}</Text> */}
             {ocr?.prices?.length ? (
@@ -429,6 +494,8 @@ export default function ScanPreviewScreen() {
                 } = parsePrice(p.text, from);
                 const title = (p as any).labelText || p.lineText || t('common.item');
                 const fromCcy: string = (currency ?? from) as string;
+                const id = priceId(p);
+                const isSelected = selectedId === id;
                 return (
                   <Pressable
                     key={`${p.lineIndex}-${i}`}
@@ -441,9 +508,12 @@ export default function ScanPreviewScreen() {
                         label: title,
                         lineIndex: p.lineIndex,
                         score: 1,
-                      })
+                      },id)
                     }
-                    style={styles.row}
+                    style={[
+                      styles.row,
+                      isSelected && styles.rowSelected,
+                    ]}
                   >
                     <View style={{
                       width:'65%'

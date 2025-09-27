@@ -93,7 +93,9 @@
     "convertedTo": "Converted to",
     "item": "Item",
     "loadingCurrencies": "Loading currencies…",
-    "couldntLoadCurrencies": "Couldn’t load currencies."
+    "couldntLoadCurrencies": "Couldn’t load currencies.",
+    "seeAll": "See all",
+    "seeLess": "See less"
   },
   "converter": {
     "midMarketRate":"Mid-market rate",

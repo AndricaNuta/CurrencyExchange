@@ -22,12 +22,20 @@ export type Theme = {
   shadow: { ios: any; android: { elevation: number } };
 };
 
+export const base = {
+  purple: {
+    primary: '#483AA0',
+    tonal:   '#7965C1',
+  },
+  accent: '#E3D095',
+  white:  '#FFFFFF',
+  black:  '#000000',
+};
+
 export const alpha = (hex: string, a: number) => {
-  // hex like #RRGGBB
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!m) return hex;
-  const [_, r, g, b] = m;
-  return `rgba(${parseInt(r,16)}, ${parseInt(g,16)}, ${parseInt(b,16)}, ${a})`;
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return `rgba(${r},${g},${b},${a})`;
 };
 
 const spacing = (n: number) => n * 4;
@@ -36,17 +44,17 @@ export const lightTheme: Theme = {
   scheme: 'light',
   colors: {
     bg: '#F7F8FA',
-    surface: '#FFFFFF',
+    surface: '#FBFAFF',
     card: '#FFFFFF',
-    text: '#111827',
-    subtext: '#6B7280',
+    text: '#1B1B23',
+    subtext: '#6F6B7E',
     muted: '#9CA3AF',
-    border: '#ECEFF3',
-    tint: '#2563EB',
+    border: '#E7E3F4',
+    tint: base.purple.primary,
     danger: '#EF4444',
     success: '#22C55E',
-    sheetHandle: '#D1D5DB',
-    icon: '#111827',
+    sheetHandle: '#D7D2EA',
+    icon: '#1B1B23',
     navBg: '#FFFFFF',
   },
   radius: {
@@ -75,19 +83,19 @@ export const lightTheme: Theme = {
 export const darkTheme: Theme = {
   scheme: 'dark',
   colors: {
-    bg: '#0B0F14',
-    surface: '#111827',
-    card: '#0F172A',
-    text: '#F9FAFB',
-    subtext: '#9CA3AF',
-    muted: '#6B7280',
-    border: '#1F2937',
-    tint: '#60A5FA',
+    bg: '#0F0E14',
+    surface: '#161423',
+    card: '#1C1930',
+    text: '#F4F3F8',
+    subtext: '#B9B3D9',
+    muted: '#8A84A8',
+    border: '#2B2743',
+    tint: base.purple.primary,
     danger: '#F87171',
     success: '#34D399',
-    sheetHandle: '#374151',
-    icon: '#F9FAFB',
-    navBg: '#0B0F14',
+    sheetHandle: '#3A3553',
+    icon: '#F4F3F8',
+    navBg: '#0F0E14',
   },
   radius: {
     sm: 8,

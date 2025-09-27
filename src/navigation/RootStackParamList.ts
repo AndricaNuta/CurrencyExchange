@@ -1,4 +1,4 @@
-import { Candidate } from '../ocr/pickImageAndDetectPrices';
+import { Candidate } from "../ocr/ocrShared";
 
 export type MainTabParamList = {
   History: undefined;

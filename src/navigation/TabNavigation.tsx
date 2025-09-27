@@ -11,6 +11,8 @@ import FAB from '../components/FAB/FAB';
 import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopover';
 import { captureWithCamera, pickFromGallery } from '../ocr/ocrService';
 import { TabBarItem } from '../components/TabBarItem';
+import { makeStyles, useTheme as useAppTheme } from '../theme/ThemeProvider';
+import { alpha } from '../theme/tokens';
 
 const {
   width: SCREEN_W
@@ -21,6 +23,9 @@ type TabKey = keyof MainTabParamList;
 export default function TabNavigation() {
   const insets = useSafeAreaInsets();
   const stackNav = useNavigation<StackNav>();
+  const t = useAppTheme();
+  const s = useStyles();
+
   const [scanOpen, setScanOpen] = useState(false);
 
   const onTakePhoto = useCallback(async () => {
@@ -52,37 +57,56 @@ export default function TabNavigation() {
   }, [stackNav]);
 
   const renderTabItem = ({
-    routeName, selectedTab, navigate
-  }: {
-    routeName: TabKey; selectedTab: TabKey; navigate: (name: TabKey) => void;
-  }) => (
+    routeName, selectedTab, navigate,
+  }: { routeName: TabKey; selectedTab: TabKey; navigate: (name: TabKey) => void; }) => (
     <TabBarItem
       label={routeName}
       selected={selectedTab === routeName}
-      onPress={() => navigate(routeName)} />
+      onPress={() => navigate(routeName)}
+    />
   );
 
   return (
-    <View style={[S.container, {
+    <View style={[s.container, {
       paddingBottom: Math.max(insets.bottom, 8)
     }]}>
       <CurvedBottomBar.Navigator
+        id="MainTabs"
+        type="DOWN"
+        circlePosition="CENTER"
+        width={SCREEN_W}
+        height={60}
+        circleWidth={55}
+        bgColor={t.colors.surface}
+        borderTopLeftRight
+        borderColor="transparent"
+        borderWidth={0}
+        backBehavior="initialRoute"
+        style={s.bar}
+        defaultScreenOptions
+        shadowStyle={s.shadow}
         screenOptions={{
-          headerShown: false,
-
+          headerShown: false
         }}
-        screenListeners
-        id="MainTabs" type="DOWN" circlePosition="CENTER"
-        width={SCREEN_W} height={60} circleWidth={55}
-        bgColor="#FFFFFF" borderTopLeftRight borderColor="transparent"
-        borderWidth={0} backBehavior="initialRoute" style={S.bar}
-        defaultScreenOptions shadowStyle={S.shadow}
-        initialRouteName="Converter"
         renderCircle={() => <FAB onPress={() => setScanOpen(true)} />}
         tabBar={renderTabItem}
       >
-        <CurvedBottomBar.Screen name="Converter" position="LEFT" component={CurrencyConverterScreen} />
-        <CurvedBottomBar.Screen name="Settings"  position="RIGHT" component={SettingsScreen} />
+        <CurvedBottomBar.Screen
+          name="Converter"
+          position="LEFT"
+          component={CurrencyConverterScreen}
+          options={{
+            headerShown: false
+          }}
+        />
+        <CurvedBottomBar.Screen
+          name="Settings"
+          position="RIGHT"
+          component={SettingsScreen}
+          options={{
+            headerShown: false
+          }}
+        />
       </CurvedBottomBar.Navigator>
 
       <ScanActionsPopover
@@ -96,22 +120,23 @@ export default function TabNavigation() {
   );
 }
 
-const S = StyleSheet.create({
+const useStyles = makeStyles((t) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF'
+    backgroundColor: t.colors.surface,
   },
   bar: {
-    alignSelf: 'center'
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
   },
   shadow: {
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowColor: t.scheme === 'dark' ? alpha('#000', 0.9) : '#000',
+    shadowOpacity: t.scheme === 'dark' ? 0.18 : 0.06,
     shadowRadius: 12,
     shadowOffset: {
       width: 0,
       height: -10
     },
-    elevation: 12,
+    elevation: t.scheme === 'dark' ? 8 : 12,
   },
-});
+}));

@@ -9,6 +9,7 @@ import { Search } from 'react-native-feather';
 import { usePickerStyles } from './styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../theme/ThemeProvider';
 
 type Item = {
   key: string;
@@ -49,6 +50,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
     const {
       t
     } = useTranslation();
+    const theme = useTheme();
     // convert % → px and ensure we return [small,big]
     const resolvedSnapPoints = useMemo(() => {
       const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
@@ -105,12 +107,12 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
 
           {search && (
             <View style={styles.searchWrap}>
-              <Search color="#6B7280" />
+              <Search color={theme.colors.subtext} />
               <BottomSheetTextInput
                 value={search.value}
                 onChangeText={search.set}
                 placeholder={t('common.search')}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={theme.colors.muted}
                 style={styles.searchInput}
                 autoCapitalize={search.autoCapitalize ?? 'none'}
               />
