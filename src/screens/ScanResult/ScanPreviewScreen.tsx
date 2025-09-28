@@ -17,7 +17,7 @@ import { useGetBaseTableQuery, useGetCurrenciesQuery, useGetPairRateQuery } from
 import type { RootStackParamList } from '../../navigation/RootStackParamList';
 import type { OCRResult } from '../../types/PriceOCR';
 import type { Candidate } from '../../ocr/ocrShared';
-import { extractPrices, PriceHit, mapBoxToView } from '../../utils/extractPrices';
+import { extractPrices, PriceHit } from '../../utils/extractPrices';
 import { detectTextInImage } from '../../native/PriceOCR';
 import { setFrom, setTo, swap } from '../../redux/slices/exchangeSlice';
 import { parsePrice } from '../../utils/parsePrice';
@@ -34,6 +34,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'react-native-feather';
 import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
+import { mapBoxContain as mapBoxToView } from '../../utils/boxMap';
+import {mapQuadToViewContain,
+  mapQuadToViewCover,
+  quadMetrics,} from '../../utils/quadMap';
+import { getDetectedCurrency } from '../../utils/getDetectedCurrency';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -274,6 +279,7 @@ export default function ScanPreviewScreen() {
     // return to bottom (first) snap
     sheetRef.current?.snapToIndex(0);
   };
+
   return (
     <BottomSheetModalProvider>
       <View style={styles.root}>
@@ -302,111 +308,207 @@ export default function ScanPreviewScreen() {
 
             {/* Overlays */}
             {!showOriginal && ocr &&
-          ocr.prices.map((p, i) => {
-            const b = mapBoxToView(
-              p.box,
-              ocr.width,
-              ocr.height,
-              imgLayout.w,
-              imgLayout.h);
-            const {
-              currency, value
-            } = parsePrice(p.text, from);
+  ocr.prices.map((p, i) => {
+    // prefer QUAD if present
+    const hasQuad =
+      p.quad &&
+      (p.quad as any).topLeft &&
+      (p.quad as any).topRight &&
+      (p.quad as any).bottomLeft &&
+      (p.quad as any).bottomRight;
 
-            // Tweak these to taste
-            const INFLATE_PX = 6;
-            const MIN_W = 56;
-            const MIN_H = 28;
+    const {
+      currency, value
+    } = parsePrice(p.text, from);
 
-            // apply vertical correction before inflating
-            const baseLeft = b.left;
-            const baseTop = b.top + 45;
-            const baseW = b.width;
-            const baseH = b.height;
+    const INFLATE_PX = 6;
+    const MIN_W = 56;
+    const MIN_H = 28;
 
-            const rect = inflateBox(
-              baseLeft,
-              baseTop,
-              baseW,
-              baseH,
-              imgLayout.w,
-              imgLayout.h,
-              INFLATE_PX,
-              MIN_W,
-              MIN_H
-            );
+    if (hasQuad) {
+      // 1) map quad to view coords
+      const mapped =
+        // camera preview usually “covers”, gallery “contains”
+        // change if your preview uses contain instead
+        mapQuadToViewContain(
+          p.quad as any,
+          ocr.width, ocr.height,
+          imgLayout.w, imgLayout.h
+        );
 
-            const {
-              left, top, width: vw, height: vh
-            } = rect;
-            const id = priceId(p);
-            const isSelected = selectedId === id;
-            const boxStyle = {
-              position: 'absolute' as const,
-              left,
-              top,
-              width: vw,
-              height: vh,
-              borderWidth: 1,
-              borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
-              borderRadius: 10,
-            };
+      // 2) derive center/size/angle
+      const {
+        cx, cy, w, h, angle
+      } = quadMetrics(mapped);
 
-            const pillW = clamp(vw * 0.9, 44, Math.min(180, vw - 6));
-            const pillH = clamp(vh * 0.9, 20, Math.min(44, vh - 6));
-            const font = clamp(pillH * 0.42, 9, 18);
+      // 3) inflate & clamp
+      const W0 = Math.max(w + INFLATE_PX * 2, MIN_W);
+      const H0 = Math.max(h + INFLATE_PX * 2, MIN_H);
 
-            return (
-              <Pressable
-                key={`${p.lineIndex}-${i}`}
-                onPress={() =>
-                  onPickCandidate({
-                    raw: p.text,
-                    value,
-                    currency: (currency ?? from).toUpperCase(),
-                    line: p.lineText,
-                    label: p.lineText,
-                    lineIndex: p.lineIndex,
-                    score: 1,
-                  }, id,)
-                }
-                style={boxStyle}
-                hitSlop={12}
-              >
-                {/* pill centered INSIDE the yellow box */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    left: (vw - pillW) / 2,
-                    top: (vh - pillH) / 2,
-                    width: pillW,
-                    height: pillH,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  pointerEvents="none"
-                >
-                  <ConvertedPill
-                    amount={value}
-                    fromCurrency={(currency ?? from).toUpperCase()}
-                    toCurrency={to}
-                    decimals={decimals}
-                    containerStyle={{
-                      height: pillH,
-                      width: pillW,
-                      paddingHorizontal: Math.min(8, pillW * 0.18),
-                      paddingVertical: Math.min(4, pillH * 0.25),
-                      borderRadius: pillH * 0.35,
-                      backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
-                    }}
-                    textStyle={{
-                      fontSize: font,
-                    }}
-                  />
-                </View>
-              </Pressable>
-            );
-          })}
+      let left = cx - W0 / 2;
+      let top  = cy - H0 / 2; // ❗ no yOffset in quad path
+      const R  = Math.min(left + W0, imgLayout.w);
+      const B  = Math.min(top  + H0, imgLayout.h);
+      left = Math.max(0, left);
+      top  = Math.max(0, top);
+      const W = Math.max(0, R - left);
+      const H = Math.max(0, B - top);
+
+      const pillW = Math.min(Math.max(W * 0.9, 44), Math.min(180, W - 6));
+      const pillH = Math.min(Math.max(H * 0.9, 20), Math.min(44,  H - 6));
+      const font  = Math.min(Math.max(pillH * 0.42, 9), 18);
+
+      const id = `${p.lineIndex}-${i}`;
+      const isSelected = selectedId === id;
+
+      const {
+        currency: parsedCurrency, value
+      } = parsePrice(p.text, from);
+      const title = (p as any).labelText || p.lineText || t('common.item');
+      const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
+      return (
+        <Pressable
+          key={id}
+          onPress={() =>
+            onPickCandidate({
+              raw: p.text,
+              value,
+              currency: fromCcy,             // <- normalized
+              line: title,
+              label: title,
+              lineIndex: p.lineIndex,
+              score: 1,
+            }, id)
+          }
+          style={{
+            position: 'absolute',
+            left,
+            top,
+            width: W,
+            height: H,
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: [{
+              rotateZ: `${angle}rad`
+            }], // ← rotate with the text
+            borderWidth: 1,
+            borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
+            borderRadius: 10,
+          }}
+          hitSlop={12}
+        >
+          <View
+            pointerEvents="none"
+            style={{
+              width: pillW,
+              height: pillH,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ConvertedPill
+              amount={value}
+              fromCurrency={(currency ?? from).toUpperCase()}
+              toCurrency={to}
+              decimals={decimals}
+              containerStyle={{
+                height: pillH,
+                width: pillW,
+                paddingHorizontal: Math.min(8, pillW * 0.18),
+                paddingVertical:   Math.min(4, pillH * 0.25),
+                borderRadius: pillH * 0.35,
+                backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
+              }}
+              textStyle={{
+                fontSize: font
+              }}
+            />
+          </View>
+        </Pressable>
+      );
+    }
+
+    // Fallback: old upright rect path (when p.quad is missing)
+    const b = mapBoxToView(
+      p.box, ocr.width, ocr.height, imgLayout.w, imgLayout.h
+    );
+    const rect = inflateBox(
+      b.left, b.top, b.width, b.height,
+      imgLayout.w, imgLayout.h, INFLATE_PX, MIN_W, MIN_H
+    );
+    const {
+      left, top, width: vw, height: vh
+    } = rect;
+    const pillW = Math.min(Math.max(vw * 0.9, 44), Math.min(180, vw - 6));
+    const pillH = Math.min(Math.max(vh * 0.9, 20), Math.min(44,  vh - 6));
+    const font  = Math.min(Math.max(pillH * 0.42, 9), 18);
+    const id = `${p.lineIndex}-${i}`;
+    const isSelected = selectedId === id;
+    const {
+      currency: parsedCurrency
+    } = parsePrice(p.text, from);
+    const title = (p as any).labelText || p.lineText || t('common.item');
+    const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
+    return (
+      <Pressable
+        key={id}
+        onPress={() =>
+          onPickCandidate({
+            raw: p.text,
+            value,
+            currency: fromCcy,             // <- normalized
+            line: title,
+            label: title,
+            lineIndex: p.lineIndex,
+            score: 1,
+          }, id)
+        }
+        style={{
+          position: 'absolute',
+          left,
+          top,
+          width: vw,
+          height: vh,
+          borderWidth: 1,
+          borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
+          borderRadius: 10,
+        }}
+        hitSlop={12}
+      >
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: (vw - pillW) / 2,
+            top:  (vh - pillH) / 2,
+            width: pillW,
+            height: pillH,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ConvertedPill
+            amount={value}
+            fromCurrency={(currency ?? from).toUpperCase()}
+            toCurrency={to}
+            decimals={decimals}
+            containerStyle={{
+              height: pillH,
+              width: pillW,
+              paddingHorizontal: Math.min(8, pillW * 0.18),
+              paddingVertical:   Math.min(4, pillH * 0.25),
+              borderRadius: pillH * 0.35,
+              backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
+            }}
+            textStyle={{
+              fontSize: font
+            }}
+          />
+        </View>
+      </Pressable>
+    );
+  })
+            }
           </View>
         </ZoomableCanvas>
 
@@ -495,11 +597,12 @@ export default function ScanPreviewScreen() {
             <Text style={styles.title}>{t('scan.detectedPrices')}</Text> */}
             {ocr?.prices?.length ? (
               ocr.prices.map((p, i) => {
-                const {
-                  currency, value
-                } = parsePrice(p.text, from);
+
                 const title = (p as any).labelText || p.lineText || t('common.item');
-                const fromCcy: string = (currency ?? from) as string;
+                const {
+                  currency: parsedCurrency, value
+                } = parsePrice(p.text, from);
+                const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
                 const id = priceId(p);
                 const isSelected = selectedId === id;
                 return (
@@ -509,7 +612,7 @@ export default function ScanPreviewScreen() {
                       onPickCandidate({
                         raw: p.text,
                         value,
-                        currency: fromCcy.toUpperCase(),
+                        currency: fromCcy,
                         line: title,
                         label: title,
                         lineIndex: p.lineIndex,

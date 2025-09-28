@@ -16,12 +16,12 @@ export type OCRLine = {
 
 export type OCRPrice = {
   text: string;
-  confidence?: number;
-  box: Box;
-  quad: any;
+  box: { x: number; y: number; width: number; height: number };
+  quad?: any;
   lineIndex: number;
   lineText: string;
-  lineBox: Box;
+  currencyCode?: string;
+  rawCurrency?: string;
 };
 export type OCRWord = {
   text: string;

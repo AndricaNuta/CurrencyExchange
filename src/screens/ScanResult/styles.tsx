@@ -57,13 +57,13 @@ export const useScanStyles = makeStyles(t => StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     height: 32,
-    borderRadius: 16
+    borderRadius: 16,
   },
   eyeChipInactive: {
-    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.06) : alpha('#111827',0.06)
+    backgroundColor: t.scheme==='dark' ? alpha('#000',0.35) : alpha('#FFFFFF',0.60),
   },
   eyeChipActive: {
-    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.10) : alpha('#111827',0.10)
+    backgroundColor: t.scheme==='dark' ? alpha('#000',0.10) : alpha('#FFFFFF',0.80)
   },
   eyeChipText: {
     fontSize: 13,

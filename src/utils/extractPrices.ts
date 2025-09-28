@@ -89,12 +89,10 @@ export function extractPrices(ocr: OCRResult): PriceHit[] {
 }
 
 
-export function mapBoxToView(
-  box: { x: number; y: number; width: number; height: number },
-  imgW: number,
-  imgH: number,
-  viewW: number,
-  viewH: number,
+export function mapQuadToView(
+  quad: { topLeft:{x:number,y:number}; topRight:{x:number,y:number}; bottomRight:{x:number,y:number}; bottomLeft:{x:number,y:number} },
+  imgW: number, imgH: number,
+  viewW: number, viewH: number
 ) {
   const scale = Math.min(viewW / imgW, viewH / imgH);
   const drawnW = imgW * scale;
@@ -102,13 +100,42 @@ export function mapBoxToView(
   const offsetX = (viewW - drawnW) / 2;
   const offsetY = (viewH - drawnH) / 2;
 
+  const mapPoint = (p:{x:number,y:number}) => ({
+    x: offsetX + p.x * drawnW,
+    y: offsetY + p.y * drawnH,
+  });
+
   return {
-    left: offsetX + box.x * drawnW,
-    top: offsetY + box.y * drawnH,
-    width: box.width  * drawnW,
-    height: box.height * drawnH,
+    topLeft: mapPoint(quad.topLeft),
+    topRight: mapPoint(quad.topRight),
+    bottomRight: mapPoint(quad.bottomRight),
+    bottomLeft: mapPoint(quad.bottomLeft),
   };
 }
+
+// Convenience: from a mapped quad, get center/size/angle
+export function quadMetrics(quad: {
+  topLeft:{x:number,y:number}; topRight:{x:number,y:number};
+  bottomRight:{x:number,y:number}; bottomLeft:{x:number,y:number};
+}) {
+  const cx = (quad.topLeft.x + quad.topRight.x + quad.bottomRight.x + quad.bottomLeft.x) / 4;
+  const cy = (quad.topLeft.y + quad.topRight.y + quad.bottomRight.y + quad.bottomLeft.y) / 4;
+
+  const w = Math.hypot(quad.topRight.x - quad.topLeft.x, quad.topRight.y - quad.topLeft.y);
+  const h = Math.hypot(quad.bottomLeft.x - quad.topLeft.x, quad.bottomLeft.y - quad.topLeft.y);
+
+  // Angle of the top edge, in radians
+  const angle = Math.atan2(quad.topRight.y - quad.topLeft.y, quad.topRight.x - quad.topLeft.x);
+
+  return {
+    cx,
+    cy,
+    w,
+    h,
+    angle
+  };
+}
+
 
 
 export function priceHitToCandidate
