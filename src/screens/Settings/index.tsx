@@ -226,8 +226,11 @@ export default function SettingsScreen() {
           subtitle={currencyName(from)}
           onPress={() => presentMode('from')}
           iconLeft={
-            <View style={[styles.circleIcon, styles.fromIcon]}>
-              <ArrowUpRight color={tkn.colors.tint} />
+            <View style={[styles.circleIcon, {
+              backgroundColor: tkn.colors[tkn.roles.settings.defaultFromIcon.bg]
+            }]}>
+              <ArrowUpRight
+                color={tkn.colors[tkn.roles.settings.defaultFromIcon.fg]} />
             </View>
           }
         />
@@ -237,8 +240,11 @@ export default function SettingsScreen() {
           subtitle={currencyName(to)}
           onPress={() => presentMode('to')}
           iconLeft={
-            <View style={[styles.circleIcon, styles.toIcon]}>
-              <ArrowDownLeft color="#EA580C" />
+            <View style={[styles.circleIcon, {
+              backgroundColor: tkn.colors[tkn.roles.settings.defaultToIcon.bg]
+            }]}>
+              <ArrowDownLeft
+                color={tkn.colors[tkn.roles.settings.defaultToIcon.fg]} />
             </View>
           }
         />
@@ -264,8 +270,10 @@ export default function SettingsScreen() {
             />
           }
           iconLeft={
-            <View style={[styles.circleIcon, styles.notifIcon]}>
-              <Bell color="#EF4444" />
+            <View style={[styles.circleIcon, {
+              backgroundColor: tkn.colors[tkn.roles.settings.notifIcon.bg]
+            }]}>
+              <Bell color={tkn.colors[tkn.roles.settings.notifIcon.fg]} />
             </View>
           }
         />
@@ -291,8 +299,10 @@ export default function SettingsScreen() {
             />
           }
           iconLeft={
-            <View style={[styles.circleIcon, styles.darkIcon]}>
-              <Moon color="#fff" />
+            <View style={[styles.circleIcon, {
+              backgroundColor: tkn.colors[tkn.roles.settings.darkModeIcon.bg]
+            }]}>
+              <Moon color={tkn.colors[tkn.roles.settings.darkModeIcon.fg]} />
             </View>
           }
         />

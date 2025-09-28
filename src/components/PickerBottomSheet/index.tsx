@@ -3,13 +3,13 @@ import { Text, View, Pressable, useWindowDimensions } from 'react-native';
 import {BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetFlatList,
-  useBottomSheetSpringConfigs,
-  BottomSheetBackdropProps,} from '@gorhom/bottom-sheet';
+  useBottomSheetSpringConfigs,} from '@gorhom/bottom-sheet';
 import { Search } from 'react-native-feather';
 import { usePickerStyles } from './styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useThemedBackdrop } from './useThemedBackdrop';
 
 type Item = {
   key: string;
@@ -26,7 +26,6 @@ type Props = {
   snapPoints?: Array<number | `${number}%`>;
   onDismiss?: () => void;
   initialIndex?: 0 | 1;
-  backdropComponent?: (props: BottomSheetBackdropProps) => React.ReactNode;
 };
 
 export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
@@ -39,7 +38,6 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
       snapPoints,
       onDismiss,
       initialIndex = 0,
-      backdropComponent
     },
     ref
   ) => {
@@ -51,6 +49,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
       t
     } = useTranslation();
     const theme = useTheme();
+    const backdropComponent = useThemedBackdrop();
     // convert % → px and ensure we return [small,big]
     const resolvedSnapPoints = useMemo(() => {
       const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
@@ -101,13 +100,23 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={backdropComponent}
+        backgroundStyle={{
+          backgroundColor: theme.colors.surface
+        }}
+        handleStyle={{
+          backgroundColor: theme.colors.surface,
+          borderRadius:25,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: theme.colors.sheetHandle
+        }}
       >
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
 
           {search && (
             <View style={styles.searchWrap}>
-              <Search color={theme.colors.subtext} />
+              <Search color={theme.colors.iconMuted} />
               <BottomSheetTextInput
                 value={search.value}
                 onChangeText={search.set}

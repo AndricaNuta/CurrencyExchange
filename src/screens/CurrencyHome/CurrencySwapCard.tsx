@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated, Easing } from 'react-native';
 import { ChevronDown, RefreshCw } from 'react-native-feather';
-import { makeStyles } from '../../theme/ThemeProvider';
+import { makeStyles, useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
 
@@ -48,7 +48,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
   const s = useCardStyles();
   const { t } = useTranslation();
   const { from, to, amount, onAmountChange, decimals, rate, isFetching, rateError, onOpenFrom, onOpenTo, onSwap, renderFlag } = props;
-
+  const tkn = useTheme();
   const amtNum = Number(amount.replace(',', '.')) || 0;
   const converted = (rate ?? 0) * amtNum;
 
@@ -96,7 +96,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           <Pressable style={s.pill} onPress={onOpenFrom} accessibilityRole="button" accessibilityLabel="Change from currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(from) : from}</Text>
             <Text style={s.pillCode}>{from}</Text>
-            <ChevronDown/>
+            <ChevronDown color={tkn.colors.iconMuted} />
           </Pressable>
         </View>
 
@@ -119,7 +119,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
         disabled={animating}
       >
         <Animated.View style={{ transform: [{ rotate: rotation }, { scale: pulse }] }}>
-          <RefreshCw />
+          <RefreshCw color={tkn.colors.iconActive} />
         </Animated.View>
       </Pressable>
 
@@ -129,7 +129,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           <Pressable style={s.pill} onPress={onOpenTo} accessibilityRole="button" accessibilityLabel="Change to currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(to) : to}</Text>
             <Text style={s.pillCode}>{to}</Text>
-            <ChevronDown/>
+            <ChevronDown color={tkn.colors.iconMuted} />
           </Pressable>
         </View>
 

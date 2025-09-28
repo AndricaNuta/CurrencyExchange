@@ -1,9 +1,20 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { makeStyles } from '../../theme/ThemeProvider';
+import { makeStyles, useTheme as useAppTheme } from '../../theme/ThemeProvider';
+import { Activity, Clock, Settings, Repeat } from 'react-native-feather';
 
-const iconFor = (label: string) => label === 'Converter' ? '💱' :
-  label === 'History' ? '🕘' : label === 'Settings' ? '⚙️' : '❖';
+const IconFor = ({ label, color }: { label: string; color: string }) => {
+  switch (label) {
+    case 'Converter':
+      return <Repeat width={20} height={20} color={color} />;
+    case 'History':
+      return <Clock width={20} height={20} color={color} />;
+    case 'Settings':
+      return <Settings width={20} height={20} color={color} />;
+    default:
+      return <Activity width={20} height={20} color={color} />;
+  }
+};
 
 const useStyles = makeStyles(t => StyleSheet.create({
   tabItem: {
@@ -24,18 +35,23 @@ const useStyles = makeStyles(t => StyleSheet.create({
 
 export const TabBarItem = ({
   label, selected, onPress, style
-}: { label: string;
-    selected?: boolean;
-    onPress: () => void; style?: any; }) => {
+}: {
+  label: string;
+  selected?: boolean;
+  onPress: () => void;
+  style?: any;
+}) => {
   const s = useStyles();
+  const t = useAppTheme();
+  const color = selected ? t.colors.tint : t.colors.muted;
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[s.tabItem, style]}
-      activeOpacity={0.8}>
-      <Text style={{
-        fontSize: 18
-      }}>{iconFor(label)}</Text>
+      activeOpacity={0.8}
+    >
+      <IconFor label={label} color={color} />
       <Text style={[s.tabLabel, selected && s.active]}>{label}</Text>
     </TouchableOpacity>
   );

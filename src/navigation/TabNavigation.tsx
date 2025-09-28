@@ -8,11 +8,12 @@ import type { RootStackParamList, MainTabParamList } from './RootStackParamList'
 import CurrencyConverterScreen from '../screens/CurrencyHome';
 import SettingsScreen from '../screens/Settings';
 import FAB from '../components/FAB/FAB';
-import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopover';
 import { captureWithCamera, pickFromGallery } from '../ocr/ocrService';
 import { TabBarItem } from '../components/TabBarItem';
 import { makeStyles, useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { alpha } from '../theme/tokens';
+import ScanRadialMenu from '../components/ScanRadialMenu';
+import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopover';
 
 const {
   width: SCREEN_W
@@ -27,6 +28,7 @@ export default function TabNavigation() {
   const s = useStyles();
 
   const [scanOpen, setScanOpen] = useState(false);
+  const anchorBottom = Math.max(insets.bottom, 8) + 60 /* bar height */ + 30; // place the arc above the bar+fab
 
   const onTakePhoto = useCallback(async () => {
     setScanOpen(false);
@@ -75,7 +77,7 @@ export default function TabNavigation() {
         type="DOWN"
         circlePosition="CENTER"
         width={SCREEN_W}
-        height={60}
+        height={50}
         circleWidth={55}
         bgColor={t.colors.surface}
         borderTopLeftRight
@@ -88,7 +90,9 @@ export default function TabNavigation() {
         screenOptions={{
           headerShown: false
         }}
-        renderCircle={() => <FAB onPress={() => setScanOpen(true)} />}
+        renderCircle={() =>
+          <FAB open={scanOpen} onToggle={() => setScanOpen(v => !v)} />
+        }
         tabBar={renderTabItem}
       >
         <CurvedBottomBar.Screen
@@ -108,7 +112,6 @@ export default function TabNavigation() {
           }}
         />
       </CurvedBottomBar.Navigator>
-
       <ScanActionsPopover
         visible={scanOpen}
         onClose={() => setScanOpen(false)}
@@ -116,6 +119,7 @@ export default function TabNavigation() {
         onCamera={onTakePhoto}
         onGallery={onPickImage}
       />
+
     </View>
   );
 }
