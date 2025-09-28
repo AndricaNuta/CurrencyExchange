@@ -357,7 +357,7 @@ export default function ScanPreviewScreen() {
       const boxH = H0;
       const pillW = Math.min(Math.max(W * 0.9, 44), Math.min(180, W - 6));
       const pillH = Math.min(Math.max(H * 0.9, 20), Math.min(44,  H - 6));
-      const font = Math.max(10, boxH * 0.30);
+      const font = Math.max(10, boxH * 0.24);
       const id = `${p.lineIndex}-${i}`;
       const isSelected = selectedId === id;
 
@@ -389,8 +389,8 @@ export default function ScanPreviewScreen() {
             transform: [{ rotateZ: `${angle}rad` }],
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: isSelected ? 1 : 0,
-            borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
+            borderWidth: isSelected ? 2 : 0,
+            borderColor: isSelected ? theme.colors.highlightRing : 'transparent',
             borderRadius: 8, // small; purely visual, does not change size
           }}
           hitSlop={12}
@@ -437,7 +437,7 @@ export default function ScanPreviewScreen() {
     } = rect;
     const pillH = Math.min(Math.max(vh * 0.9, 20), Math.min(44,  vh - 6));
     const content = `${value.toFixed(decimals)} ${to}`;
-    const font = Math.max(10, vh * 0.30);
+    const font = Math.max(10, vh * 0.24);
     const pillW = Math.min(200, Math.max(56, content.length * (font * 0.6)));
     const id = `${p.lineIndex}-${i}`;
     const isSelected = selectedId === id;
@@ -468,8 +468,8 @@ export default function ScanPreviewScreen() {
           height: Math.round(vh),
           alignItems: 'center',
           justifyContent: 'center',
-          borderWidth: isSelected ? 1 : 0,
-          borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
+          borderWidth: isSelected ? 2 : 0,
+          borderColor: isSelected ? theme.colors.highlightRing : 'transparent',
           borderRadius: 8,
         }}
         hitSlop={12}

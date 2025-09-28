@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Կարգավորումներ",
+        "section": {
+            "general": "Ընդհանուր",
+            "defaults": "Լռելյայն արժույթներ",
+            "notifications": "Ծանուցումներ",
+            "appearance": "Արտաքին տեսք",
+            "info": "Տեղեկություն"
+        },
+        "language": "Լեզու",
+        "defaultFrom": "Սկսած",
+        "defaultTo": "Դեպի",
+        "exchangeRateAlerts": "Փոխարժեքի մասին ծանուցումներ",
+        "darkMode": "Մութ ռեժիմ",
+        "about": "Արժույթի փոխարկիչի մասին",
+        "version": "Տարբերակ",
+        "support": "Աջակցություն"
+    },
+    "common": {
+        "search": "Որոնում",
+        "chooseCurrency": "Ընտրեք արժույթ",
+        "convertedTo": "Փոխարկվել է",
+        "item": "Ապրանք",
+        "loadingCurrencies": "Բեռնվում են արժույթներ…",
+        "couldntLoadCurrencies": "Չհաջողվեց բեռնել արժույթները։"
+    },
+    "converter": {
+        "midMarketRate": "Միջին շուկայական տոկոսադրույք",
+        "rateLabel": "Գնահատել՝",
+        "rateError": "Գնահատման սխալ",
+        "amount": "Գումար",
+        "convertedTo": "Փոխարկվել է",
+        "couldNotFetchRate": "Չհաջողվեց ստանալ գինը։"
+    },
+    "scan": {
+        "detectedPrices": "Հայտնաբերված գներ",
+        "noValuesDetected": "Արժեքներ չեն հայտնաբերվել։",
+        "tapValueToLoad": "Հպեք արժեքին՝ այն վերևում գտնվող փոխարկիչում բեռնելու համար։"
+    }
+}

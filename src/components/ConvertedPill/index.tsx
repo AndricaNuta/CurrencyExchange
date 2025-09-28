@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+import { useGetPairRateQuery } from '../../services/currencyApi';
 
 type Props = {
   amount: number;
@@ -43,13 +44,22 @@ const useStyles = makeStyles(t => StyleSheet.create({
 }));
 
 export function ConvertedPill({
-  amount, toCurrency, decimals,
+  amount, fromCurrency, toCurrency, decimals,
   containerStyle, textStyle, muteUnit = true, variant = 'default',
   fixedWidth, fixedHeight,
 }: Props) {
   const s = useStyles();
-  const numSize = textStyle?.fontSize ?? (variant === 'overlay' ? 14 : 14);
+  const numSize = textStyle?.fontSize ?? (variant === 'overlay' ? 13 : 14);
   const unitSize = Math.round(numSize * 0.8);
+
+  const {
+    data
+  } = useGetPairRateQuery({
+    from: fromCurrency,
+    to: toCurrency
+  });
+  const rate = data?.rate ?? 0;
+  const converted = rate ? amount * rate : 0;
   return (
     <View
       style={[
@@ -69,7 +79,7 @@ export function ConvertedPill({
       <Text style={[s.number, {
         fontSize: numSize
       }]}>
-        {amount.toFixed(decimals)}
+        {converted.toFixed(decimals)}
       </Text>
       <Text
         style={[

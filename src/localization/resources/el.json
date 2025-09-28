@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Ρυθμίσεις",
+        "section": {
+            "general": "Γενικός",
+            "defaults": "Προεπιλεγμένα Νομίσματα",
+            "notifications": "Ειδοποιήσεις",
+            "appearance": "Εμφάνιση",
+            "info": "Πληροφορίες"
+        },
+        "language": "Γλώσσα",
+        "defaultFrom": "Από",
+        "defaultTo": "Να",
+        "exchangeRateAlerts": "Ειδοποιήσεις Συναλλαγματικών Ισοτιμιών",
+        "darkMode": "Σκοτεινή λειτουργία",
+        "about": "Σχετικά με τον Μετατροπέα Νομισμάτων",
+        "version": "Εκδοχή",
+        "support": "Υποστήριξη"
+    },
+    "common": {
+        "search": "Ερευνα",
+        "chooseCurrency": "Επιλέξτε νόμισμα",
+        "convertedTo": "Μετατράπηκε σε",
+        "item": "Είδος",
+        "loadingCurrencies": "Φόρτωση νομισμάτων…",
+        "couldntLoadCurrencies": "Δεν ήταν δυνατή η φόρτωση νομισμάτων."
+    },
+    "converter": {
+        "midMarketRate": "Μεσαία τιμή αγοράς",
+        "rateLabel": "Τιμή:",
+        "rateError": "Σφάλμα τιμής",
+        "amount": "Ποσό",
+        "convertedTo": "Μετατράπηκε σε",
+        "couldNotFetchRate": "Δεν ήταν δυνατή η ανάκτηση της τιμής."
+    },
+    "scan": {
+        "detectedPrices": "Εντοπισμένες τιμές",
+        "noValuesDetected": "Δεν εντοπίστηκαν τιμές.",
+        "tapValueToLoad": "Πατήστε μια τιμή για να τη φορτώσετε στον παραπάνω μετατροπέα."
+    }
+}

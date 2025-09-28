@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Stillingar",
+        "section": {
+            "general": "Almennt",
+            "defaults": "Sjálfgefin gjaldmiðlar",
+            "notifications": "Tilkynningar",
+            "appearance": "Útlit",
+            "info": "Upplýsingar"
+        },
+        "language": "Tungumál",
+        "defaultFrom": "Frá",
+        "defaultTo": "Til",
+        "exchangeRateAlerts": "Viðvaranir um gengi",
+        "darkMode": "Dökk stilling",
+        "about": "Um gjaldmiðilsbreytir",
+        "version": "Útgáfa",
+        "support": "Stuðningur"
+    },
+    "common": {
+        "search": "Leita",
+        "chooseCurrency": "Veldu gjaldmiðil",
+        "convertedTo": "Breytt í",
+        "item": "Vara",
+        "loadingCurrencies": "Hleður gjaldmiðla…",
+        "couldntLoadCurrencies": "Ekki tókst að hlaða gjaldmiðlum."
+    },
+    "converter": {
+        "midMarketRate": "Miðlungs markaðsgengi",
+        "rateLabel": "Gefðu einkunn:",
+        "rateError": "Gjaldvilla",
+        "amount": "Upphæð",
+        "convertedTo": "Breytt í",
+        "couldNotFetchRate": "Gat ekki sótt hlutfall."
+    },
+    "scan": {
+        "detectedPrices": "Verð sem greinst hafa",
+        "noValuesDetected": "Engin gildi greind.",
+        "tapValueToLoad": "Ýttu á gildi til að hlaða því inn í breytinn hér að ofan."
+    }
+}

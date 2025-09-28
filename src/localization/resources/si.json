@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "සැකසුම්",
+        "section": {
+            "general": "ජනරාල්",
+            "defaults": "පෙරනිමි මුදල් වර්ග",
+            "notifications": "දැනුම්දීම්",
+            "appearance": "පෙනුම",
+            "info": "තොරතුරු"
+        },
+        "language": "භාෂාව",
+        "defaultFrom": "සිට",
+        "defaultTo": "වෙත",
+        "exchangeRateAlerts": "විනිමය අනුපාත ඇඟවීම්",
+        "darkMode": "අඳුරු ප්‍රකාරය",
+        "about": "මුදල් පරිවර්තකය ගැන",
+        "version": "පිටපත",
+        "support": "සහාය"
+    },
+    "common": {
+        "search": "සෙවීම",
+        "chooseCurrency": "මුදල් වර්ගය තෝරන්න",
+        "convertedTo": "පරිවර්තනය කරන ලදී",
+        "item": "අයිතමය",
+        "loadingCurrencies": "මුදල් වර්ග පූරණය වෙමින්...",
+        "couldntLoadCurrencies": "මුදල් වර්ග පූරණය කළ නොහැකි විය."
+    },
+    "converter": {
+        "midMarketRate": "මධ්‍යම-වෙළඳපොළ අනුපාතය",
+        "rateLabel": "අනුපාතය:",
+        "rateError": "ශ්‍රේණිගත කිරීමේ දෝෂය",
+        "amount": "ප්‍රමාණය",
+        "convertedTo": "පරිවර්තනය කරන ලදී",
+        "couldNotFetchRate": "අනුපාතය ලබා ගැනීමට නොහැකි විය."
+    },
+    "scan": {
+        "detectedPrices": "අනාවරණය කරගත් මිල ගණන්",
+        "noValuesDetected": "අගයන් අනාවරණය නොවීය.",
+        "tapValueToLoad": "ඉහත පරිවර්තකයට අගයක් පූරණය කිරීමට එය තට්ටු කරන්න."
+    }
+}

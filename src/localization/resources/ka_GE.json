@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "პარამეტრები",
+        "section": {
+            "general": "ზოგადი",
+            "defaults": "ნაგულისხმევი ვალუტები",
+            "notifications": "შეტყობინებები",
+            "appearance": "გარეგნობა",
+            "info": "ინფორმაცია"
+        },
+        "language": "ენა",
+        "defaultFrom": "-დან",
+        "defaultTo": "მდე",
+        "exchangeRateAlerts": "გაცვლითი კურსის შეტყობინებები",
+        "darkMode": "ბნელი რეჟიმი",
+        "about": "ვალუტის კონვერტორის შესახებ",
+        "version": "ვერსია",
+        "support": "მხარდაჭერა"
+    },
+    "common": {
+        "search": "ძიება",
+        "chooseCurrency": "აირჩიეთ ვალუტა",
+        "convertedTo": "გადაკეთებულია",
+        "item": "ნივთი",
+        "loadingCurrencies": "ვალუტები იტვირთება…",
+        "couldntLoadCurrencies": "ვალუტების ჩატვირთვა ვერ მოხერხდა."
+    },
+    "converter": {
+        "midMarketRate": "საშუალო საბაზრო კურსი",
+        "rateLabel": "შეფასება:",
+        "rateError": "შეფასების შეცდომა",
+        "amount": "თანხა",
+        "convertedTo": "გადაკეთებულია",
+        "couldNotFetchRate": "ტარიფის მოძიება ვერ მოხერხდა."
+    },
+    "scan": {
+        "detectedPrices": "აღმოჩენილი ფასები",
+        "noValuesDetected": "მნიშვნელობები ვერ იქნა აღმოჩენილი.",
+        "tapValueToLoad": "შეეხეთ მნიშვნელობას ზემოთ მოცემულ გადამყვანში ჩასატვირთად."
+    }
+}

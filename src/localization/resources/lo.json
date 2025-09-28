@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "ການຕັ້ງຄ່າ",
+        "section": {
+            "general": "ທົ່ວໄປ",
+            "defaults": "ສະກຸນເງິນເລີ່ມຕົ້ນ",
+            "notifications": "ການແຈ້ງເຕືອນ",
+            "appearance": "ຮູບລັກສະນະ",
+            "info": "ຂໍ້ມູນ"
+        },
+        "language": "ພາສາ",
+        "defaultFrom": "ຈາກ",
+        "defaultTo": "ເຖິງ",
+        "exchangeRateAlerts": "ແຈ້ງເຕືອນອັດຕາແລກປ່ຽນ",
+        "darkMode": "ໂໝດມືດ",
+        "about": "ກ່ຽວກັບການແປງສະກຸນເງິນ",
+        "version": "ຮຸ່ນ",
+        "support": "ສະຫນັບສະຫນູນ"
+    },
+    "common": {
+        "search": "ຊອກຫາ",
+        "chooseCurrency": "ເລືອກສະກຸນເງິນ",
+        "convertedTo": "ປ່ຽນເປັນ",
+        "item": "ລາຍການ",
+        "loadingCurrencies": "ກຳລັງໂຫລດສະກຸນເງິນ...",
+        "couldntLoadCurrencies": "ບໍ່ສາມາດໂຫຼດສະກຸນເງິນໄດ້."
+    },
+    "converter": {
+        "midMarketRate": "ອັດຕາຕະຫຼາດກາງ",
+        "rateLabel": "ອັດຕາ:",
+        "rateError": "ອັດຕາຄວາມຜິດພາດ",
+        "amount": "ຈໍານວນ",
+        "convertedTo": "ປ່ຽນເປັນ",
+        "couldNotFetchRate": "ບໍ່ສາມາດດຶງອັດຕາໄດ້."
+    },
+    "scan": {
+        "detectedPrices": "ລາຄາທີ່ກວດພົບ",
+        "noValuesDetected": "ບໍ່ພົບຄ່າ.",
+        "tapValueToLoad": "ແຕະຄ່າໃດໜຶ່ງເພື່ອໂຫຼດມັນໃສ່ຕົວປ່ຽນຂ້າງເທິງ."
+    }
+}

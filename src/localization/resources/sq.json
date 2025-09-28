@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Cilësimet",
+        "section": {
+            "general": "Gjeneral",
+            "defaults": "Monedhat e paracaktuara",
+            "notifications": "Njoftime",
+            "appearance": "Pamja",
+            "info": "Informacion"
+        },
+        "language": "Gjuha",
+        "defaultFrom": "Nga",
+        "defaultTo": "Për",
+        "exchangeRateAlerts": "Alarme për Kursin e Këmbimit",
+        "darkMode": "Modaliteti i errët",
+        "about": "Rreth Konvertuesit të Valutave",
+        "version": "Versioni",
+        "support": "Mbështetje"
+    },
+    "common": {
+        "search": "Kërko",
+        "chooseCurrency": "Zgjidh monedhën",
+        "convertedTo": "Konvertuar në",
+        "item": "Artikull",
+        "loadingCurrencies": "Duke ngarkuar monedhat…",
+        "couldntLoadCurrencies": "Nuk mund të ngarkoheshin monedhat."
+    },
+    "converter": {
+        "midMarketRate": "Norma mesatare e tregut",
+        "rateLabel": "Vlerësoni:",
+        "rateError": "Gabim vlerësimi",
+        "amount": "Shuma",
+        "convertedTo": "Konvertuar në",
+        "couldNotFetchRate": "Nuk mund të merrej çmimi."
+    },
+    "scan": {
+        "detectedPrices": "Çmimet e zbuluara",
+        "noValuesDetected": "Nuk u zbuluan vlera.",
+        "tapValueToLoad": "Trokit një vlerë për ta ngarkuar atë në konvertuesin më sipër."
+    }
+}

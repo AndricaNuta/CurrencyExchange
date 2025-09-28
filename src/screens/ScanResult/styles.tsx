@@ -98,7 +98,7 @@ export const useScanStyles = makeStyles(t => StyleSheet.create({
   },
 
   rowSelected: {
-    backgroundColor: alpha(t.colors.tint, 0.08),
+    backgroundColor: alpha(t.colors.highlightFill, 0.08),
     borderRadius:20,
   },
 

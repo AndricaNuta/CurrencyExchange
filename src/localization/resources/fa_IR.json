@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "تنظیمات",
+        "section": {
+            "general": "عمومی",
+            "defaults": "ارزهای پیش‌فرض",
+            "notifications": "اعلان‌ها",
+            "appearance": "ظاهر",
+            "info": "اطلاعات"
+        },
+        "language": "زبان",
+        "defaultFrom": "از",
+        "defaultTo": "به",
+        "exchangeRateAlerts": "هشدارهای نرخ ارز",
+        "darkMode": "حالت تاریک",
+        "about": "درباره مبدل ارز",
+        "version": "نسخه",
+        "support": "پشتیبانی"
+    },
+    "common": {
+        "search": "جستجو",
+        "chooseCurrency": "ارز را انتخاب کنید",
+        "convertedTo": "تبدیل شده به",
+        "item": "مورد",
+        "loadingCurrencies": "در حال بارگذاری ارزها…",
+        "couldntLoadCurrencies": "نتوانستم ارزها را بارگیری کنم."
+    },
+    "converter": {
+        "midMarketRate": "نرخ متوسط بازار",
+        "rateLabel": "نرخ:",
+        "rateError": "خطای نرخ",
+        "amount": "مبلغ",
+        "convertedTo": "تبدیل شده به",
+        "couldNotFetchRate": "نرخ را نتوانستم دریافت کنم."
+    },
+    "scan": {
+        "detectedPrices": "قیمت‌های شناسایی‌شده",
+        "noValuesDetected": "هیچ مقداری شناسایی نشد.",
+        "tapValueToLoad": "برای بارگذاری یک مقدار در مبدل بالا، روی آن ضربه بزنید."
+    }
+}

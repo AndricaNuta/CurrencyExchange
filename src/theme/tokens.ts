@@ -11,6 +11,7 @@ export type Theme = {
     muted: string;
     border: string;
     tint: string;
+    onTint: string;
     danger: string;
     success: string;
     sheetHandle: string;
@@ -22,82 +23,80 @@ export type Theme = {
     iconActive: string;
     iconDanger: string;
     iconSuccess: string;
-    iconWarning: string;           // NEW
+    iconWarning: string;
 
-    // icon backgrounds (badges / circular pills)
     iconBgDefault: string;
     iconBgMuted: string;
     iconBgAccent: string;
     iconBgDanger: string;
     iconBgSuccess: string;
-    iconBgWarning: string;         // NEW
+    iconBgWarning: string;
 
-    // text/icon color ON those backgrounds (contrast)
     onIconBgDefault: string;
     onIconBgMuted: string;
     onIconBgAccent: string;
     onIconBgDanger: string;
     onIconBgSuccess: string;
     onIconBgWarning: string;
+
+    highlightRing: string;
+    highlightTint: string;
+    highlightFill: string;
+    highlightBorder: string;
   };
   radius: { sm: number; md: number; lg: number; xl: number };
   spacing: (n: number) => number;
   shadow: { ios: any; android: { elevation: number } };
   roles: {
     settings: {
-      defaultFromIcon: { fg: keyof Theme['colors']; bg: keyof Theme['colors']; };
-      defaultToIcon:   { fg: keyof Theme['colors']; bg: keyof Theme['colors']; };
-      darkModeIcon:    { fg: keyof Theme['colors']; bg: keyof Theme['colors']; };
-      notifIcon:       { fg: keyof Theme['colors']; bg: keyof Theme['colors']; };
+      defaultFromIcon: { fg: keyof Theme['colors']; bg: keyof Theme['colors'] };
+      defaultToIcon:   { fg: keyof Theme['colors']; bg: keyof Theme['colors'] };
+      darkModeIcon:    { fg: keyof Theme['colors']; bg: keyof Theme['colors'] };
+      notifIcon:       { fg: keyof Theme['colors']; bg: keyof Theme['colors'] };
     };
   };
-
 };
 
-
+const spacing = (n: number) => n * 4;
 export const base = {
   purple: {
     primary: '#483AA0',
-    tonal:   '#7965C1',
+    tonal: '#7965C1'
   },
-  accent: '#E3D095',
-  white:  '#FFFFFF',
-  black:  '#000000',
+  white: '#FFFFFF',
+  black: '#000000',
 };
 
 export const alpha = (hex: string, a: number) => {
-  const n = parseInt(hex.replace('#', ''), 16);
+  const n = parseInt(hex.replace('#',''), 16);
   const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
   return `rgba(${r},${g},${b},${a})`;
 };
-const warningLight = '#EA580C';
-const spacing = (n: number) => n * 4;
 export const lightTheme: Theme = {
   scheme: 'light',
   colors: {
     bg: '#F7F8FA',
     surface: '#FBFAFF',
     card: '#FFFFFF',
-    text: '#1B1B23',
-    subtext: '#6F6B7E',
-    muted: '#9CA3AF',
-    border: '#E7E3F4',
+    text: '#14151A',
+    subtext: '#4B5563',
+    muted: '#6B7280',
+    border: '#E2E8F0',
     tint: base.purple.primary,
+    onTint: '#FFFFFF',
     danger: '#EF4444',
     success: '#22C55E',
     sheetHandle: '#D7D2EA',
     icon: '#1B1B23',
     navBg: '#FFFFFF',
 
-    // icon strokes
     iconDefault: '#1B1B23',
     iconMuted: '#9CA3AF',
     iconActive: base.purple.primary,
     iconDanger: '#EF4444',
     iconSuccess: '#22C55E',
-    iconWarning: warningLight,
+    iconWarning: '#EA580C',
 
-    // backgrounds (tinted chips)
     iconBgDefault: '#F1F2F6',
     iconBgMuted: '#EEF1F7',
     iconBgAccent: '#EEEAFB',
@@ -105,32 +104,37 @@ export const lightTheme: Theme = {
     iconBgSuccess: '#EAF8F0',
     iconBgWarning: '#FFF2E8',
 
-    // contrast on those bgs
     onIconBgDefault: '#1B1B23',
     onIconBgMuted: '#6F6B7E',
     onIconBgAccent: base.purple.primary,
-    onIconBgDanger: '#B91C1C',
-    onIconBgSuccess: '#166534',
-    onIconBgWarning: '#9A3412',
+    onIconBgDanger: '#7F1D1D',
+    onIconBgSuccess: '#065F46',
+    onIconBgWarning: '#7C2D12',
+
+    // highlight
+    highlightRing: '#0B0B0B',
+    highlightTint: base.purple.primary,
+    highlightFill: 'rgba(72,58,160,0.12)',
+    highlightBorder:'rgba(72,58,160,0.35)',
   },
   roles: {
     settings: {
       defaultFromIcon: {
         fg: 'iconActive',
         bg: 'iconBgAccent'
-      }, // purple accent
+      },
       defaultToIcon:   {
         fg: 'iconWarning',
         bg: 'iconBgWarning'
-      }, // orange
+      },
       darkModeIcon:    {
         fg: 'iconDefault',
         bg: 'iconBgDefault'
-      }, // neutral
+      },
       notifIcon:       {
         fg: 'iconDanger',
         bg: 'iconBgDanger'
-      },  // red
+      },
     },
   },
   radius: {
@@ -152,10 +156,9 @@ export const lightTheme: Theme = {
     },
     android: {
       elevation: 2
-    }
+    },
   },
 };
-const warningDark = '#F59E0B';
 
 export const darkTheme: Theme = {
   scheme: 'dark',
@@ -164,10 +167,11 @@ export const darkTheme: Theme = {
     surface: '#161423',
     card: '#1C1930',
     text: '#F4F3F8',
-    subtext: '#B9B3D9',
-    muted: '#8A84A8',
-    border: '#2B2743',
-    tint: base.purple.primary,
+    subtext: '#C7C2E4',
+    muted: '#9A94BD',
+    border: '#3A3553',
+    tint: base.purple.tonal,
+    onTint: '#FFFFFF',
     danger: '#F87171',
     success: '#34D399',
     sheetHandle: '#3A3553',
@@ -179,7 +183,7 @@ export const darkTheme: Theme = {
     iconActive: base.purple.tonal,
     iconDanger: '#F87171',
     iconSuccess: '#34D399',
-    iconWarning: warningDark,
+    iconWarning: '#F59E0B',
 
     iconBgDefault: '#242239',
     iconBgMuted: '#26223E',
@@ -194,6 +198,12 @@ export const darkTheme: Theme = {
     onIconBgDanger: '#FCA5A5',
     onIconBgSuccess: '#86EFAC',
     onIconBgWarning: '#FCD34D',
+
+    // highlight
+    highlightRing: '#FFFFFF',
+    highlightTint: base.purple.tonal,
+    highlightFill: 'rgba(121,101,193,0.20)',
+    highlightBorder:'rgba(121,101,193,0.65)',
   },
   roles: {
     settings: {
@@ -234,6 +244,6 @@ export const darkTheme: Theme = {
     },
     android: {
       elevation: 0
-    }
+    },
   },
 };

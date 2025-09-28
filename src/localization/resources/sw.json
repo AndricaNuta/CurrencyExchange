@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Mipangilio",
+        "section": {
+            "general": "Mkuu",
+            "defaults": "Sarafu Chaguomsingi",
+            "notifications": "Arifa",
+            "appearance": "Muonekano",
+            "info": "Habari"
+        },
+        "language": "Lugha",
+        "defaultFrom": "Kutoka",
+        "defaultTo": "Kwa",
+        "exchangeRateAlerts": "Tahadhari za Kiwango cha ubadilishaji",
+        "darkMode": "Hali ya Giza",
+        "about": "Kuhusu Kigeuzi cha Sarafu",
+        "version": "Toleo",
+        "support": "Msaada"
+    },
+    "common": {
+        "search": "Tafuta",
+        "chooseCurrency": "Chagua sarafu",
+        "convertedTo": "Imegeuzwa kuwa",
+        "item": "Kipengee",
+        "loadingCurrencies": "Inapakia sarafu...",
+        "couldntLoadCurrencies": "Haikuweza kupakia sarafu."
+    },
+    "converter": {
+        "midMarketRate": "Kiwango cha soko la kati",
+        "rateLabel": "Kadiria:",
+        "rateError": "Hitilafu ya kukadiria",
+        "amount": "Kiasi",
+        "convertedTo": "Imegeuzwa kuwa",
+        "couldNotFetchRate": "Haikuweza kuleta kiwango."
+    },
+    "scan": {
+        "detectedPrices": "Bei zilizotambuliwa",
+        "noValuesDetected": "Hakuna maadili yaliyotambuliwa.",
+        "tapValueToLoad": "Gusa thamani ili kuipakia kwenye kigeuzi kilicho hapo juu."
+    }
+}

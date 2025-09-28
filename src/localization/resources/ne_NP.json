@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "सेटिङहरू",
+        "section": {
+            "general": "सामान्य जानकारी",
+            "defaults": "पूर्वनिर्धारित मुद्राहरू",
+            "notifications": "सूचनाहरू",
+            "appearance": "उपस्थिति",
+            "info": "जानकारी"
+        },
+        "language": "भाषा",
+        "defaultFrom": "बाट",
+        "defaultTo": "लाई",
+        "exchangeRateAlerts": "विनिमय दर अलर्टहरू",
+        "darkMode": "अँध्यारो मोड",
+        "about": "मुद्रा परिवर्तकको बारेमा",
+        "version": "संस्करण",
+        "support": "सहयोग"
+    },
+    "common": {
+        "search": "खोज्नुहोस्",
+        "chooseCurrency": "मुद्रा छनौट गर्नुहोस्",
+        "convertedTo": "रूपान्तरण गरियो",
+        "item": "वस्तु",
+        "loadingCurrencies": "मुद्राहरू लोड गर्दै...",
+        "couldntLoadCurrencies": "मुद्राहरू लोड गर्न सकिएन।"
+    },
+    "converter": {
+        "midMarketRate": "मध्य-बजार दर",
+        "rateLabel": "दर:",
+        "rateError": "मूल्याङ्कन त्रुटि",
+        "amount": "रकम",
+        "convertedTo": "रूपान्तरण गरियो",
+        "couldNotFetchRate": "दर प्राप्त गर्न सकिएन।"
+    },
+    "scan": {
+        "detectedPrices": "पत्ता लागेका मूल्यहरू",
+        "noValuesDetected": "कुनै मान पत्ता लागेन।",
+        "tapValueToLoad": "माथिको कन्भर्टरमा लोड गर्न मानमा ट्याप गर्नुहोस्।"
+    }
+}

@@ -1,0 +1,42 @@
+ {
+    "welcome_header": "",
+    "settings": {
+        "title": "Cài đặt",
+        "section": {
+            "general": "Tổng quan",
+            "defaults": "Tiền tệ mặc định",
+            "notifications": "Thông báo",
+            "appearance": "Vẻ bề ngoài",
+            "info": "Thông tin"
+        },
+        "language": "Ngôn ngữ",
+        "defaultFrom": "Từ",
+        "defaultTo": "ĐẾN",
+        "exchangeRateAlerts": "Cảnh báo tỷ giá hối đoái",
+        "darkMode": "Chế độ tối",
+        "about": "Giới thiệu về Bộ chuyển đổi tiền tệ",
+        "version": "Phiên bản",
+        "support": "Ủng hộ"
+    },
+    "common": {
+        "search": "Tìm kiếm",
+        "chooseCurrency": "Chọn loại tiền tệ",
+        "convertedTo": "Đã chuyển đổi thành",
+        "item": "Mục",
+        "loadingCurrencies": "Đang tải tiền tệ…",
+        "couldntLoadCurrencies": "Không thể tải tiền tệ."
+    },
+    "converter": {
+        "midMarketRate": "Tỷ giá trung bình",
+        "rateLabel": "Tỷ lệ:",
+        "rateError": "Tỷ lệ lỗi",
+        "amount": "Số lượng",
+        "convertedTo": "Đã chuyển đổi thành",
+        "couldNotFetchRate": "Không thể lấy được tỷ giá."
+    },
+    "scan": {
+        "detectedPrices": "Giá đã phát hiện",
+        "noValuesDetected": "Không phát hiện được giá trị nào.",
+        "tapValueToLoad": "Chạm vào một giá trị để tải nó vào bộ chuyển đổi ở trên."
+    }
+}

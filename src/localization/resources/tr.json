@@ -1,0 +1,42 @@
+ {
+    "welcome_header": "",
+    "settings": {
+        "title": "Ayarlar",
+        "section": {
+            "general": "Genel",
+            "defaults": "Varsayılan Para Birimleri",
+            "notifications": "Bildirimler",
+            "appearance": "Dış görünüş",
+            "info": "Bilgi"
+        },
+        "language": "Dil",
+        "defaultFrom": "İtibaren",
+        "defaultTo": "İle",
+        "exchangeRateAlerts": "Döviz Kuru Uyarıları",
+        "darkMode": "Karanlık Mod",
+        "about": "Döviz Dönüştürücü Hakkında",
+        "version": "Sürüm",
+        "support": "Destek"
+    },
+    "common": {
+        "search": "Aramak",
+        "chooseCurrency": "Para birimini seçin",
+        "convertedTo": "Dönüştürüldü",
+        "item": "Öğe",
+        "loadingCurrencies": "Para birimleri yükleniyor…",
+        "couldntLoadCurrencies": "Para birimleri yüklenemedi."
+    },
+    "converter": {
+        "midMarketRate": "Orta piyasa oranı",
+        "rateLabel": "Oran:",
+        "rateError": "Oran hatası",
+        "amount": "Miktar",
+        "convertedTo": "Dönüştürüldü",
+        "couldNotFetchRate": "Oran alınamadı."
+    },
+    "scan": {
+        "detectedPrices": "Tespit edilen fiyatlar",
+        "noValuesDetected": "Hiçbir değer algılanmadı.",
+        "tapValueToLoad": "Yukarıdaki dönüştürücüye yüklemek için bir değere dokunun."
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "welcome_header": "",
+    "settings": {
+        "title": "Postavke",
+        "section": {
+            "general": "General",
+            "defaults": "Zadane valute",
+            "notifications": "Obavijesti",
+            "appearance": "Izgled",
+            "info": "Informacije"
+        },
+        "language": "Jezik",
+        "defaultFrom": "Iz",
+        "defaultTo": "Do",
+        "exchangeRateAlerts": "Upozorenja o tečaju",
+        "darkMode": "Tamni način rada",
+        "about": "O konverteru valuta",
+        "version": "Verzija",
+        "support": "Podrška"
+    },
+    "common": {
+        "search": "Pretraživanje",
+        "chooseCurrency": "Odaberite valutu",
+        "convertedTo": "Pretvoreno u",
+        "item": "Artikal",
+        "loadingCurrencies": "Učitavanje valuta…",
+        "couldntLoadCurrencies": "Nije moguće učitati valute."
+    },
+    "converter": {
+        "midMarketRate": "Srednja tržišna stopa",
+        "rateLabel": "Stopa:",
+        "rateError": "Pogreška brzine",
+        "amount": "Iznositi",
+        "convertedTo": "Pretvoreno u",
+        "couldNotFetchRate": "Nije moguće dohvatiti stopu."
+    },
+    "scan": {
+        "detectedPrices": "Otkrivene cijene",
+        "noValuesDetected": "Nisu otkrivene vrijednosti.",
+        "tapValueToLoad": "Dodirnite vrijednost da biste je učitali u pretvarač iznad."
+    }
+}
