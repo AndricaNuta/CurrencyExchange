@@ -1,8 +1,21 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { useGetPairRateQuery } from '../../services/currencyApi';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+
+type Props = {
+  amount: number;
+  fromCurrency: string;
+  toCurrency: string;
+  decimals: number;
+  containerStyle?: any;
+  textStyle?: any;
+  muteUnit?: boolean;
+  variant?: 'default' | 'overlay';
+  fixedWidth?: number;     // exact width
+  fixedHeight?: number;    // exact height
+  fullBleed?: boolean;
+};
 
 const useStyles = makeStyles(t => StyleSheet.create({
   pill: {
@@ -15,56 +28,61 @@ const useStyles = makeStyles(t => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    flex: 1,
+    maxWidth: '100%',
   },
-  main: {
+  number: {
     fontWeight: '700',
+    fontVariant: ['tabular-nums'],
     color: t.colors.text,
   },
-  meta: {
-    fontSize: 10,
-    color: t.colors.subtext,
-    marginLeft: 3,
+  unit: {
+    marginLeft: 5,
+    fontWeight: '600',
+    color: alpha(t.colors.text, 0.55),
   },
 }));
 
-export function ConvertedPill(props: {
-  amount: number;
-  fromCurrency: string;
-  toCurrency: string;
-  decimals: number;
-  containerStyle?: any;
-  textStyle?: any;
-}) {
-  const {
-    amount, fromCurrency, toCurrency, decimals, containerStyle, textStyle
-  } = props;
+export function ConvertedPill({
+  amount, toCurrency, decimals,
+  containerStyle, textStyle, muteUnit = true, variant = 'default',
+  fixedWidth, fixedHeight,
+}: Props) {
   const s = useStyles();
-  const {
-    data
-  } = useGetPairRateQuery({
-    from: fromCurrency,
-    to: toCurrency
-  });
-  const rate = data?.rate ?? 0;
-  const converted = rate ? amount * rate : 0;
-
+  const numSize = textStyle?.fontSize ?? (variant === 'overlay' ? 14 : 14);
+  const unitSize = Math.round(numSize * 0.8);
   return (
-    <View style={[s.pill, containerStyle]}>
-      <Text
-        style={[s.main, textStyle]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.5}
-      >
-        {rate
-          ? new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-          }).format(converted)
-          : '…'}
+    <View
+      style={[
+        s.pill,
+        variant === 'overlay' && {
+          borderRadius: 8
+        },
+        fixedWidth  != null && {
+          width: Math.round(fixedWidth)
+        },
+        fixedHeight != null && {
+          height: Math.round(fixedHeight)
+        },
+        containerStyle,
+      ]}
+    >
+      <Text style={[s.number, {
+        fontSize: numSize
+      }]}>
+        {amount.toFixed(decimals)}
       </Text>
-      <Text style={s.meta}>{toCurrency}</Text>
+      <Text
+        style={[
+          s.unit,
+          {
+            fontSize: unitSize,
+            opacity: muteUnit ? 0.6 : 1
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {toCurrency.toUpperCase()}
+      </Text>
     </View>
   );
 }

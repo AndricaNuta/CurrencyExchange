@@ -56,7 +56,11 @@ const useStyles = makeStyles(t => StyleSheet.create({
 }));
 
 export default function ScanActionsPopover(props: {
-  visible: boolean; onClose: () => void; onLive: () => void; onCamera: () => void; onGallery: () => void;
+  visible: boolean;
+  onClose: () => void;
+  onLive: () => void;
+  onCamera: () => void;
+  onGallery: () => void;
 }) {
   const {
     visible, onClose, onLive, onCamera, onGallery
@@ -65,12 +69,12 @@ export default function ScanActionsPopover(props: {
   const iconColor = s.text.color as string;
 
   const actions = [
-    {
+  /*  {
       key: 'live',
       label: 'Scan live',
       onPress: onLive,
       Icon: Radio
-    },
+   }, */
     {
       key: 'camera',
       label: 'Take photo',

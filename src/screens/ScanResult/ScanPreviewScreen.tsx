@@ -353,16 +353,16 @@ export default function ScanPreviewScreen() {
       top  = Math.max(0, top);
       const W = Math.max(0, R - left);
       const H = Math.max(0, B - top);
-
+      const boxW = W0 +10;
+      const boxH = H0;
       const pillW = Math.min(Math.max(W * 0.9, 44), Math.min(180, W - 6));
       const pillH = Math.min(Math.max(H * 0.9, 20), Math.min(44,  H - 6));
-      const font  = Math.min(Math.max(pillH * 0.42, 9), 18);
-
+      const font = Math.max(10, boxH * 0.30);
       const id = `${p.lineIndex}-${i}`;
       const isSelected = selectedId === id;
 
       const {
-        currency: parsedCurrency, value
+        currency: parsedCurrency,value
       } = parsePrice(p.text, from);
       const title = (p as any).labelText || p.lineText || t('common.item');
       const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
@@ -373,7 +373,7 @@ export default function ScanPreviewScreen() {
             onPickCandidate({
               raw: p.text,
               value,
-              currency: fromCcy,             // <- normalized
+              currency: fromCcy,
               line: title,
               label: title,
               lineIndex: p.lineIndex,
@@ -382,26 +382,22 @@ export default function ScanPreviewScreen() {
           }
           style={{
             position: 'absolute',
-            left,
-            top,
-            width: W,
-            height: H,
+            left: Math.round(left),
+            top: Math.round(top),
+            width: Math.round(boxW),
+            height: Math.round(boxH),
+            transform: [{ rotateZ: `${angle}rad` }],
             alignItems: 'center',
             justifyContent: 'center',
-            transform: [{
-              rotateZ: `${angle}rad`
-            }], // ← rotate with the text
-            borderWidth: 1,
+            borderWidth: isSelected ? 1 : 0,
             borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
-            borderRadius: 10,
+            borderRadius: 8, // small; purely visual, does not change size
           }}
           hitSlop={12}
         >
           <View
             pointerEvents="none"
             style={{
-              width: pillW,
-              height: pillH,
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -410,12 +406,12 @@ export default function ScanPreviewScreen() {
               amount={value}
               fromCurrency={(currency ?? from).toUpperCase()}
               toCurrency={to}
+              variant="overlay"
+              fixedWidth={boxW}               // <- exact width
+              fixedHeight={boxH}
               decimals={decimals}
               containerStyle={{
-                height: pillH,
-                width: pillW,
-                paddingHorizontal: Math.min(8, pillW * 0.18),
-                paddingVertical:   Math.min(4, pillH * 0.25),
+                paddingHorizontal: 10,                // ensure some minimum
                 borderRadius: pillH * 0.35,
                 backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
               }}
@@ -439,13 +435,14 @@ export default function ScanPreviewScreen() {
     const {
       left, top, width: vw, height: vh
     } = rect;
-    const pillW = Math.min(Math.max(vw * 0.9, 44), Math.min(180, vw - 6));
     const pillH = Math.min(Math.max(vh * 0.9, 20), Math.min(44,  vh - 6));
-    const font  = Math.min(Math.max(pillH * 0.42, 9), 18);
+    const content = `${value.toFixed(decimals)} ${to}`;
+    const font = Math.max(10, vh * 0.30);
+    const pillW = Math.min(200, Math.max(56, content.length * (font * 0.6)));
     const id = `${p.lineIndex}-${i}`;
     const isSelected = selectedId === id;
     const {
-      currency: parsedCurrency
+      currency: parsedCurrency,
     } = parsePrice(p.text, from);
     const title = (p as any).labelText || p.lineText || t('common.item');
     const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
@@ -456,7 +453,7 @@ export default function ScanPreviewScreen() {
           onPickCandidate({
             raw: p.text,
             value,
-            currency: fromCcy,             // <- normalized
+            currency: fromCcy,
             line: title,
             label: title,
             lineIndex: p.lineIndex,
@@ -465,23 +462,21 @@ export default function ScanPreviewScreen() {
         }
         style={{
           position: 'absolute',
-          left,
-          top,
-          width: vw,
-          height: vh,
-          borderWidth: 1,
+          left: Math.round(left),
+          top: Math.round(top),
+          width: Math.round(vw),
+          height: Math.round(vh),
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: isSelected ? 1 : 0,
           borderColor: isSelected ? alpha(theme.colors.tint, 0.9) : 'transparent',
-          borderRadius: 10,
+          borderRadius: 8,
         }}
         hitSlop={12}
       >
         <View
           pointerEvents="none"
           style={{
-            position: 'absolute',
-            left: (vw - pillW) / 2,
-            top:  (vh - pillH) / 2,
-            width: pillW,
             height: pillH,
             alignItems: 'center',
             justifyContent: 'center',
@@ -491,12 +486,14 @@ export default function ScanPreviewScreen() {
             amount={value}
             fromCurrency={(currency ?? from).toUpperCase()}
             toCurrency={to}
+            variant="overlay"
+            fixedWidth={vw}
+            fixedHeight={vh}
             decimals={decimals}
             containerStyle={{
-              height: pillH,
-              width: pillW,
-              paddingHorizontal: Math.min(8, pillW * 0.18),
-              paddingVertical:   Math.min(4, pillH * 0.25),
+              minWidth: 56,                  // ensure some minimum
+              paddingHorizontal: 10,          // stable padding
+              paddingVertical: 4,
               borderRadius: pillH * 0.35,
               backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
             }}
@@ -578,20 +575,14 @@ export default function ScanPreviewScreen() {
             />
             <View style={styles.detectedHeader}>
               <Text style={styles.detectedTitle}>
-                {/*t('scan.detectedPrices', {
-                  count: ocr?.prices?.length ?? 0
-                })*/}
-                Detected {ocr?.prices?.length} prices
+    Detected {ocr?.prices?.length ?? 0} prices
               </Text>
-              {(ocr?.prices?.length ?? 0) > 2 && (
-                <Pressable
-                  onPress={showAll ? handleSeeLess : handleSeeAll}
-                  hitSlop={8}>
-                  <Text style={styles.seeAll}>
-                    {showAll ? t('common.seeLess') : t('common.seeAll')}
-                  </Text>
+              {/*(ocr?.prices?.length ?? 0) > 2 && (
+                <Pressable onPress={showAll ? handleSeeLess : handleSeeAll}
+                  style={styles.seeAllBtn} hitSlop={8}>
+                  <Text style={styles.seeAllTxt}>{showAll ? t('common.seeLess') : t('common.seeAll')}</Text>
                 </Pressable>
-              )}
+              )*/}
             </View>
             {/*  Detected prices list (already converted)
             <Text style={styles.title}>{t('scan.detectedPrices')}</Text> */}
@@ -619,15 +610,12 @@ export default function ScanPreviewScreen() {
                         score: 1,
                       },id)
                     }
-                    style={[
-                      styles.row,
-                      isSelected && styles.rowSelected,
-                    ]}
+                    style={[styles.row, isSelected && styles.rowSelected]}
                   >
                     <View style={{
-                      width:'65%'
+                      width:'70%'
                     }}>
-                      <Text style={styles.itemTitle} numberOfLines={1}>
+                      <Text style={styles.itemTitle}numberOfLines={1}  >
                         {title}
                       </Text>
                     </View>
@@ -637,6 +625,7 @@ export default function ScanPreviewScreen() {
                       fromCurrency={fromCcy}
                       toCurrency={to}
                       decimals={decimals}
+                      muteUnit
                     />
                   </Pressable>
                 );
@@ -663,7 +652,6 @@ export default function ScanPreviewScreen() {
             modalRef.current?.dismiss();
           }}
           onDismiss={() => { setPickerOpen(false); handleDismiss(); }}
-          backdropComponent={renderBackdrop}
         />
       </View>
     </BottomSheetModalProvider>
