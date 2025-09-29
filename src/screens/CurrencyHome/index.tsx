@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
@@ -62,7 +62,7 @@ export default function CurrencyConverterScreen() {
   } = useRatesStatus(effFrom);
 
   const isOffline = online === false;
-  const isStale = typeof staleHours === 'number' && staleHours > 24;
+  //const isStale = typeof staleHours === 'number' && staleHours > 24;
   const {
     data: pair, isFetching, error: rateError
   } = useGetPairRateQuery(
@@ -181,7 +181,7 @@ export default function CurrencyConverterScreen() {
         />
 
         <View style={styles.rateRow}>
-          <Text style={styles.rateText}>
+          <Text style={styles.rateText} onPress={() => {Linking.openURL('https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html')}}>
             {t('converter.midMarketRate')}{' '} <Text style={styles.rateStrong}>
               {rate ? new Intl.NumberFormat(undefined, {
                 maximumFractionDigits: 2

@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated, Easing } from 'react-native';
 import { ChevronDown, RefreshCw } from 'react-native-feather';
-import { makeStyles } from '../../theme/ThemeProvider';
+import { makeStyles, useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
 import { SwapIcon } from '../../../assets/icons/svg';
@@ -119,6 +119,7 @@ export const CurrencySwapRow: React.FC<Props> = ({
   onOpenFrom, onOpenTo, onSwap, renderFlag,
 }) => {
   const s = useStyles();
+  const tkn = useTheme();
   const {
     t
   } = useTranslation();
@@ -194,7 +195,11 @@ export const CurrencySwapRow: React.FC<Props> = ({
                 </Text>}
             </View>
             <Text style={s.pillCode} numberOfLines={1} ellipsizeMode="tail">{from}</Text>
-            <ChevronDown pointerEvents="none" />
+            <ChevronDown
+              width={18}
+              height={18}
+              strokeWidth={2.25}
+              color={tkn.colors.iconMuted} />
           </Pressable>
 
           <TextInput
@@ -239,7 +244,11 @@ export const CurrencySwapRow: React.FC<Props> = ({
                 <Text style={s.pillCode}>{to}</Text>}
             </View>
             <Text style={s.pillCode} numberOfLines={1} ellipsizeMode="tail">{to}</Text>
-            <ChevronDown pointerEvents="none" />
+            <ChevronDown
+              width={18}
+              height={18}
+              strokeWidth={2.25}
+              color={tkn.colors.iconMuted} />
           </Pressable>
 
           <View style={s.convertedWrap}>

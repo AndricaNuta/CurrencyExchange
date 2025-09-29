@@ -44,7 +44,14 @@ export type Theme = {
     highlightFill: string;
     highlightBorder: string;
   };
-  radius: { sm: number; md: number; lg: number; xl: number };
+  radius: {
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number,
+    sheet:number,
+    pill:number };
+  typography: typeof typography;
   spacing: (n: number) => number;
   shadow: { ios: any; android: { elevation: number } };
   roles: {
@@ -55,6 +62,60 @@ export type Theme = {
       notifIcon:       { fg: keyof Theme['colors']; bg: keyof Theme['colors'] };
     };
   };
+};
+
+
+// theme/tokens.ts
+export const radius = {
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 20,
+  xl: 24,
+  sheet: 28,
+  pill: 999,         // chips, buttons, pills
+};
+
+export const typography = {
+  h1: {
+    size: 22,
+    weight: '700',
+    lineHeight: 28
+  },
+  title: {
+    size: 16,
+    weight: '700',
+    lineHeight: 22
+  },
+  body: {
+    size: 15,
+    weight: '400',
+    lineHeight: 22.5
+  },
+  caption: {
+    size: 12,
+    weight: '700',
+    lineHeight: 16,
+    letterSpacing: 0.6,
+    uppercase: true
+  },
+  numStrong: '800',
+  numStrongLarge: 40,
+};
+
+export const shadow = {
+  ios: {
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 8
+    },
+  },
+  android: {
+    elevation: 6
+  },
 };
 
 const spacing = (n: number) => n * 4;
@@ -115,7 +176,7 @@ export const lightTheme: Theme = {
     highlightRing: '#0B0B0B',
     highlightTint: base.purple.primary,
     highlightFill: 'rgba(72,58,160,0.12)',
-    highlightBorder:'rgba(72,58,160,0.35)',
+    highlightBorder: 'rgba(72,58,160,0.35)',
   },
   roles: {
     settings: {
@@ -123,15 +184,15 @@ export const lightTheme: Theme = {
         fg: 'iconActive',
         bg: 'iconBgAccent'
       },
-      defaultToIcon:   {
+      defaultToIcon: {
         fg: 'iconWarning',
         bg: 'iconBgWarning'
       },
-      darkModeIcon:    {
+      darkModeIcon: {
         fg: 'iconDefault',
         bg: 'iconBgDefault'
       },
-      notifIcon:       {
+      notifIcon: {
         fg: 'iconDanger',
         bg: 'iconBgDanger'
       },
@@ -141,7 +202,9 @@ export const lightTheme: Theme = {
     sm: 8,
     md: 12,
     lg: 16,
-    xl: 20
+    xl: 20,
+    pill: 999,
+    sheet: 28,
   },
   spacing,
   shadow: {
@@ -158,6 +221,32 @@ export const lightTheme: Theme = {
       elevation: 2
     },
   },
+  typography:   {
+    h1: {
+      size: 22,
+      weight: '700',
+      lineHeight: 28
+    },
+    title: {
+      size: 16,
+      weight: '700',
+      lineHeight: 22
+    },
+    body: {
+      size: 15,
+      weight: '400',
+      lineHeight: 22.5
+    },
+    caption: {
+      size: 12,
+      weight: '700',
+      lineHeight: 16,
+      letterSpacing: 0.6,
+      uppercase: true
+    },
+    numStrong: '800',
+    numStrongLarge: 40,
+  }
 };
 
 export const darkTheme: Theme = {
@@ -203,7 +292,7 @@ export const darkTheme: Theme = {
     highlightRing: '#FFFFFF',
     highlightTint: base.purple.tonal,
     highlightFill: 'rgba(121,101,193,0.20)',
-    highlightBorder:'rgba(121,101,193,0.65)',
+    highlightBorder: 'rgba(121,101,193,0.65)',
   },
   roles: {
     settings: {
@@ -211,15 +300,15 @@ export const darkTheme: Theme = {
         fg: 'iconActive',
         bg: 'iconBgAccent'
       },
-      defaultToIcon:   {
+      defaultToIcon: {
         fg: 'iconWarning',
         bg: 'iconBgWarning'
       },
-      darkModeIcon:    {
+      darkModeIcon: {
         fg: 'iconDefault',
         bg: 'iconBgDefault'
       },
-      notifIcon:       {
+      notifIcon: {
         fg: 'iconDanger',
         bg: 'iconBgDanger'
       },
@@ -229,7 +318,9 @@ export const darkTheme: Theme = {
     sm: 8,
     md: 12,
     lg: 16,
-    xl: 20
+    xl: 20,
+    pill: 999,
+    sheet: 28,
   },
   spacing,
   shadow: {
@@ -246,4 +337,30 @@ export const darkTheme: Theme = {
       elevation: 0
     },
   },
+  typography:   {
+    h1: {
+      size: 22,
+      weight: '700',
+      lineHeight: 28
+    },
+    title: {
+      size: 16,
+      weight: '700',
+      lineHeight: 22
+    },
+    body: {
+      size: 15,
+      weight: '400',
+      lineHeight: 22.5
+    },
+    caption: {
+      size: 12,
+      weight: '700',
+      lineHeight: 16,
+      letterSpacing: 0.6,
+      uppercase: true
+    },
+    numStrong: '800',
+    numStrongLarge: 40,
+  }
 };

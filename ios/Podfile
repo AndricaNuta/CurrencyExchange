@@ -7,12 +7,12 @@ require Pod::Executable.execute_command('node', ['-p',
 
   platform :ios, min_ios_version_supported
   prepare_react_native_project!
-  
+
   ENV['RCT_NEW_ARCH_ENABLED'] = '1'
-  
+
   target 'CurrencyCamera' do
     config = use_native_modules!
-  
+
     use_react_native!(
       :path           => config[:reactNativePath],
       :app_path       => "#{Pod::Config.instance.installation_root}/..",
@@ -20,14 +20,14 @@ require Pod::Executable.execute_command('node', ['-p',
       :fabric_enabled => true,
       :new_arch_enabled => true
     )
-  
+
     post_install do |installer|
       react_native_post_install(
         installer,
         config[:reactNativePath],
         :mac_catalyst_enabled => false,
       )
-  
+
       # Optional: reduce Xcode 16 “non-modular include” noise
       installer.pods_project.targets.each do |t|
         t.build_configurations.each do |bc|
@@ -37,4 +37,3 @@ require Pod::Executable.execute_command('node', ['-p',
       end
     end
   end
-  

@@ -4,12 +4,11 @@ import {Image,
   Text,
   View,
   Keyboard,
-  Dimensions,
-  Switch} from 'react-native';
+  Dimensions} from 'react-native';
 import {useNavigation,
   useRoute,
   type RouteProp,} from '@react-navigation/native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useScanStyles } from './styles';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
@@ -17,7 +16,7 @@ import { useGetBaseTableQuery, useGetCurrenciesQuery, useGetPairRateQuery } from
 import type { RootStackParamList } from '../../navigation/RootStackParamList';
 import type { OCRResult } from '../../types/PriceOCR';
 import type { Candidate } from '../../ocr/ocrShared';
-import { extractPrices, PriceHit } from '../../utils/extractPrices';
+import { extractPrices } from '../../utils/extractPrices';
 import { detectTextInImage } from '../../native/PriceOCR';
 import { setFrom, setTo, swap } from '../../redux/slices/exchangeSlice';
 import { parsePrice } from '../../utils/parsePrice';
@@ -36,13 +35,11 @@ import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { mapBoxContain as mapBoxToView } from '../../utils/boxMap';
 import {mapQuadToViewContain,
-  mapQuadToViewCover,
   quadMetrics,} from '../../utils/quadMap';
 import { getDetectedCurrency } from '../../utils/getDetectedCurrency';
-import Animated, { FadeIn, FadeOut, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { SelectionRing } from './SelectionRing';
-import { useThemedBackdrop } from '../../components/PickerBottomSheet/useThemedBackdrop';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -61,13 +58,12 @@ export default function ScanPreviewScreen() {
   const decimals = useSelector((s: RootState) => s.settings.decimals);
   const dispatch = useDispatch();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const priceId = (p: any) =>
-    `${p.lineIndex}|${Math.round(p.box.left)}:${Math.round(p.box.top)}|${p.text}`;
   // mini-converter local state (prefill with first detected value)
   const [miniAmt, setMiniAmt] = useState(() => {
     const first = candidates?.[0]?.value;
     return first != null ? String(first) : '';
   });
+  const idForPrice = (p: any, i: number) => `${p.lineIndex}-${i}`;
   // keep the mini amount in sync when a new image is opened
   useEffect(() => {
     const first = candidates?.[0]?.value;
@@ -101,7 +97,6 @@ export default function ScanPreviewScreen() {
 
   // OCR + overlays
   const [ocr, setOcr] = useState<OCRResult | null>(null);
-  const [hits, setHits] = useState<PriceHit[]>([]);
   const [imgLayout, setImgLayout] = useState({
     w: 0,
     h: 0
@@ -191,26 +186,16 @@ export default function ScanPreviewScreen() {
 
         if (cancelled) return;
         setOcr(res);
-        setHits(found);
       } catch (e) {
         console.warn('OCR failed', e);
         setOcr(null);
-        setHits([]);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [uri]);
-  const renderBackdrop = (props: BottomSheetBackdropProps) => (
-    <BottomSheetBackdrop
-      {...props}
-      appearsOnIndex={0}
-      disappearsOnIndex={-1}
-      opacity={0.35}      // 0.30–0.45 feels right
-      pressBehavior="close"
-    />
-  );
+
   const clamp = (v: number, min: number, max: number) =>
     Math.min(max, Math.max(min, v));
 
@@ -268,9 +253,8 @@ export default function ScanPreviewScreen() {
   );
   const minSnapPx = Math.min(...snapsPx);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  //const [showAll, setShowAll] = useState(false);
   // final available height for the image area
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const onPickCandidate = (c: Candidate, id: string) => {
     setMiniAmt(c.value.toFixed(2));
     if (c.currency && c.currency !== from) dispatch(setFrom(c.currency));
@@ -278,7 +262,7 @@ export default function ScanPreviewScreen() {
   };
   const [showOriginal, setShowOriginal] = useState(false);
   const [sheetIndex, setSheetIndex] = useState(0);
-  const handleSeeAll = () => {
+  /*const handleSeeAll = () => {
     setShowAll(true);
     // snap to the largest point to reveal the full list
     sheetRef.current?.snapToIndex(snaps.length - 1);
@@ -288,7 +272,7 @@ export default function ScanPreviewScreen() {
     setShowAll(false);
     // return to bottom (first) snap
     sheetRef.current?.snapToIndex(0);
-  };
+  };*/
 
   return (
     <BottomSheetModalProvider>
@@ -356,19 +340,16 @@ export default function ScanPreviewScreen() {
       const H0 = Math.max(h + INFLATE_PX * 2, MIN_H);
 
       let left = cx - W0 / 2;
-      let top  = cy - H0 / 2; // ❗ no yOffset in quad path
-      const R  = Math.min(left + W0, imgLayout.w);
+      let top  = cy - H0 / 2;
       const B  = Math.min(top  + H0, imgLayout.h);
       left = Math.max(0, left);
       top  = Math.max(0, top);
-      const W = Math.max(0, R - left);
       const H = Math.max(0, B - top);
       const boxW = W0 +10;
       const boxH = H0;
-      const pillW = Math.min(Math.max(W * 0.9, 44), Math.min(180, W - 6));
       const pillH = Math.min(Math.max(H * 0.9, 20), Math.min(44,  H - 6));
       const font = Math.max(10, boxH * 0.24);
-      const id = `${p.lineIndex}-${i}`;
+      const id = idForPrice(p, i);
       const isSelected = selectedId === id;
 
       const {
@@ -469,10 +450,8 @@ export default function ScanPreviewScreen() {
       left, top, width: vw, height: vh
     } = rect;
     const pillH = Math.min(Math.max(vh * 0.9, 20), Math.min(44,  vh - 6));
-    const content = `${value.toFixed(decimals)} ${to}`;
     const font = Math.max(10, vh * 0.24);
-    const pillW = Math.min(200, Math.max(56, content.length * (font * 0.6)));
-    const id = `${p.lineIndex}-${i}`;
+    const id = idForPrice(p, i);
     const isSelected = selectedId === id;
     const {
       currency: parsedCurrency,
@@ -598,6 +577,7 @@ export default function ScanPreviewScreen() {
           backgroundStyle={styles.sheetBackground}
           topInset={topGapPx}
           enableOverDrag={false}
+
         >
           <BottomSheetScrollView
             contentContainerStyle={styles.sheetContent}
@@ -633,7 +613,8 @@ export default function ScanPreviewScreen() {
               {/*(ocr?.prices?.length ?? 0) > 2 && (
                 <Pressable onPress={showAll ? handleSeeLess : handleSeeAll}
                   style={styles.seeAllBtn} hitSlop={8}>
-                  <Text style={styles.seeAllTxt}>{showAll ? t('common.seeLess') : t('common.seeAll')}</Text>
+                  <Text style={styles.seeAllTxt}>{showAll ? t('common.seeLess')
+                  : t('common.seeAll')}</Text>
                 </Pressable>
               )*/}
             </View>
@@ -647,7 +628,7 @@ export default function ScanPreviewScreen() {
                   currency: parsedCurrency, value
                 } = parsePrice(p.text, from);
                 const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
-                const id = priceId(p);
+                const id = idForPrice(p, i);
                 const isSelected = selectedId === id;
                 return (
                   <Pressable

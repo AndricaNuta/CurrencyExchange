@@ -4,7 +4,9 @@ import { makeStyles, useTheme as useAppTheme } from '../../theme/ThemeProvider';
 import { Activity, Clock, Settings } from 'react-native-feather';
 import { SwapIcon } from '../../../assets/icons/svg';
 
-const IconFor = ({ label, color }: { label: string; color: string }) => {
+const IconFor = ({
+  label, color
+}: { label: string; color: string }) => {
   switch (label) {
     case 'Converter':
       return  <SwapIcon width={20} height={20} fill={color}/>;
@@ -21,7 +23,9 @@ const useStyles = makeStyles(t => StyleSheet.create({
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingVertical: 6,
+    borderRadius: t.radius.pill
   },
   tabLabel: {
     fontSize: 12,
@@ -30,7 +34,7 @@ const useStyles = makeStyles(t => StyleSheet.create({
   },
   active: {
     color: t.colors.tint,
-    fontWeight: '600'
+    fontWeight: '700'
   },
 }));
 

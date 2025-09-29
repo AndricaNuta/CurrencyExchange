@@ -102,11 +102,14 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
         keyboardBlurBehavior="restore"
         backdropComponent={backdropComponent}
         backgroundStyle={{
-          backgroundColor: theme.colors.surface
+          backgroundColor: theme.colors.surface,
+          borderTopLeftRadius: theme.radius?.sheet ?? 28,
+          borderTopRightRadius: theme.radius?.sheet ?? 28
         }}
         handleStyle={{
           backgroundColor: theme.colors.surface,
-          borderRadius:25,
+          borderTopLeftRadius: theme.radius?.sheet ?? 28,
+          borderTopRightRadius: theme.radius?.sheet ?? 28
         }}
         handleIndicatorStyle={{
           backgroundColor: theme.colors.sheetHandle

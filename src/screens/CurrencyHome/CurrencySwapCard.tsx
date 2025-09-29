@@ -7,28 +7,24 @@ import { useTranslation } from 'react-i18next';
 import { SwapIcon } from '../../../assets/icons/svg';
 
 const useCardStyles = makeStyles((t) => ({
-  card:{ backgroundColor:t.colors.card, borderRadius:24, ...t.shadow.ios, ...t.shadow.android },
+  card:{ backgroundColor:t.colors.card, borderRadius:t.radius.xl, ...t.shadow.ios, ...t.shadow.android },
   block:{ padding:t.spacing(5) },
   blockTop:{ borderTopLeftRadius:24, borderTopRightRadius:24 },
   blockBottom:{ borderBottomLeftRadius:24, borderBottomRightRadius:24, paddingTop:t.spacing(7) },
   blockHeader:{ flexDirection:'row', alignItems:'center', justifyContent:'space-between' },
-  blockLabel:{ fontSize:15, color:t.colors.subtext, fontWeight:'600' },
-  bigInput:{ fontSize:40, fontWeight:'800', marginTop:8, paddingVertical:0, color:t.colors.text },
-  bigConverted:{ fontSize:40, fontWeight:'800', marginTop:8, color:t.colors.text },
+  blockLabel:{ fontSize:t.typography.title.size, fontWeight:t.typography.title.weight as any, color:t.colors.subtext },
+  bigInput:{ fontSize:t.typography.numStrongLarge, fontWeight:t.typography.numStrong as any, marginTop:8, paddingVertical:0, color:t.colors.text },
+  bigConverted:{ fontSize:t.typography.numStrongLarge, fontWeight:t.typography.numStrong as any, marginTop:8, color:t.colors.text },
+
   subAmount:{ marginTop:6, color:t.colors.subtext, fontSize:14 },
-  pill:{
-    flexDirection:'row', alignItems:'center',
-    backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.08) : alpha('#111827',0.06),
-    borderRadius:22, paddingHorizontal:14, height:36, gap:8,
-  },
+  pill:{ flexDirection:'row', alignItems:'center', backgroundColor: t.scheme==='dark' ? alpha('#FFFFFF',0.08) : alpha('#111827',0.06),
+             borderRadius:t.radius.pill, paddingHorizontal:14, height:36, gap:8 },
   pillFlag:{ fontSize:16 },
   pillCode:{ fontSize:14, fontWeight:'700', color:t.colors.text },
-  swapCircle:{
-    position:'absolute', alignSelf:'center', top:'40%',
-    backgroundColor:t.colors.surface, borderRadius:40, width:64, height:64,
-    alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:t.colors.border,
-    ...t.shadow.ios, ...t.shadow.android,
-  },
+  swapCircle:{ position:'absolute', alignSelf:'center', top:'40%',
+                 backgroundColor:t.colors.surface, borderRadius:999, width:64, height:64,
+                  alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:t.colors.border,
+                 ...t.shadow.ios, ...t.shadow.android },
   error:{ color:t.colors.danger, marginTop:8 },
 }));
 
@@ -97,7 +93,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           <Pressable style={s.pill} onPress={onOpenFrom} accessibilityRole="button" accessibilityLabel="Change from currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(from) : from}</Text>
             <Text style={s.pillCode}>{from}</Text>
-            <ChevronDown color={tkn.colors.iconMuted} />
+            <ChevronDown color={tkn.colors.iconMuted} width={18} height={18} strokeWidth={2.25} />
           </Pressable>
         </View>
 
@@ -130,7 +126,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           <Pressable style={s.pill} onPress={onOpenTo} accessibilityRole="button" accessibilityLabel="Change to currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(to) : to}</Text>
             <Text style={s.pillCode}>{to}</Text>
-            <ChevronDown color={tkn.colors.iconMuted} />
+            <ChevronDown color={tkn.colors.iconMuted} width={18} height={18} strokeWidth={2.25} />
           </Pressable>
         </View>
 

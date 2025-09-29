@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, Switch } from 'react-native';
+import { View, Text, Pressable, Switch, Button } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './styles';
 import { SUPPORTED, LanguageCode } from '../../localization/languages';
@@ -18,6 +18,9 @@ import { setDefaultFrom, setDefaultTo, setThemePreference } from '../../redux/sl
 import { useTheme } from '../../theme/ThemeProvider';
 import { currencyFlag } from '../../utils/currencyFlag';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
+import { LegalDialog } from './LegalModal.tsx';
+import { PermissionsCard } from './PermissionsSection/index.tsx';
+import { aboutText, privacyPolicyText, termsOfUseText } from '../../constants/text.ts';
 
 type RowProps = {
   title: string;
@@ -27,6 +30,7 @@ type RowProps = {
   iconLeft?: React.ReactNode;
   disabled?: boolean;
 };
+
 const Row = React.memo(function Row({
   title,
   subtitle,
@@ -73,6 +77,9 @@ export default function SettingsScreen() {
     themePreference
   } = useSelector((s: any) => s.settings);
   const isDark = themePreference === 'dark';
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   const onToggleDark = useCallback((v: boolean) => {
     dispatch(setThemePreference(v ? 'dark' : 'light'));
@@ -307,8 +314,43 @@ export default function SettingsScreen() {
           }
         />
       </View>
+      <Text style={styles.sectionHeader}>{t('Legal')}</Text>
+      <View style={styles.card}>
+        <Row
+          title={t('Privacy Policy')}
+          onPress={() =>setShowPrivacy(true)}
+        />
+        <View style={styles.divider} />
+        <Row
+          title={t('Terms of Use')}
+          onPress={() =>setShowTerms(true)}
+        />
+        <View style={styles.divider} />
 
-      {/* Modal (one instance) */}
+        <Row title={t('About')} onPress={() => setShowAbout(true)} />
+
+      </View>
+ {/*
+      <Text style={styles.sectionHeader}>{t('Permissions')}</Text>
+     <PermissionsCard />*/}
+      <LegalDialog
+        visible={showPrivacy}
+        title="Privacy Policy"
+        content={privacyPolicyText}
+        onClose={() => setShowPrivacy(false)}
+      />
+      <LegalDialog
+        visible={showTerms}
+        title="Terms of Use"
+        content={termsOfUseText}
+        onClose={() => setShowTerms(false)}
+      />
+      <LegalDialog
+        visible={showAbout}
+        title="About"
+        content={aboutText}
+        onClose={() => setShowAbout(false)}
+      />
       <PickerBottomSheet
         ref={modalRef}
         title={titleForMode}

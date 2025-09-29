@@ -10,23 +10,24 @@ export const useStyles = makeStyles((t) => ({
     paddingHorizontal: t.spacing(4),
   },
   screenTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: t.typography.h1.size,
+    fontWeight: t.typography.h1.weight as any,
+    lineHeight: t.typography.h1.lineHeight,
     color: t.colors.text,
-    marginBottom: t.spacing(2),
+    marginBottom: t.spacing(2)
   },
   sectionHeader: {
-    marginTop: t.spacing(4),
-    marginBottom: t.spacing(2),
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontSize: t.typography.caption.size,
+    fontWeight: t.typography.caption.weight as any,
+    letterSpacing: t.typography.caption.letterSpacing,
     textTransform: 'uppercase',
     color: t.colors.subtext,
+    marginTop: t.spacing(4),
+    marginBottom: t.spacing(2),
   },
   card: {
     backgroundColor: t.colors.card,
-    borderRadius: t.radius.lg,
+    borderRadius: t.radius.xl,
     paddingHorizontal: t.spacing(3),
     overflow: 'hidden',
     ...t.shadow.ios,
@@ -37,6 +38,7 @@ export const useStyles = makeStyles((t) => ({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: t.spacing(2),
+    borderRadius: t.radius.md,
   },
   rowPressed: {
     opacity: 0.6
