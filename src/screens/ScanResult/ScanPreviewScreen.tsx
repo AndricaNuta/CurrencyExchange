@@ -39,6 +39,10 @@ import {mapQuadToViewContain,
   mapQuadToViewCover,
   quadMetrics,} from '../../utils/quadMap';
 import { getDetectedCurrency } from '../../utils/getDetectedCurrency';
+import Animated, { FadeIn, FadeOut, withTiming } from 'react-native-reanimated';
+import { useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
+import { SelectionRing } from './SelectionRing';
+import { useThemedBackdrop } from '../../components/PickerBottomSheet/useThemedBackdrop';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -84,7 +88,12 @@ export default function ScanPreviewScreen() {
     to
   });
   const baseRate = basePair?.rate ?? 0;
-
+  const sheetAnim = useBottomSheetSpringConfigs({
+    damping: 16,
+    mass: 0.3,
+    stiffness: 220,
+    overshootClamping: false,
+  });
   // bottom sheet ref + snaps
   const sheetRef = useRef<BottomSheet>(null);
   const snaps = useMemo(() => ['24%', '48%', '86%'], []);
@@ -252,7 +261,8 @@ export default function ScanPreviewScreen() {
   };
 
   // layout math for available image height
-
+  const MAX_FRACTION = 0.85;                 // your desired max height (86%)
+  const topGapPx = Math.round(screenH * (1 - MAX_FRACTION));
   const snapsPx = snaps.map(s =>
     typeof s === 'string' && s.endsWith('%') ? (parseFloat(s) / 100) * screenH : Number(s)
   );
@@ -386,20 +396,27 @@ export default function ScanPreviewScreen() {
             top: Math.round(top),
             width: Math.round(boxW),
             height: Math.round(boxH),
-            transform: [{ rotateZ: `${angle}rad` }],
+            transform: [{
+              rotateZ: `${angle}rad`
+            }],
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: isSelected ? 2 : 0,
-            borderColor: isSelected ? theme.colors.highlightRing : 'transparent',
-            borderRadius: 8, // small; purely visual, does not change size
+
           }}
           hitSlop={12}
         >
-          <View
+          <Animated.View
             pointerEvents="none"
+            entering={FadeIn.duration(240).withInitialValues({
+              opacity: 0,
+              transform: [{
+                scale: 0.94
+              }],
+            })}
+            exiting={FadeOut.duration(150)}
             style={{
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'center'
             }}
           >
             <ConvertedPill
@@ -407,19 +424,35 @@ export default function ScanPreviewScreen() {
               fromCurrency={(currency ?? from).toUpperCase()}
               toCurrency={to}
               variant="overlay"
-              fixedWidth={boxW}               // <- exact width
+              fixedWidth={boxW}
               fixedHeight={boxH}
               decimals={decimals}
               containerStyle={{
-                paddingHorizontal: 10,                // ensure some minimum
                 borderRadius: pillH * 0.35,
-                backgroundColor: theme.scheme === 'dark' ? alpha(theme.colors.card, 0.92) : alpha('#FFFFFF', 0.96),
+                backgroundColor:
+        theme.scheme === 'dark'
+          ? alpha(theme.colors.card, 0.92)
+          : alpha('#FFFFFF', 0.96),
+
+                // LOWER elevation so it doesn't visually swallow the ring edge
+                shadowOpacity: 0.06,
+                elevation: 2,
               }}
               textStyle={{
                 fontSize: font
               }}
             />
-          </View>
+          </Animated.View>
+
+          {isSelected && (
+            <SelectionRing
+              width={boxW}
+              height={boxH}
+              radius={Math.round(pillH * 0.35)}
+              color={theme.colors.tint}
+              thickness={3}
+            />
+          )}
         </Pressable>
       );
     }
@@ -469,17 +502,34 @@ export default function ScanPreviewScreen() {
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: isSelected ? 2 : 0,
-          borderColor: isSelected ? theme.colors.highlightRing : 'transparent',
-          borderRadius: 8,
+          borderColor: isSelected ? theme.colors.tint : 'transparent',
+          // add a soft outer glow so it’s visible even on bright areas:
+          shadowColor: theme.colors.tint,
+          shadowOpacity: isSelected ? 0.25 : 0,
+          shadowRadius: 8,
+          shadowOffset: {
+            width: 0,
+            height: 2
+          },
+          elevation: isSelected ? 5 : 0,
         }}
         hitSlop={12}
       >
-        <View
+        <Animated.View
           pointerEvents="none"
+          entering={FadeIn
+            .duration(240)
+            .withInitialValues({
+              opacity: 0,
+              transform: [{
+                scale: 0.94
+              }],   // start slightly smaller
+            })
+          }
+          exiting={FadeOut.duration(150)}
           style={{
-            height: pillH,
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'center'
           }}
         >
           <ConvertedPill
@@ -501,7 +551,7 @@ export default function ScanPreviewScreen() {
               fontSize: font
             }}
           />
-        </View>
+        </Animated.View>
       </Pressable>
     );
   })
@@ -543,8 +593,11 @@ export default function ScanPreviewScreen() {
           index={0}
           snapPoints={snaps}
           handleIndicatorStyle={styles.handle}
+          animationConfigs={sheetAnim}
           style={pickerOpen ? styles.fadeBehind : null}
           backgroundStyle={styles.sheetBackground}
+          topInset={topGapPx}
+          enableOverDrag={false}
         >
           <BottomSheetScrollView
             contentContainerStyle={styles.sheetContent}
@@ -610,12 +663,24 @@ export default function ScanPreviewScreen() {
                         score: 1,
                       },id)
                     }
-                    style={[styles.row, isSelected && styles.rowSelected]}
+                    style={({
+                      pressed
+                    }) => [
+                      styles.row,
+                      isSelected && styles.rowSelected,
+                      pressed && {
+                        transform: [{
+                          scale: 0.99
+                        }],
+                        opacity: 0.95
+                      },
+                    ]}
                   >
                     <View style={{
-                      width:'70%'
+                      flex: 1,
+                      paddingRight: 10
                     }}>
-                      <Text style={styles.itemTitle}numberOfLines={1}  >
+                      <Text style={styles.itemTitle} numberOfLines={1}>
                         {title}
                       </Text>
                     </View>

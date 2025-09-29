@@ -3,10 +3,16 @@ import { StyleSheet } from 'react-native';
 import { BottomSheetBackdrop, type BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import { useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+import { BackdropPressBehavior } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 
-export const useThemedBackdrop = () => {
+type Props = { pressBehavior?: BackdropPressBehavior | undefined };
+
+export const useThemedBackdrop = (opts: Props = {}) => {
+  const {
+    pressBehavior = 'close'
+  } = opts;
   const t = useTheme();
-  const bg = alpha(t.colors.text, t.scheme === 'dark' ? 0.25 : 0.30)
+  const bg = alpha(t.colors.text, t.scheme === 'dark' ? 0.25 : 0.30);
 
   return useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -14,12 +20,12 @@ export const useThemedBackdrop = () => {
         {...props}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
-        pressBehavior="close"
+        pressBehavior={pressBehavior}
         style={[StyleSheet.absoluteFill, {
-          backgroundColor: bg
+          backgroundColor: bg,
         }]}
       />
     ),
-    [bg]
+    [bg, pressBehavior]
   );
 };

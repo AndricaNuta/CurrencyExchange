@@ -1,12 +1,13 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { makeStyles, useTheme as useAppTheme } from '../../theme/ThemeProvider';
-import { Activity, Clock, Settings, Repeat } from 'react-native-feather';
+import { Activity, Clock, Settings } from 'react-native-feather';
+import { SwapIcon } from '../../../assets/icons/svg';
 
 const IconFor = ({ label, color }: { label: string; color: string }) => {
   switch (label) {
     case 'Converter':
-      return <Repeat width={20} height={20} color={color} />;
+      return  <SwapIcon width={20} height={20} fill={color}/>;
     case 'History':
       return <Clock width={20} height={20} color={color} />;
     case 'Settings':

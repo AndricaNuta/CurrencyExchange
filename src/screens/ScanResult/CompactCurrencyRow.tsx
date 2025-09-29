@@ -4,6 +4,7 @@ import { ChevronDown, RefreshCw } from 'react-native-feather';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
+import { SwapIcon } from '../../../assets/icons/svg';
 
 type Props = {
   from: string; to: string; amount: string;
@@ -226,7 +227,7 @@ export const CurrencySwapRow: React.FC<Props> = ({
               scale: pulse
             }]
           }}>
-            <RefreshCw />
+            <SwapIcon width={25} height={25} />
           </Animated.View>
         </Pressable>
 

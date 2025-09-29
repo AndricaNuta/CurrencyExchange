@@ -62,10 +62,10 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
     }, [snapPoints, height]);
 
     const anim = useBottomSheetSpringConfigs({
-      damping: 18,
-      mass: 0.6,
-      stiffness: 450,
-      overshootClamping: true,
+      damping: 16,
+      mass: 0.3,
+      stiffness: 220,
+      overshootClamping: false,
     });
 
     const keyExtractor = useCallback((it: Item) => it.key, []);
@@ -87,6 +87,7 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
       [onSelect, styles.left, styles.row, styles.rowLabel, styles.rowPressed]
     );
     const insets = useSafeAreaInsets();
+
     return (
       <BottomSheetModal
         topInset={insets.top + 8}

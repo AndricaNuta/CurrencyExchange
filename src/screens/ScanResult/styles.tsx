@@ -98,8 +98,9 @@ export const useScanStyles = makeStyles(t => StyleSheet.create({
   },
 
   rowSelected: {
-    backgroundColor: alpha(t.colors.highlightFill, 0.08),
-    borderRadius:20,
+    borderWidth: 2,
+    borderColor: t.colors.tint, // strong purple highlight
+    shadowOpacity: 0.1, // stronger glow when selected
   },
 
   close: {
@@ -145,24 +146,33 @@ export const useScanStyles = makeStyles(t => StyleSheet.create({
     color: t.colors.text
   },
   row: {
-    minHeight: 56,
-    paddingVertical: 10,
-    paddingHorizontal: t.spacing(3),
+    minHeight: 64,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent:'space-between',
-    gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,              // << light line
-    borderBottomColor: alpha(t.colors.text, 0.08),
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    marginVertical: 6,
+
+    backgroundColor: t.colors.card,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    elevation: 2,
   },
   itemTitle: {
-    fontSize: 16.5,
+    fontSize: 16,
     fontWeight: '600',
     color: t.colors.text,
   },
   priceWrap: {
     flexGrow: 1,
-    alignItems: 'flex-end',                                   // << right aligned
+    alignItems: 'flex-end',
   },
   meta: {
     fontSize: 12,

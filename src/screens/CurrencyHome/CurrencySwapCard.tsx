@@ -4,6 +4,7 @@ import { ChevronDown, RefreshCw } from 'react-native-feather';
 import { makeStyles, useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
+import { SwapIcon } from '../../../assets/icons/svg';
 
 const useCardStyles = makeStyles((t) => ({
   card:{ backgroundColor:t.colors.card, borderRadius:24, ...t.shadow.ios, ...t.shadow.android },
@@ -119,7 +120,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
         disabled={animating}
       >
         <Animated.View style={{ transform: [{ rotate: rotation }, { scale: pulse }] }}>
-          <RefreshCw color={tkn.colors.iconActive} />
+          <SwapIcon width={40} height={40} fill={tkn.colors.iconActive}/>
         </Animated.View>
       </Pressable>
 
