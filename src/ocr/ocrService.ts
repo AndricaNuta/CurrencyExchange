@@ -1,6 +1,7 @@
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import TextRecognition from 'react-native-text-recognition';
 import { detectPriceCandidatesWithLabels, normalizeForOCR, type Candidate } from './ocrShared';
+import { Platform } from 'react-native';
 
 export type OCRPickResult = {
     candidates: Candidate[];
@@ -43,6 +44,11 @@ export async function captureWithCamera(
     saveToPhotos: false,
     cameraType: 'back',
     presentationStyle: 'fullScreen',
+    ...Platform.select({
+      ios: {
+        skipProcessing: true
+      }
+    })
   });
   const asset = res?.assets?.[0];
   if (!asset?.uri) return null;

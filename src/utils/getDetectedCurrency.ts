@@ -1,7 +1,13 @@
+import type { OCRPrice } from '../types/PriceOCR';
+
 export function getDetectedCurrency(
-  p: { currencyCode?: string },
-  parsed?: string,
-  fallback?: string
+  p: OCRPrice,
+  parsedFallback: string | undefined,
+  fromFallback: string
 ) {
-  return (p.currencyCode || parsed || fallback || '').toUpperCase();
+  return (p.currencyCode ??
+          (p as any).rawCurrency ??
+          parsedFallback ??
+          (p as any).currencyDefault ??
+          fromFallback).toUpperCase();
 }

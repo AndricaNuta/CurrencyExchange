@@ -13,10 +13,6 @@ RCT_EXTERN_METHOD(detectTextInImage:(NSString *)uri
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(detectTextInImageLive:(NSString *)uri
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
 + (BOOL)requiresMainQueueSetup { return NO; }
 
 @end

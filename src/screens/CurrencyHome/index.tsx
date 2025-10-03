@@ -174,8 +174,8 @@ export default function CurrencyConverterScreen() {
           rate={rate}
           isFetching={isFetching}
           rateError={!!rateError}
-          onOpenFrom={() => presentMode('from')}
-          onOpenTo={() => presentMode('to')}
+          onOpenFrom={() => { Keyboard.dismiss(); presentMode('from')}}
+          onOpenTo={() => {  Keyboard.dismiss(); presentMode('to')}}
           onSwap={() => dispatch(swap())}
           renderFlag={(code) => <Text>{currencyFlag(code)}</Text>}
         />

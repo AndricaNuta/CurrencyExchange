@@ -40,6 +40,8 @@ import { getDetectedCurrency } from '../../utils/getDetectedCurrency';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { SelectionRing } from './SelectionRing';
+import { canonicalCurrency } from '../../types/currency-alias';
+import { valueAndCurrencyFromNative } from '../../utils/price-from-native';
 
 export default function ScanPreviewScreen() {
   const nav = useNavigation();
@@ -165,6 +167,8 @@ export default function ScanPreviewScreen() {
     (async () => {
       try {
         const res = await detectTextInImage(uri);
+        console.log('res', res);
+
         console.log('OCR result:', {
           img: {
             w: res.width,
@@ -244,6 +248,18 @@ export default function ScanPreviewScreen() {
       height: H
     };
   };
+  // in ScanPreviewScreen
+  const pageDefault = useMemo(() => {
+    const counts = new Map<string, number>();
+    (ocr?.prices ?? []).forEach(p => {
+      const c = canonicalCurrency(p.currencyCode || p.rawCurrency);
+      if (c) counts.set(c, (counts.get(c) ?? 0) + 1);
+    });
+    let best: string | undefined;
+    let max = 0;
+    counts.forEach((n, k) => { if (n > max) { max = n; best = k; } });
+    return best;
+  }, [ocr]);
 
   // layout math for available image height
   const MAX_FRACTION = 0.85;                 // your desired max height (86%)
@@ -311,10 +327,6 @@ export default function ScanPreviewScreen() {
       (p.quad as any).bottomLeft &&
       (p.quad as any).bottomRight;
 
-    const {
-      currency, value
-    } = parsePrice(p.text, from);
-
     const INFLATE_PX = 6;
     const MIN_W = 56;
     const MIN_H = 28;
@@ -353,10 +365,11 @@ export default function ScanPreviewScreen() {
       const isSelected = selectedId === id;
 
       const {
-        currency: parsedCurrency,value
-      } = parsePrice(p.text, from);
+        value, currency: fromCcy
+      } =
+      valueAndCurrencyFromNative(p, from, pageDefault);
       const title = (p as any).labelText || p.lineText || t('common.item');
-      const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
+      // const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
       return (
         <Pressable
           key={id}
@@ -402,7 +415,7 @@ export default function ScanPreviewScreen() {
           >
             <ConvertedPill
               amount={value}
-              fromCurrency={(currency ?? from).toUpperCase()}
+              fromCurrency={fromCcy}
               toCurrency={to}
               variant="overlay"
               fixedWidth={boxW}
@@ -454,10 +467,11 @@ export default function ScanPreviewScreen() {
     const id = idForPrice(p, i);
     const isSelected = selectedId === id;
     const {
-      currency: parsedCurrency,
-    } = parsePrice(p.text, from);
+      value, currency: fromCcy
+    } =
+    valueAndCurrencyFromNative(p, from, pageDefault);
     const title = (p as any).labelText || p.lineText || t('common.item');
-    const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
+    //const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
     return (
       <Pressable
         key={id}
@@ -513,7 +527,7 @@ export default function ScanPreviewScreen() {
         >
           <ConvertedPill
             amount={value}
-            fromCurrency={(currency ?? from).toUpperCase()}
+            fromCurrency={fromCcy}
             toCurrency={to}
             variant="overlay"
             fixedWidth={vw}
@@ -625,9 +639,10 @@ export default function ScanPreviewScreen() {
 
                 const title = (p as any).labelText || p.lineText || t('common.item');
                 const {
-                  currency: parsedCurrency, value
-                } = parsePrice(p.text, from);
-                const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
+                  value, currency: fromCcy
+                } =
+                valueAndCurrencyFromNative(p, from, pageDefault);
+                //const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
                 const id = idForPrice(p, i);
                 const isSelected = selectedId === id;
                 return (

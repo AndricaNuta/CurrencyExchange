@@ -65,13 +65,13 @@ export function ConvertedPill({
   const numSize = textStyle?.fontSize ?? (variant === 'overlay' ? 13 : 14);
   const unitSize = Math.round(numSize * 0.8);
 
-  const {
-    data
-  } = useGetPairRateQuery({
+  const pair =  useGetPairRateQuery({
     from: fromCurrency,
     to: toCurrency
   });
-  const rate = data?.rate ?? 0;
+  if (!pair.data?.rate) return null;
+
+  const rate = pair.data?.rate ?? 0;
   const converted = rate ? amount * rate : 0;
   return (
     <View

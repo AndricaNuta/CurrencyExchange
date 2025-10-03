@@ -1,3 +1,4 @@
+import { Image } from 'react-native';
 import ImageResizer from 'react-native-image-resizer';
 
 export type Candidate = {
@@ -105,24 +106,64 @@ export function detectPriceCandidatesWithLabels(lines: string[]): Candidate[] {
   return [...map.values()].sort((a, b) => b.score - a.score);
 }
 
+async function getImageSize(uri: string):
+Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    Image.getSize(
+      uri,
+      (w, h) => resolve({
+        width: w,
+        height: h
+      }),
+      (e) => reject(e)
+    );
+  });
+}
+
 export async function normalizeForOCR(
   asset: { uri: string; width?: number; height?: number },
   maxDim = 2048,
   minDim = 1200
 ) {
-  const w = asset.width ?? maxDim;
-  const h = asset.height ?? maxDim;
-  const minSide = Math.min(w, h);
-  const targetMin = Math.max(minSide, minDim);
-  const scale = targetMin / minSide;
-  const targetW = Math.round(w * scale);
-  const targetH = Math.round(h * scale);
+  let width = asset.width ?? 0;
+  let height = asset.height ?? 0;
+  if (!width || !height) {
+    try {
+      const s = await getImageSize(asset.uri);
+      width = s.width; height = s.height;
+    } catch {
+      // last resort: don’t resize at all if we can’t measure
+      return {
+        uri: asset.uri,
+        width: width || maxDim,
+        height: height || maxDim
+      };
+    }
+  }
+
+  const minSide = Math.min(width, height);
+  const scaleUp = Math.max(1, minDim / minSide);
+  const scaledW = Math.round(width * scaleUp);
+  const scaledH = Math.round(height * scaleUp);
+  const cap = Math.max(scaledW, scaledH) > maxDim ?
+    maxDim / Math.max(scaledW, scaledH) : 1;
+  const targetW = Math.round(scaledW * cap);
+  const targetH = Math.round(scaledH * cap);
 
   const out = await ImageResizer.createResizedImage(
-    asset.uri, targetW, targetH, 'JPEG', 92, 0, undefined, false, {
+    asset.uri,
+    targetW,
+    targetH,
+    'JPEG',
+    92,
+    0,
+    undefined,
+    false,
+    {
       onlyScaleDown: false
     }
   );
+
   return {
     uri: out.uri,
     width: out.width,
