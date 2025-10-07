@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated, Easing } from 'react-native';
-import { ChevronDown, RefreshCw } from 'react-native-feather';
+import { Bell, ChevronDown, RefreshCw, Star } from 'react-native-feather';
 import { makeStyles, useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
@@ -142,7 +142,19 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
             <Text style={s.subAmount}>{fmt(converted, to, decimals)}</Text>
           </>
         )}
+        <View style={{flexDirection:'row', gap:10, alignSelf:'flex-end'}}>
+        <Pressable hitSlop={8} accessibilityLabel="Open alerts">
+              <Bell width={25} height={25}/>
+            </Pressable>
+            <Pressable  hitSlop={8} accessibilityLabel="Toggle favorite">
+              <Star
+                width={25} height={25}
+                 />
+            </Pressable>
+        </View>
+
       </View>
+
     </View>
   );
 };

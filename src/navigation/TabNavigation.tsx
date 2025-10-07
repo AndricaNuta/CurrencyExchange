@@ -14,6 +14,7 @@ import { makeStyles, useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { alpha } from '../theme/tokens';
 import ScanRadialMenu from '../components/ScanRadialMenu';
 import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopover';
+import WatchlistScreen from '../screens/Watchlist';
 
 const {
   width: SCREEN_W
@@ -107,6 +108,14 @@ export default function TabNavigation() {
           name="Settings"
           position="RIGHT"
           component={SettingsScreen}
+          options={{
+            headerShown: false
+          }}
+        />
+        <CurvedBottomBar.Screen
+          name="Watchlist"
+          position="LEFT"
+          component={WatchlistScreen}
           options={{
             headerShown: false
           }}

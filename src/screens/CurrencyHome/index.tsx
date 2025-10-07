@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking, Pressable } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
@@ -17,6 +17,9 @@ import { useConnectivity } from '../../hooks/useConnectivity';
 import { useRatesStatus } from '../../hooks/useRatesStatus';
 import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
+import { toggleFavorite } from '../../redux/slices/favoritesSlice';
+import { Bell, Star } from 'react-native-feather';
+import { SmartAlertInline } from './AlertsBottomSheet';
 
 const nowDate = () => {
   const d = new Date();
@@ -37,7 +40,6 @@ export default function CurrencyConverterScreen() {
   const {
     defaultFrom, defaultTo, decimals
   } = useSelector((s: RootState) => s.settings);
-
   useEffect(() => {
     if (!initialized) dispatch(resetToDefaults());
   }, [initialized, dispatch]);
@@ -127,6 +129,30 @@ export default function CurrencyConverterScreen() {
     }
   }, [route?.params?.preset, dispatch]);
 
+  const favItems = useSelector((s: RootState) => s.favorites.items);
+  const isFav = !!favItems[`${effFrom}-${effTo}`];
+
+  // NEW: popup ref + helpers
+  const alertsRef = useRef<AlertsPopupRef>(null);
+  const openAlerts = () => alertsRef.current?.open();
+  const closeAlerts = () => alertsRef.current?.close();
+
+  const onToggleFav = () => {
+    // if not favorite yet -> add & open alerts popup
+    if (!isFav) {
+      dispatch(toggleFavorite({
+        base: effFrom,
+        quote: effTo
+      }));
+      setTimeout(openAlerts, 0);
+    } else {
+      dispatch(toggleFavorite({
+        base: effFrom,
+        quote: effTo
+      }));
+    }
+  };
+
   const rate = pair?.rate ?? 0;
 
   const sheetTitle =
@@ -181,16 +207,35 @@ export default function CurrencyConverterScreen() {
         />
 
         <View style={styles.rateRow}>
-          <Text style={styles.rateText} onPress={() => {Linking.openURL('https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html')}}>
-            {t('converter.midMarketRate')}{' '} <Text style={styles.rateStrong}>
-              {rate ? new Intl.NumberFormat(undefined, {
+          <Text style={styles.rateText} onPress={() => { Linking.openURL('https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html') }}>
+            {t('converter.midMarketRate')}{' '}
+            <Text style={styles.rateStrong}>
+              {rate ? new Intl.NumberFormat(undefined,{
                 maximumFractionDigits: 2
               }).format(rate) : '—'}
             </Text>{' '}
             {effTo}
           </Text>
-          <View style={styles.timePill}>
-            <Text style={styles.timeTxt}>{nowDate()}</Text>
+
+          <View style={{
+            flexDirection:'row',
+            alignItems:'center',
+            gap:12
+          }}>
+            <Pressable onPress={openAlerts} hitSlop={8} accessibilityLabel="Open alerts">
+              <Bell width={20} height={20} color={theme.colors.iconMuted}/>
+            </Pressable>
+            <Pressable onPress={onToggleFav} hitSlop={8} accessibilityLabel="Toggle favorite">
+              <Star
+                width={20}
+                height={20}
+                color={isFav ? theme.colors.iconActive : theme.colors.iconMuted}
+                fill={isFav ? theme.colors.iconActive : 'transparent'} />
+            </Pressable>
+            <View style={styles.timePill}>
+              <Text style={styles.timeTxt}>{nowDate()}
+              </Text>
+            </View>
           </View>
         </View>
         <View style={{
@@ -267,6 +312,7 @@ export default function CurrencyConverterScreen() {
         </View>
       )}
 */}
+
         <PickerBottomSheet
           ref={modalRef}
           title={sheetTitle}
@@ -280,6 +326,7 @@ export default function CurrencyConverterScreen() {
           }}
           onDismiss={handleDismiss}
         />
+
       </View>
     </TouchableWithoutFeedback>
   );

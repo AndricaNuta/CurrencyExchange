@@ -3,6 +3,7 @@ import type { RootState } from '../redux/store';
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 export type CurrencyMap = Record<string, string>;
+export type HistoryPoint = { date: string; rate: number };
 
 export interface LatestResponse {
   base: string;
@@ -12,6 +13,12 @@ export interface LatestResponse {
 
 type PairRate = { rate: number; date: string };
 type PairArg  = { from: string; to: string };
+type HistoryArgs = {
+  from: string;
+  to: string;
+  start: string; // YYYY-MM-DD
+  end: string;   // YYYY-MM-DD
+};
 
 // Convenience for queryFn return
 type QueryOk<T>  = { data: T };
@@ -129,11 +136,33 @@ export const currencyApi = createApi({
       },
       keepUnusedDataFor: 60 * 5,
     }),
+    getHistoryRange: builder.query<HistoryPoint[], HistoryArgs>({
+      query: ({
+        from, to, start, end
+      }) =>
+        `${start}..${end}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      transformResponse: (resp: {
+        rates: Record<string, Record<string, number>> }, _meta, arg) => {
+        const rates = resp?.rates ?? {};
+        const points = Object.keys(rates)
+          .sort() // ascending by date
+          .map((d) => ({
+            date: d,
+            rate: Number(rates[d]?.[arg.to]),
+          }))
+          .filter((p) => Number.isFinite(p.rate));
+        return points;
+      },
+      keepUnusedDataFor: 60 * 30, // cache 30min
+    }),
   }),
+
+
 });
 
 export const {
   useGetCurrenciesQuery,
   useGetBaseTableQuery,
   useGetPairRateQuery,
+  useGetHistoryRangeQuery
 } = currencyApi;

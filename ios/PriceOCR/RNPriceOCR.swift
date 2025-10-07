@@ -132,6 +132,21 @@ class RNPriceOCR: NSObject {
     dbg("      ✗ drop: quantity segment (price / qty)");
     return
   }
+  let leftN  = normalizeCtx(beforeCtx)
+let rightN = normalizeCtx(afterCtx)
+
+// Do NOT drop just because there's a unit on the LEFT.
+// That pattern is typical: "0.5L 1840"
+let dropForUnitOrPctOrABV =
+    unitTokenRightAfter(rightN)          // "330 ml" → drop
+ || percentNearbyRight(rightN)           // "... 5.5 %"
+ || percentNearbyRight(leftN)            // rare but safe
+ || abvTokenNearby(leftN, rightN)        // ABV/vol markers
+
+if dropForUnitOrPctOrABV && !unitSlashBeforePrice(leftN) {
+  dbg("      ✗ drop: unit/%/ABV neighbor")
+  return
+}
   // Currency detection: inside match, near original range, in contexts, or anywhere on the line
   func firstCurrency(_ s: String) -> String? {
     guard let hit = CURRENCY_NEARBY_REGEX.firstMatch(
@@ -154,19 +169,43 @@ dbg("      currency: \(hasCurrency ? (normC!) : "none") in “\(priceText)”")
 
 // Bare-number plausibility only when we truly have no currency anywhere
 if !hasCurrency {
-  if isWholeMatch(NONPRICE_WHOLE_REGEX, in: priceText) { dbg("      ✗ drop: NONPRICE_WHOLE"); return }
-  let ignoreOnOrig = ignoredRanges(in: cand.string)
-  if intersectsAny(origRange, ignoreOnOrig) { dbg("      ✗ drop: intersects ignored span"); return }
+let unitBeforeBare = unitTokenLeftBefore(leftN) || unitSlashBeforePrice(beforeCtx)
+let leaderAdj      = hasLeaderOrDashAdjacent(rightContext: afterCtx)
 
+// Keep “year-looking” numbers if there’s a left-side unit (0.5L 1960) or a leader/dash
+let looksLikeYear = priceText.range(of: #"(?<!\d)(?:19|20)\d{2}(?!\d)"#, options: .regularExpression) != nil
+if !looksLikeYear && isWholeMatch(NONPRICE_WHOLE_REGEX, in: priceText) && !unitBeforeBare && !leaderAdj {
+  dbg("      ✗ drop: NONPRICE_WHOLE")
+  return
+}
+if looksLikeYear { dbg("      keep(year): \(priceText)") }
+
+  let ignoreOnOrig = ignoredRanges(in: cand.string)
+let unitAfter  = unitTokenRightAfter(afterCtx)
+let pctAfter   = percentImmediatelyAfter(rightContext: afterCtx)
+let abvL = beforeCtx.range(of: #"(?i)\b(alc|alco?ol|abv|vol)\b\s*$"#, options: .regularExpression) != nil
+let abvR = afterCtx.range(of:  #"(?i)^\s*\b(alc|alco?ol|abv|vol)\b"#,  options: .regularExpression) != nil
+
+// Keep numbers that follow a left-side unit, e.g., "0.5L 1840"
+if (unitAfter || pctAfter || abvL || abvR) && !unitSlashBeforePrice(beforeCtx) {
+  dbg("      ✗ drop: unit/%/ABV neighbor");
+  return
+}
+if intersectsAny(origRange, ignoreOnOrig) {
+  if !unitSlashBeforePrice(beforeCtx) {
+    dbg("      ✗ drop: intersects ignored span");
+    return
+  }
+}
   // NOTE: remove 'rightHalf' from the keep condition (see function below)
-  if !looksLikeBarePrice(priceText: priceText,
+  /*if !looksLikeBarePrice(priceText: priceText,
                          fullLineText: cand.string,
                          ns: ns,
                          match: m,
                          lineRect: o.boundingBox,
                          priceRect: priceRect,
                          leftContext: beforeCtx,
-                         rightContext: afterCtx) { return }
+                         rightContext: afterCtx) { return }*/
 }
 
 
@@ -216,25 +255,24 @@ for i in 0..<prices.count {
   if prices[i]["currencyCode"] == nil {
     let t = (prices[i]["text"] as? String) ?? ""
     let line = (prices[i]["lineText"] as? String) ?? ""
-if let raw = currencyAnywhere(in: t) {
-  prices[i]["rawCurrency"] = raw
+    if let raw = currencyAnywhere(in: t) ?? currencyAnywhere(in: line) {
+      prices[i]["rawCurrency"]  = raw
       prices[i]["currencyCode"] = normalizeCurrency(raw)
-      dbg("  currency-safety: attached \(prices[i]["currencyCode"]!) to “\(t)”")
     }
   }
 }
-      }
-      let pageHasCurrency = prices.contains { $0["currencyCode"] != nil }
 
-       // for each line
-if STRICT_CURRENCY_GATE {
-  if pageHasCurrency {
-    // current behavior when we clearly see currency anywhere
-    gateBareNumbersWhenCurrencyPresent(lines: lines, prices: &prices)
-  } else {
-    // new: align/prune bare numbers into a plausible price column
-    keepBareNumbersWhenNoCurrencyPresent(lines: lines, prices: &prices)
-  }
+// 2) Decide once: are there currencies on the page?
+let pageHasCurrency = prices.contains { $0["currencyCode"] != nil }
+
+// 3) Branch the policy
+ if pageHasCurrency {
+  // We have currency on the page → keep currency hits and allow aligned/leader/decimal bare ones.
+  gateBareNumbersWhenCurrencyPresent(lines: lines, prices: &prices)
+ } else {
+  // No currency anywhere → find right-side price columns across one or more clusters.
+   keepBareNumbersWhenNoCurrencyPresent_V2(lines: lines, prices: &prices)
+ }
 }
       // Post-pair orphan labels (pass 1: strict thresholds)
       postPairOrphanLabels(lines: &lines, prices: &prices,
@@ -404,7 +442,22 @@ private func gateBareNumbersWhenCurrencyPresent(lines: [[String: Any]],
     // ALIGNMENT: if we have a currency column, bare integers must live in it
     // i.e., be close to the rightmost column or have leader/decimals.
     let alignedWithRightColumn = abs(mx - rightMostColumnX) <= band || mx >= (rightMostColumnX - 0.02)
+    // Never allow unit/%/ABV neighbors even when currency exists
+    func squishRepeats(_ s: String) -> String {
+      return s.replacingOccurrences(of: #"(.)\1{1,}"#, with: "$1", options: .regularExpression)
+    }
+    let leftCtx  = squishRepeats((p["leftCtx"]  as? String) ?? "")
+    let rightCtx = squishRepeats((p["rightCtx"] as? String) ?? "")
 
+    let unitish = unitTokenRightAfter(rightCtx) || unitTokenLeftBefore(leftCtx)
+    let pctish  = percentImmediatelyAfter(rightContext: rightCtx)
+    let abvish  =
+      leftCtx.range(of: #"(?i)\b(alc|alco?ol|abv|vol)\b\s*$"#, options: .regularExpression) != nil ||
+      rightCtx.range(of: #"(?i)^\s*\b(alc|alco?ol|abv|vol)\b"#, options: .regularExpression) != nil
+
+    if (unitish || pctish || abvish) && !unitSlashBeforePrice(leftCtx) {
+      return false
+    }
     let keep = hasDec2 || leaderOnLine || alignedWithRightColumn
     if !keep { dbg("      ✗ gate(drop bare/alignment): \(text) @ \(String(format: "%.3f", mx)) not near right col \(String(format: "%.3f", rightMostColumnX))") }
     return keep
@@ -413,6 +466,155 @@ private func gateBareNumbersWhenCurrencyPresent(lines: [[String: Any]],
 /// When no currency tokens are present anywhere on the page,
 /// keep bare numbers that form a right-side price column.
 /// Decimals and dotted leaders always keep; misaligned strays drop.
+/// When no currency tokens are present anywhere on the page,
+/// keep bare numbers that form a right-side price column across rows.
+/// Accept clusters that (a) show price-like signals OR (b) are clearly a right column.
+private func keepBareNumbersWhenNoCurrencyPresent_V2(
+  lines: [[String: Any]],
+  prices: inout [[String: Any]]
+) {
+  func toRect(_ box: [String: Any]) -> CGRect {
+    let x = box["x"] as! CGFloat, yTL = box["y"] as! CGFloat
+    let w = box["width"] as! CGFloat, h = box["height"] as! CGFloat
+    // Vision-space (BL origin) for geometry ops
+    return CGRect(x: x, y: 1.0 - yTL - h, width: w, height: h)
+  }
+  func vertOverlap(_ a: CGRect, _ b: CGRect) -> CGFloat {
+    let y1 = max(a.minY, b.minY), y2 = min(a.maxY, b.maxY)
+    return max(0, y2 - y1) / max(1e-6, min(a.height, b.height))
+  }
+  func isPriceLine(_ text: String) -> Bool {
+    return PRICE_LAX_REGEX.firstMatch(in: text, options: [],
+      range: NSRange(location: 0, length: (text as NSString).length)) != nil
+  }
+
+  typealias Item = (
+    idx: Int,
+    mx: CGFloat,
+    rect: CGRect,
+    leftCtx: String,
+    rightCtx: String,
+    lineText: String,
+    text: String,
+    hasInlineLabel: Bool,
+    hasLeftTextNeighbor: Bool
+  )
+
+  // Precompute Vision rects for all lines to detect left neighbors
+  struct L { let rect: CGRect; let text: String }
+  let allLineRects: [L] = lines.compactMap { l in
+    guard let b = l["box"] as? [String:Any],
+          let t = l["text"] as? String else { return nil }
+    return L(rect: toRect(b), text: t)
+  }
+
+  var bare: [Item] = []
+  for (i,p) in prices.enumerated() {
+    guard p["currencyCode"] == nil,
+          let box  = p["box"] as? [String:Any],
+          let line = p["lineText"] as? String,
+          let text = p["text"] as? String else { continue }
+
+    let rect = toRect(box)
+    let left  = (p["leftCtx"] as? String)  ?? ""
+    let right = (p["rightCtx"] as? String) ?? ""
+    let hasInline = ((p["labelText"] as? String)?
+      .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+
+    // Detect a non-price line to the LEFT on the same row (vertical overlap)
+    let hasLeftNeighbor: Bool = allLineRects.contains { Lr in
+      guard !Lr.text.isEmpty, !isPriceLine(Lr.text) else { return false }
+      // left of the price and overlapping vertically
+      return Lr.rect.maxX <= rect.minX + 0.004 && vertOverlap(Lr.rect, rect) >= 0.45
+    }
+let unitRight = unitTokenRightAfter(right)
+let pctRight  = percentImmediatelyAfter(rightContext: right)
+let abvL = left.range(of: #"(?i)\b(alc|alco?ol|abv|vol)\b\s*$"#, options: .regularExpression) != nil
+let abvR = right.range(of: #"(?i)^\s*\b(alc|alco?ol|abv|vol)\b"#, options: .regularExpression) != nil
+
+if (unitRight || pctRight || abvL || abvR) && !unitSlashBeforePrice(left) {
+  continue
+}
+    bare.append((i, rect.midX, rect, left, right, line, text, hasInline, hasLeftNeighbor))
+  }
+  guard bare.count >= 3 else { return }
+
+  // --- Cluster by horizontal midX (multiple columns supported) ---
+let eps: CGFloat = 0.040
+let sorted = bare.sorted { $0.mx < $1.mx }
+var clusters: [[Item]] = []
+var cur: [Item] = []
+for b in sorted {
+  if cur.isEmpty || (b.mx - cur.last!.mx) <= eps { cur.append(b) }
+  else { clusters.append(cur); cur = [b] }
+}
+if !cur.isEmpty { clusters.append(cur) }
+
+
+// If a cluster looks wide/bimodal, split it by the largest gap.
+func splitIfBimodal(_ c: [Item]) -> [[Item]] {
+  guard c.count >= 4 else { return [c] }
+  let s = c.sorted { $0.mx < $1.mx }
+  var bestGap: CGFloat = 0; var idx = -1
+  for i in 0..<(s.count - 1) {
+    let g = s[i+1].mx - s[i].mx
+    if g > bestGap { bestGap = g; idx = i }
+  }
+  guard idx >= 0, bestGap >= 0.02 else { return [s] } // twin columns ~0.02–0.04
+  return [Array(s[...idx]), Array(s[(idx+1)...])]
+}
+
+
+
+// ONE split pass only (was done twice before)
+let splitClusters = clusters.flatMap(splitIfBimodal)
+
+// convenience
+func unitish(_ b: Item) -> Bool {
+  let unitRight = unitTokenRightAfter(b.rightCtx)
+  let pctRight  = percentImmediatelyAfter(rightContext: b.rightCtx)
+  let abvL = b.leftCtx.range(of: #"(?i)\b(alc|alco?ol|abv|vol)\b\s*$"#, options: .regularExpression) != nil
+  let abvR = b.rightCtx.range(of: #"(?i)^\s*\b(alc|alco?ol|abv|vol)\b"#, options: .regularExpression) != nil
+  return unitRight || pctRight || abvL || abvR
+}
+
+var keepIdx = Set<Int>()
+
+
+for cluster in splitClusters {
+  let n = cluster.count
+  if n < 3 { continue }
+
+  let decimals = cluster.filter { $0.text.range(of: #"[.,]\d{1,2}\b"#, options: .regularExpression) != nil }.count
+  let leaders  = cluster.filter { $0.lineText.range(of: #"\.{2,}|[–-]"#, options: .regularExpression) != nil }.count
+  let labelish = cluster.filter { $0.hasInlineLabel || $0.hasLeftTextNeighbor }.count
+
+  let mids = cluster.map { $0.mx }.sorted()
+  let medianMx = mids[mids.count/2]
+  let rightColumnish = medianMx >= 0.54  // slightly looser
+
+  let signals = decimals + leaders + labelish
+  let signalsOk = signals >= max(1, n/5)
+
+  // NEW: don’t accept columns that are mostly units/ABV
+  let unitishCnt   = cluster.filter(unitish).count
+  let nonInlineCnt = max(1, cluster.filter { !$0.hasInlineLabel }.count)
+  let unitishRatio = CGFloat(unitishCnt) / CGFloat(nonInlineCnt)
+
+  // Many aligned integers on the right and not mostly units → accept
+  let columnOk = (n >= 4 && rightColumnish && unitishRatio <= 0.55)
+
+  if signalsOk || columnOk {
+    cluster.forEach { keepIdx.insert($0.idx) }
+  }
+}
+
+prices = prices.enumerated().compactMap { i, p in
+  (p["currencyCode"] != nil || keepIdx.contains(i)) ? p : nil
+}
+}
+
+/*
 private func keepBareNumbersWhenNoCurrencyPresent(lines: [[String: Any]],
                                                   prices: inout [[String: Any]]) {
 
@@ -461,11 +663,10 @@ let unitishCount = bare.reduce(0) { acc, b in
 
   // Otherwise: keep only things aligned with the price column and NOT unit/percent/ABV
 let keepSet = Set(bare.compactMap { b -> Int? in
-let hasInline: (Int) -> Bool = { i in
-  ((prices[i]["labelText"] as? String)?
-    .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
-}
-
+    let hasInline: (Int) -> Bool = { i in
+      ((prices[i]["labelText"] as? String)?
+        .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+    }
 let denom = max(1, bare.filter { !hasInline($0.idx) }.count)
 let ratio = CGFloat(unitishCount) / CGFloat(denom)
 if ratio >= 0.65 {
@@ -481,17 +682,17 @@ if ratio >= 0.65 {
     b.left.range(of: #"(?i)\b(alc|alco?ol|abv|vol)\b\s*$"#, options: .regularExpression) != nil ||
     b.right.range(of: #"(?i)^\s*\b(alc|alco?ol|abv|vol)\b"#, options: .regularExpression) != nil
 
-  return ((aligned || hasDec || leader || hasInlineLabel) && !unitish) ? b.idx : nil
-  }
-})
-
+  return ((aligned || hasDec || leader || hasInline(b.idx)) && !unitish) ? b.idx : nil
+    }
+  return nil
+ })
 
   prices = prices.enumerated().compactMap { (i,p) in
     if p["currencyCode"] != nil { return p }
     return keepSet.contains(i) ? p : nil
   }
 }
-
+*/
 
   /// Creates a configured VNRecognizeTextRequest with the given parameters.
   private func makeRequest(minTextHeight: Float,
@@ -557,8 +758,31 @@ private func percentImmediatelyAfter(rightContext: String) -> Bool {
   if rightContext.range(of: #"^\s{0,3}(?:[oO0°][/ ]?0)"#, options: .regularExpression) != nil { return true }
   return false
 }
+private func unitSlashBeforePrice(_ leftContext: String) -> Bool {
+  // e.g. "... 0.33 ml /", "... 330ml /", "... 350 g /"
+  return leftContext.range(
+    of: #"""
+          (?xi)
+          \d{1,4}(?:[.,]\d{1,2})?
+          \s*
+          (?:m(?:l|[1iI!L])?|cl|dl|l|gr?|kg|mg|oz|lb|lbs)
+          \s*/\s*$
+         """#,
+    options: .regularExpression
+  ) != nil
+}
 
 // Catch ml/l and common slips (m1, mI, m!, mL), and short unit tails like "m"
+private func normalizeCtx(_ s: String) -> String {
+  var t = s
+  // Collapse repeated letters: "mml" -> "ml", "grr" -> "gr"
+  t = t.replacingOccurrences(of: #"([a-zA-Z%])\1{1,}"#, with: "$1", options: .regularExpression)
+  // Common OCR confusions: I/|/! -> l or 1 depending on unit
+  t = t.replacingOccurrences(of: #"m[1I|!]"#, with: "ml", options: .regularExpression)
+  t = t.replacingOccurrences(of: #"[1I|!]\s*%"#, with: " %", options: .regularExpression) // safety
+  return t
+}
+
 private func unitTokenRightAfter(_ s: String) -> Bool {
   return s.range(of: #"^\s{0,3}(?:m(?:l|[1iI!L])?\.?|cl|dl|l\.?|gr?|kg|mg|oz|lb|lbs|cm|mm|km|kcal|cal|kj)\b"#,
                  options: [.regularExpression, .caseInsensitive]) != nil
@@ -573,7 +797,16 @@ private func plusImmediatelyBefore(leftContext: String) -> Bool {
   // e.g. "...  EXTRA SHOT   +4"
   return leftContext.range(of: #"\+\s{0,2}$"#, options: .regularExpression) != nil
 }
-
+private func percentNearbyRight(_ s: String) -> Bool {
+  // allows "5%", "5.5%", "5,5%", spaces, punctuation
+  return s.range(of: #"^\s*[,\.]?\d{1,2}\s*%|^\s*\d+(?:[.,]\d+)?\s*%"#,
+                 options: [.regularExpression, .caseInsensitive]) != nil
+}
+private func abvTokenNearby(_ left: String, _ right: String) -> Bool {
+  let pat = #"(?i)\b(?:alc|alco?ol|abv|vol)\b"#
+  return left.range(of: pat, options: .regularExpression) != nil
+      || right.range(of: pat, options: .regularExpression) != nil
+}
 /// Returns true if a unit token (g, gr, kg, ml, l, cl, dl, cm, mm, km, kcal...) appears right after the match (≤ 3 chars)
 private func unitImmediatelyAfter(rightContext: String) -> Bool {
   unitTokenRightAfter(rightContext)
@@ -692,6 +925,7 @@ private func postPairOrphanLabels(lines: inout [[String: Any]],
   }
 // Inside class RNPriceOCR
 private func isQuantitySegment(leftContext: String, rightContext: String) -> Bool {
+  if unitSlashBeforePrice(leftContext) { return false }
   // “/” or “per” immediately to the left of the number?
   let slashOrPerLeft =
     leftContext.range(of: #"[\/×x]\s{0,2}$"#, options: .regularExpression) != nil ||
@@ -886,8 +1120,13 @@ private func looksLikeBarePrice(priceText: String,
 let unitAfter = unitImmediatelyAfter(rightContext: rightContext)
 let leaderAdjacent = hasLeaderOrDashAdjacent(rightContext: rightContext)
 let plusBefore = plusImmediatelyBefore(leftContext: leftContext)
+if unitSlashBeforePrice(leftContext) {
+  let keep = sane
+  dbg("      keep: unit/ slash before → price after slash");
+  return keep
+}
 if percentImmediatelyAfter(rightContext: rightContext)
-   || unitTokenLeftBefore(leftContext) && rightContext.range(of: #"\s*%","#, options: .regularExpression) != nil {
+  || (unitTokenLeftBefore(leftContext) && rightContext.range(of: #"\s*%"#, options: .regularExpression) != nil) {
   dbg("      ✗ drop: percent/ABV near number"); return false
 }
 if looksLikeAllergenTrail(rightContext) {
@@ -896,13 +1135,24 @@ if looksLikeAllergenTrail(rightContext) {
 if unitAfter && !leaderAdjacent {
   dbg("      ✗ drop: unit immediately after number without leader/dash"); return false
 }
+func _nearbyHit(_ s: String) -> String? {
+  let ns = s as NSString; let r = NSRange(location: 0, length: ns.length)
+  if let m = IGNORE_NEARBY_REGEX.firstMatch(in: s, options: [], range: r) {
+    return ns.substring(with: m.range(at: 1))
+  }
+  return nil
+}
 
 // Nearby unit/time words get blocked unless a leader/dash pardons them.
-let nearUnits =
-  IGNORE_NEARBY_REGEX.firstMatch(in: leftContext, options: [], range: NSRange(location:0, length:(leftContext as NSString).length)) != nil
-  || IGNORE_NEARBY_REGEX.firstMatch(in: rightContext, options: [], range: NSRange(location:0, length:(rightContext as NSString).length)) != nil
+//let nearUnits =
+//  IGNORE_NEARBY_REGEX.firstMatch(in: leftContext, options: [], range: NSRange(location:0, length:(leftContext as NSString).length)) != nil
+//  || IGNORE_NEARBY_REGEX.firstMatch(in: rightContext, options: [], range: NSRange(location:0, length:(rightContext as NSString).length)) != nil
+let leftHit  = _nearbyHit(leftContext)
+let rightHit = _nearbyHit(rightContext)
+let nearUnits = (leftHit != nil || rightHit != nil)
 if nearUnits && !leaderAdjacent {
-  dbg("      ✗ drop: unit/time nearby without leader/dash"); return false
+  dbg("      ✗ drop: unit/time nearby (\(leftHit ?? rightHit ?? "?")) without leader/dash");
+  return false
 }
 
 let hasDecimalAny = priceText.range(of: #"[.,]\d{1,2}\b"#, options: .regularExpression) != nil
@@ -1088,7 +1338,7 @@ private let IGNORE_NEARBY_REGEX =
 (?:^|[^\p{L}])
 (
   g|gr|kg|mg|lb|lbs|oz|GR|G|KG|MG|LB|LBS|OZ|CUPS|cups
-  | ml|l|cl|dl|ML|L|CL|DL|
+  | ml|l|cl|dl|ML|L|CL|DL
   | cm|mm|km
   | °c|°f
   | kcal|cal|kj
@@ -1205,3 +1455,4 @@ private func normalizeCurrency(_ raw: String) -> String {
   let k = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
   return CURRENCY_ALIASES[k] ?? raw.uppercased()
 }
+
