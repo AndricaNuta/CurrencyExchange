@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "724730617527",
+    "project_id": "currensee-5214a",
+    "storage_bucket": "currensee-5214a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724730617527:android:f451467efe83501d567732",
+        "android_client_info": {
+          "package_name": "com.currencycamera"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHiDdLNz4Lp697bgCcSEgorO4xTP7ugCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

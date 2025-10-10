@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import {
   createNavigationContainerRef,
@@ -14,6 +14,8 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { toNavTheme } from '../theme/navTheme';
 import { useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { RootStackParamList } from './RootStackParamList';
+import SettingsScreen from '../screens/Settings';
+import { initPush, useAlertsCloudSync } from '../services/pushInit';
 
 export const navRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -21,9 +23,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   const pref = useSelector((s: RootState) => s.settings.themePreference);
   const isDark = pref === 'dark';
-
   const t = useAppTheme();
-
+  useEffect(() => { initPush(); }, []);
+  useAlertsCloudSync();
   return (
     <>
       <StatusBar
@@ -56,6 +58,17 @@ export default function RootNavigator() {
               options={{
                 headerShown: false,
                 presentation: 'fullScreenModal',
+                headerStyle: { backgroundColor: t.colors.card },
+                headerTintColor: t.colors.text,
+                contentStyle: { backgroundColor: t.colors.bg },
+              }}
+            />
+             <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{
+                presentation: 'card',
+                animation: 'slide_from_right',
                 headerStyle: { backgroundColor: t.colors.card },
                 headerTintColor: t.colors.text,
                 contentStyle: { backgroundColor: t.colors.bg },

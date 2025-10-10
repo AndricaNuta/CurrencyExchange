@@ -34,6 +34,9 @@ type Props = {
   decimals: number; rate?: number; isFetching?: boolean; rateError?: boolean;
   onOpenFrom: () => void; onOpenTo: () => void; onSwap: () => void;
   renderFlag?: (code: string) => React.ReactNode;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onOpenAlerts: () => void;
 };
 
 const fmt = (n: number, c: string, max = 2) => {
@@ -44,7 +47,7 @@ const fmt = (n: number, c: string, max = 2) => {
 export const CurrencySwapCard: React.FC<Props> = (props) => {
   const s = useCardStyles();
   const { t } = useTranslation();
-  const { from, to, amount, onAmountChange, decimals, rate, isFetching, rateError, onOpenFrom, onOpenTo, onSwap, renderFlag } = props;
+  const { from, to, amount, onAmountChange, decimals, rate, isFetching, rateError, onOpenFrom, onOpenTo, onSwap, renderFlag,isFavorite, onToggleFavorite, onOpenAlerts } = props;
   const tkn = useTheme();
   const amtNum = Number(amount.replace(',', '.')) || 0;
   const converted = (rate ?? 0) * amtNum;
@@ -143,13 +146,13 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           </>
         )}
         <View style={{flexDirection:'row', gap:10, alignSelf:'flex-end'}}>
-        <Pressable hitSlop={8} accessibilityLabel="Open alerts">
-              <Bell width={25} height={25}/>
-            </Pressable>
-            <Pressable  hitSlop={8} accessibilityLabel="Toggle favorite">
-              <Star
-                width={25} height={25}
-                 />
+            <Pressable  onPress={onToggleFavorite} hitSlop={8} accessibilityLabel="Toggle favorite">
+            <Star
+              width={24}
+              height={24}
+              color={isFavorite ? tkn.colors.iconActive : tkn.colors.iconMuted}
+              fill={isFavorite ? tkn.colors.iconActive : 'transparent'}
+            />
             </Pressable>
         </View>
 

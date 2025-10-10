@@ -12,4 +12,5 @@ export type RootStackParamList = {
   ScanPreview: { uri: string; candidates: Candidate[] };
   LiveScan: undefined;
   Watchlist: undefined;
+  Settings: undefined;
 };

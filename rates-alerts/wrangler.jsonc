@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "rates-alerts",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-10-10",
+	"compatibility_flags": ["global_fetch_strictly_public"],
+	"kv_namespaces": [
+	  { "binding": "KV", "id": "cc8b07d6626e49a3a5130bc6702fbb90", "remote": true }
+	],
+	"triggers": { "crons": ["0 6 * * *"] },
+	"vars": {
+	  "FCM_PROJECT_ID": "currensee-5214a"
+	}
+  }

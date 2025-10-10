@@ -9,6 +9,7 @@ require Pod::Executable.execute_command('node', ['-p',
   prepare_react_native_project!
 
   ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+  use_frameworks! :linkage => :static
 
   target 'CurrencyCamera' do
     config = use_native_modules!
@@ -20,6 +21,9 @@ require Pod::Executable.execute_command('node', ['-p',
       :fabric_enabled => true,
       :new_arch_enabled => true
     )
+    pod 'GoogleUtilities', :modular_headers => true
+    pod 'PromisesObjC',    :modular_headers => true
+    pod 'nanopb',          :modular_headers => true
 
     post_install do |installer|
       react_native_post_install(

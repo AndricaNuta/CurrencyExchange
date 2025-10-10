@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking, Pressable } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
 import { useGetBaseTableQuery, useGetCurrenciesQuery, useGetPairRateQuery } from '../../services/currencyApi';
@@ -19,7 +19,7 @@ import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { toggleFavorite } from '../../redux/slices/favoritesSlice';
 import { Bell, Star } from 'react-native-feather';
-import { SmartAlertInline } from './AlertsBottomSheet';
+import { FloatingGear, FloatingSettingsButton } from '../../components/FloatingSettingsButton';
 
 const nowDate = () => {
   const d = new Date();
@@ -34,6 +34,7 @@ export default function CurrencyConverterScreen() {
     t
   } = useTranslation();
   const theme = useTheme();
+  const nav = useNavigation<any>();
   const {
     from, to, initialized
   } = useSelector((s: RootState) => s.exchange);
@@ -204,7 +205,11 @@ export default function CurrencyConverterScreen() {
           onOpenTo={() => {  Keyboard.dismiss(); presentMode('to')}}
           onSwap={() => dispatch(swap())}
           renderFlag={(code) => <Text>{currencyFlag(code)}</Text>}
+          isFavorite={isFav}
+          onToggleFavorite={onToggleFav}
+          onOpenAlerts={openAlerts}
         />
+        <FloatingSettingsButton onPress={() => nav.navigate('Settings')} bottomGuardPx={48}/>
 
         <View style={styles.rateRow}>
           <Text style={styles.rateText} onPress={() => { Linking.openURL('https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html') }}>
@@ -222,16 +227,6 @@ export default function CurrencyConverterScreen() {
             alignItems:'center',
             gap:12
           }}>
-            <Pressable onPress={openAlerts} hitSlop={8} accessibilityLabel="Open alerts">
-              <Bell width={20} height={20} color={theme.colors.iconMuted}/>
-            </Pressable>
-            <Pressable onPress={onToggleFav} hitSlop={8} accessibilityLabel="Toggle favorite">
-              <Star
-                width={20}
-                height={20}
-                color={isFav ? theme.colors.iconActive : theme.colors.iconMuted}
-                fill={isFav ? theme.colors.iconActive : 'transparent'} />
-            </Pressable>
             <View style={styles.timePill}>
               <Text style={styles.timeTxt}>{nowDate()}
               </Text>

@@ -105,16 +105,8 @@ export default function TabNavigation() {
           }}
         />
         <CurvedBottomBar.Screen
-          name="Settings"
-          position="RIGHT"
-          component={SettingsScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-        <CurvedBottomBar.Screen
           name="Watchlist"
-          position="LEFT"
+          position="RIGHT"
           component={WatchlistScreen}
           options={{
             headerShown: false

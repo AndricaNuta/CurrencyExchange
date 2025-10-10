@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { persistor, store } from './src/redux/store';
 import RootNavigator from './src/navigation/RootNavigator';
@@ -7,6 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import './src/localization';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from './src/theme/ThemeProvider';
+
 
 export default function App() {
   return (

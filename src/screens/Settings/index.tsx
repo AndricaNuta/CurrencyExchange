@@ -19,7 +19,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { currencyFlag } from '../../utils/currencyFlag';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
 import { LegalDialog } from './LegalModal.tsx';
-import { PermissionsCard } from './PermissionsSection/index.tsx';
+import { useNotifPermission } from '../../hooks/useNotifPermission';
 import { aboutText, privacyPolicyText, termsOfUseText } from '../../constants/text.ts';
 
 type RowProps = {
@@ -71,6 +71,7 @@ export default function SettingsScreen() {
   const tkn = useTheme();
   const [rateAlerts, setRateAlerts] = useState(true);
   const dispatch = useDispatch();
+  const notif = useNotifPermission();
   const {
     defaultFrom: from,
     defaultTo: to,
@@ -205,6 +206,12 @@ export default function SettingsScreen() {
           }
           : undefined;
 
+  const notifSubtitle =
+          notif.state === 'authorized'  ? 'Allowed'
+            : notif.state === 'provisional' ? 'Provisional (iOS)'
+              : notif.state === 'denied'      ? 'Denied'
+                : notif.state === 'blocked'     ? 'Blocked'
+                  : 'Unknown';
   return (
     <View style={styles.container}>
       <Text style={styles.screenTitle}>{t('settings.title')}</Text>
@@ -264,16 +271,22 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Row
           title={t('settings.exchangeRateAlerts')}
+          subtitle={notifSubtitle}
           right={
             <Switch
-              value={rateAlerts}
-              onValueChange={setRateAlerts}
+              value={notif.enabled}
+              onValueChange={(next) => {
+                if (next) {
+                  notif.requestEnable();
+                } else {
+                  notif.openSettingsToDisable();
+                }
+              }}
               thumbColor={tkn.colors.surface}
               trackColor={{
                 false: tkn.colors.muted,
                 true: tkn.colors.success
               }}
-
             />
           }
           iconLeft={
@@ -330,7 +343,7 @@ export default function SettingsScreen() {
         <Row title={t('About')} onPress={() => setShowAbout(true)} />
 
       </View>
- {/*
+      {/*
       <Text style={styles.sectionHeader}>{t('Permissions')}</Text>
      <PermissionsCard />*/}
       <LegalDialog
