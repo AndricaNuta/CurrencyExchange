@@ -6,7 +6,7 @@ export const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
     backgroundColor: t.colors.bg,
-    paddingTop: t.spacing(15),
+    paddingTop: t.spacing(15+3),
     paddingHorizontal: t.spacing(4),
   },
   screenTitle: {
