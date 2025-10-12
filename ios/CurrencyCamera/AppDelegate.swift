@@ -18,6 +18,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
        if FirebaseApp.app() == nil {
       FirebaseApp.configure()
     }
+    
+    BackgroundRefresh.register()
+    BackgroundRefresh.schedule()
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
+       BackgroundRefresh.schedule()
+     }
+    
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()

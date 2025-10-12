@@ -1,29 +1,11 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import {persistReducer,
-  persistStore,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,} from 'redux-persist';
+import { configureStore } from '@reduxjs/toolkit';
+import {persistReducer, persistStore,
+  FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER,} from 'redux-persist';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import settingsReducer from './slices/settingsSlice';
-import historyReducer from './slices/historySlice';
 import { currencyApi } from '../services/currencyApi';
 import { reduxStorage } from '../services/mmkv';
-import exchangeReducer from './slices/exchangeSlice';
-import  ratesCacheReducer  from './slices/ratesCacheSlice';
-import  favoritesReducer  from './slices/favoritesSlice';
-
-const rootReducer = combineReducers({
-  settings: settingsReducer,
-  history: historyReducer,
-  exchange: exchangeReducer,
-  ratesCache: ratesCacheReducer,
-  favorites: favoritesReducer,
-  [currencyApi.reducerPath]: currencyApi.reducer,
-});
+import { rootReducer, type RootState } from './rootReducer';
+import { widgetSyncMiddleware } from './middleware/widgetSyncMiddleware';
 
 const persistConfig = {
   key: 'root',
@@ -31,23 +13,25 @@ const persistConfig = {
   whitelist: ['settings', 'ratesCache', 'favorites', currencyApi.reducerPath],
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer<ReturnType<typeof rootReducer>>(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
-  middleware: getDefault =>
+  middleware: (getDefault) =>
     getDefault({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(currencyApi.middleware),
+    })
+      .concat(currencyApi.middleware)
+      .concat(widgetSyncMiddleware),
 });
 
 setupListeners(store.dispatch);
 
 export const persistor = persistStore(store);
 
-export type RootState = ReturnType<typeof store.getState>;
+// Types exported from the store (now safe; no cycles)
 export type AppDispatch = typeof store.dispatch;
-export type AppThunk = (dispatch: AppDispatch, getState:
-  () => RootState) => void;
+export type AppThunk = (dispatch: AppDispatch, getState: () => RootState) => void;
+export type { RootState }; // re-export for convenience

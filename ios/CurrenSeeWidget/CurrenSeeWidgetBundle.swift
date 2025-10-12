@@ -12,7 +12,7 @@ import SwiftUI
 struct CurrenSeeWidgetBundle: WidgetBundle {
     var body: some Widget {
         CurrenSeeWidget()
-        CurrenSeeWidgetControl()
-        CurrenSeeWidgetLiveActivity()
+        //CurrenSeeWidgetControl()
+        //CurrenSeeWidgetLiveActivity()
     }
 }

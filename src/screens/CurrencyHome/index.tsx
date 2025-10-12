@@ -17,7 +17,7 @@ import { useConnectivity } from '../../hooks/useConnectivity';
 import { useRatesStatus } from '../../hooks/useRatesStatus';
 import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
-import { toggleFavorite } from '../../redux/slices/favoritesSlice';
+import { toggleFavorite, updateFavoriteRate } from '../../redux/slices/favoritesSlice';
 import { Bell, Star } from 'react-native-feather';
 import { FloatingGear, FloatingSettingsButton } from '../../components/FloatingSettingsButton';
 
@@ -153,7 +153,15 @@ export default function CurrencyConverterScreen() {
       }));
     }
   };
-
+  useEffect(() => {
+    if (isFav && pair?.rate && effFrom && effTo) {
+      dispatch(updateFavoriteRate({
+        base: effFrom,
+        quote: effTo,
+        rate: pair.rate
+      }));
+    }
+  }, [isFav, pair?.rate, effFrom, effTo, dispatch]);
   const rate = pair?.rate ?? 0;
 
   const sheetTitle =
