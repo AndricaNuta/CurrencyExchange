@@ -4,7 +4,7 @@ const RATE_SOURCE_URL = 'https://api.frankfurter.dev/v1';
 const LAST_UPDATED = new Date().toISOString().slice(0, 10);
 const LINKEDIN_URL = 'https://www.linkedin.com/in/andreeanuta/';
 
-// --- About ---
+//Abou
 export const aboutText = `
 ${APP_NAME} is a personal project developed by Andrica Cristina to learn and showcase React Native + TypeScript.
 Exchange rates are fetched from the Frankfurter API (${RATE_SOURCE_URL}) and refresh roughly once per day.
@@ -14,7 +14,7 @@ Connect with me on LinkedIn: ${LINKEDIN_URL}
 This app is not a financial service and should be used for general information only.
 `;
 
-// --- Privacy Policy ---
+//Privacy Policy
 export const privacyPolicyText = `
 Last updated: ${LAST_UPDATED}
 
@@ -32,7 +32,7 @@ Contact
 Questions? Write to ${CONTACT_EMAIL}.
 `;
 
-// --- Terms of Use ---
+//Terms of Use
 export const termsOfUseText = `
 Purpose
 ${APP_NAME} is provided for learning and demonstration purposes. It is not a financial product.

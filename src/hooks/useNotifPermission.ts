@@ -21,8 +21,6 @@ export function useNotifPermission() {
   const refresh = useCallback(async () => {
     setChecking(true);
     try {
-      // RNFirebase: hasPermission() returns iOS-style AuthorizationStatus on both platforms.
-      // On Android pre-13 it usually returns AUTHORIZED by default.
       const current = await messaging().hasPermission();
       setState(decode(current));
     } catch {
@@ -37,7 +35,7 @@ export function useNotifPermission() {
   }, [refresh]);
 
   const requestEnable = useCallback(async () => {
-    // Ask OS (iOS + Android 13+) for permission
+    // (iOS + Android 13+)
     const status = await messaging().requestPermission();
     const next = decode(status);
     setState(next);
@@ -60,8 +58,6 @@ export function useNotifPermission() {
   }, []);
 
   const openSettingsToDisable = useCallback(() => {
-    // Apps can’t programmatically “turn off” notifications;
-    // we deep-link to the OS settings instead.
     Alert.alert(
       'Turn off notifications',
       'To disable alerts, use your device notification settings for this app.',
@@ -82,10 +78,10 @@ export function useNotifPermission() {
 
   return {
     enabled,
-    state,            // for UI text if you want
-    checking,         // show spinner if needed
+    state,           
+    checking,       
     refresh,
-    requestEnable,    // call when user toggles ON
-    openSettingsToDisable, // call when user toggles OFF
+    requestEnable,   
+    openSettingsToDisable, 
   };
 }

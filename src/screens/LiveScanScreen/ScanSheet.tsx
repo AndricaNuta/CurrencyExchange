@@ -1,4 +1,3 @@
-// components/scan/ScanSheet.tsx
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { View, Text, Pressable, TextInput, Platform, Dimensions } from 'react-native';

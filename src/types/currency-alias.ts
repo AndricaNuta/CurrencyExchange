@@ -1,4 +1,3 @@
-// currency-alias.ts
 export const CCY_ALIASES: Record<string, string> = {
   LEI: 'RON',
   LEU: 'RON',

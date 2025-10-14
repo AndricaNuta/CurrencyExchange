@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
@@ -14,12 +14,11 @@ import { filterByQuery } from '../../utils/filtersCurrency';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
 import { useTranslation } from 'react-i18next';
 import { useConnectivity } from '../../hooks/useConnectivity';
-import { useRatesStatus } from '../../hooks/useRatesStatus';
 import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { toggleFavorite, updateFavoriteRate } from '../../redux/slices/favoritesSlice';
 import { Bell, Star } from 'react-native-feather';
-import { FloatingGear, FloatingSettingsButton } from '../../components/FloatingSettingsButton';
+import { FloatingSettingsButton } from '../../components/FloatingSettingsButton';
 
 const nowDate = () => {
   const d = new Date();
@@ -60,9 +59,6 @@ export default function CurrencyConverterScreen() {
   const {
     online
   } = useConnectivity();
-  const {
-    hasBase, staleHours, lastDate
-  } = useRatesStatus(effFrom);
 
   const isOffline = online === false;
   //const isStale = typeof staleHours === 'number' && staleHours > 24;

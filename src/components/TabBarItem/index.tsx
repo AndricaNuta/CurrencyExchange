@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { makeStyles, useTheme as useAppTheme } from '../../theme/ThemeProvider';
 import { Activity, Clock, Settings } from 'react-native-feather';
 import { SwapIcon } from '../../../assets/icons/svg';
+import { useStyles } from './styles';
 
 const IconFor = ({
   label, color
@@ -18,25 +19,6 @@ const IconFor = ({
       return <Activity width={20} height={20} color={color} />;
   }
 };
-
-const useStyles = makeStyles(t => StyleSheet.create({
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 6,
-    borderRadius: t.radius.pill
-  },
-  tabLabel: {
-    fontSize: 12,
-    color: t.colors.muted,
-    marginTop: 4
-  },
-  active: {
-    color: t.colors.tint,
-    fontWeight: '700'
-  },
-}));
 
 export const TabBarItem = ({
   label, selected, onPress, style

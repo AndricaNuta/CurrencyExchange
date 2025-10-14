@@ -3,7 +3,7 @@ export type Alerts = {
     above: number | null;
     below: number | null;
     notifyOncePerCross: boolean;
-    quietHours: { start: string; end: string } | null; // "22:00"–"07:00"
+    quietHours: { start: string; end: string } | null; 
     minIntervalMinutes: number;
     lastNotifiedAt: string | null;
     lastBaseline: number | null;
@@ -11,8 +11,8 @@ export type Alerts = {
   };
 
 export type FavoritePair = {
-    id: string;        // "EUR-RON"
-    base: string;      // "EUR"
-    quote: string;     // "RON"
+    id: string;        
+    base: string;      
+    quote: string;     
     alerts: Alerts;
   };

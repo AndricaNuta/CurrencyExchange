@@ -10,11 +10,10 @@ export function SelectionRing({
 }: {
   width: number;
   height: number;
-  radius: number;      // ring corner radius (match pill)
+  radius: number;      
   color: string;
   thickness?: number;
 }) {
-  // Draw ABOVE the pill: put as a sibling after the pill in the tree.
   return (
     <View
       pointerEvents="none"
@@ -27,7 +26,7 @@ export function SelectionRing({
         borderRadius: Math.max(0, radius + thickness),
         borderWidth: thickness,
         borderColor: color,
-        zIndex: 2, // sits above pill
+        zIndex: 2, 
       }}
     />
   );

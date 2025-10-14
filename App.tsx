@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { persistor, store } from './src/redux/store';
 import RootNavigator from './src/navigation/RootNavigator';

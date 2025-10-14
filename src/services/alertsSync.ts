@@ -1,4 +1,3 @@
-// src/services/alertsSync.ts
 const WORKER_URL = 'https://rates-alerts.currensee.workers.dev';
 
 type FavoritePair = { id: string; base: string; quote: string; alerts: {

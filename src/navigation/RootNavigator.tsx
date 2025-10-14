@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigation from './TabNavigation';
-import ScanPreviewScreen from '../screens/ScanResult/ScanPreviewScreen';
+import ScanPreviewScreen from '../screens/ScanResult';
 import LiveScanScreen from '../screens/LiveScanScreen';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { toNavTheme } from '../theme/navTheme';
@@ -21,8 +21,8 @@ export const navRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const pref = useSelector((s: RootState) => s.settings.themePreference);
-  const isDark = pref === 'dark';
+  const preference = useSelector((s: RootState) => s.settings.themePreference);
+  const isDark = preference === 'dark';
   const t = useAppTheme();
   useEffect(() => { initPush(); }, []);
   useAlertsCloudSync();

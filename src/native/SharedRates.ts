@@ -22,20 +22,3 @@ export const reloadWidgetTimelines = () => {
   try { CurrenseeWidgetReload?.reload?.(); } catch {}
 };
 
-console.log('NM has CurrenseeSharedRates?', !!CurrenseeSharedRates);
-console.log('NM has CurrenseeWidgetReload?', !!CurrenseeWidgetReload);
-
-// Option A: IIFE
-(async () => {
-  try {
-    const count = await CurrenseeSharedRates?.readFavoritesCount?.();
-    console.log('widget favorites count:', count);
-  } catch (e) {
-    console.warn('readFavoritesCount failed:', e);
-  }
-})();
-
-// Option B: .then()
-// CurrenseeSharedRates?.readFavoritesCount?.()
-//   .then(c => console.log('widget favorites count:', c))
-//   .catch(e => console.warn('readFavoritesCount failed:', e));

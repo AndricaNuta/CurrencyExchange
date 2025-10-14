@@ -1,4 +1,3 @@
-// components/FloatingSettingsButton.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Pressable, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,17 +10,16 @@ type Props = {
   onPress: () => void;
   size?: number;
   margin?: number;
-  peek?: number;        // how far it “peeks” outside the edge
-  accent?: string;      // drag color
+  peek?: number;       
+  accent?: string;     
   idleOpacity?: number;
-  bottomGuardPx?: number; // opacity when idle
+  bottomGuardPx?: number; 
 };
 
-// MMKV store (you can reuse a central instance if you already have one)
 const storage = new MMKV({
   id: 'ui-state'
 });
-const KEY = 'floating-gear@pos'; // JSON: { dock: Dock; along: number }
+const KEY = 'floating-gear@pos'; 
 
 export  function FloatingSettingsButton({
   onPress,
@@ -37,11 +35,9 @@ export  function FloatingSettingsButton({
   } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
-  // animated translate (avoid left/top warnings)
   const tx = useRef(new Animated.Value(0)).current;
   const ty = useRef(new Animated.Value(0)).current;
 
-  // remembered dock & along-edge position
   const dockRef = useRef<Dock>('right');
   const alongRef = useRef<number>(0);
 

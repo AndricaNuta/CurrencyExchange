@@ -65,7 +65,6 @@ export type Theme = {
 };
 
 
-// theme/tokens.ts
 export const radius = {
   xs: 8,
   sm: 12,
@@ -73,7 +72,7 @@ export const radius = {
   lg: 20,
   xl: 24,
   sheet: 28,
-  pill: 999,         // chips, buttons, pills
+  pill: 999,         
 };
 
 export const typography = {
@@ -172,7 +171,6 @@ export const lightTheme: Theme = {
     onIconBgSuccess: '#065F46',
     onIconBgWarning: '#7C2D12',
 
-    // highlight
     highlightRing: '#0B0B0B',
     highlightTint: base.purple.primary,
     highlightFill: 'rgba(72,58,160,0.12)',
@@ -288,7 +286,6 @@ export const darkTheme: Theme = {
     onIconBgSuccess: '#86EFAC',
     onIconBgWarning: '#FCD34D',
 
-    // highlight
     highlightRing: '#FFFFFF',
     highlightTint: base.purple.tonal,
     highlightFill: 'rgba(121,101,193,0.20)',

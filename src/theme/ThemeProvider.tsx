@@ -4,16 +4,16 @@ import type { RootState } from '../redux/store';
 import { darkTheme, lightTheme, type Theme } from './tokens';
 import { StyleSheet } from 'react-native';
 
-type Ctx = { theme: Theme };
-const ThemeContext = createContext<Ctx>({
+type Context = { theme: Theme };
+const ThemeContext = createContext<Context>({
   theme: lightTheme
 });
 
 export function ThemeProvider({
   children
 }: { children: React.ReactNode }) {
-  const pref = useSelector((s: RootState) => s.settings.themePreference);
-  const theme = useMemo(() => (pref === 'dark' ? darkTheme : lightTheme), [pref]);
+  const preference = useSelector((s: RootState) => s.settings.themePreference);
+  const theme = useMemo(() => (preference === 'dark' ? darkTheme : lightTheme), [preference]);
   const value = useMemo(() => ({
     theme
   }), [theme]);

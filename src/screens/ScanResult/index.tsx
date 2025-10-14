@@ -19,7 +19,6 @@ import type { Candidate } from '../../ocr/ocrShared';
 import { extractPrices } from '../../utils/extractPrices';
 import { detectTextInImage } from '../../native/PriceOCR';
 import { setFrom, setTo, swap } from '../../redux/slices/exchangeSlice';
-import { parsePrice } from '../../utils/parsePrice';
 import { ConvertedPill } from '../../components/ConvertedPill';
 import { CurrencySwapRow } from './CompactCurrencyRow';
 import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
@@ -33,10 +32,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'react-native-feather';
 import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
-import { mapBoxContain as mapBoxToView } from '../../utils/boxMap';
+import { mapBoxToView } from '../../utils/boxMap';
 import {mapQuadToViewContain,
   quadMetrics,} from '../../utils/quadMap';
-import { getDetectedCurrency } from '../../utils/getDetectedCurrency';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { SelectionRing } from './SelectionRing';
@@ -369,7 +367,6 @@ export default function ScanPreviewScreen() {
       } =
       valueAndCurrencyFromNative(p, from, pageDefault);
       const title = (p as any).labelText || p.lineText || t('common.item');
-      // const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
       return (
         <Pressable
           key={id}
@@ -471,7 +468,6 @@ export default function ScanPreviewScreen() {
     } =
     valueAndCurrencyFromNative(p, from, pageDefault);
     const title = (p as any).labelText || p.lineText || t('common.item');
-    //const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
     return (
       <Pressable
         key={id}
@@ -642,7 +638,6 @@ export default function ScanPreviewScreen() {
                   value, currency: fromCcy
                 } =
                 valueAndCurrencyFromNative(p, from, pageDefault);
-                //const fromCcy = getDetectedCurrency(p, parsedCurrency, from);
                 const id = idForPrice(p, i);
                 const isSelected = selectedId === id;
                 return (

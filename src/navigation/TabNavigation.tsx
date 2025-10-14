@@ -6,14 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, MainTabParamList } from './RootStackParamList';
 import CurrencyConverterScreen from '../screens/CurrencyHome';
-import SettingsScreen from '../screens/Settings';
-import FAB from '../components/FAB/FAB';
+import FAB from '../components/FAB';
 import { captureWithCamera, pickFromGallery } from '../ocr/ocrService';
 import { TabBarItem } from '../components/TabBarItem';
 import { makeStyles, useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { alpha } from '../theme/tokens';
-import ScanRadialMenu from '../components/ScanRadialMenu';
-import ScanActionsPopover from '../components/ScanActionsPopover/ScanActionsPopover';
+import ScanActionsPopover from '../components/ScanActionsPopover';
 import WatchlistScreen from '../screens/Watchlist';
 
 const {
@@ -27,9 +25,7 @@ export default function TabNavigation() {
   const stackNav = useNavigation<StackNav>();
   const t = useAppTheme();
   const s = useStyles();
-
   const [scanOpen, setScanOpen] = useState(false);
-  const anchorBottom = Math.max(insets.bottom, 8) + 60 /* bar height */ + 30; // place the arc above the bar+fab
 
   const onTakePhoto = useCallback(async () => {
     setScanOpen(false);

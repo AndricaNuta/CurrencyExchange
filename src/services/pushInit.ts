@@ -1,4 +1,3 @@
-// src/services/pushInit.ts
 import '@react-native-firebase/app';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
@@ -10,15 +9,8 @@ import { registerDeviceToken, syncRules } from './alertsSync';
 let currentFcmToken: string | null = null;
 export const getCurrentFcmToken = () => currentFcmToken;
 
-/**
- * Call once at app start (you already do this in RootNavigator: useEffect(() => { initPush(); }, []))
- * - Requests permission on iOS (Android auto-grants by default)
- * - Ensures the device is registered with your Cloudflare Worker
- * - Re-registers on token refresh
- */
 export async function initPush() {
   try {
-    // iOS: register for remote messages (optional if auto-register is on in firebase.json)
     if (Platform.OS === 'ios') {
       try {
         await messaging().registerDeviceForRemoteMessages();

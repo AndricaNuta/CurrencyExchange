@@ -27,7 +27,7 @@ export function mapQuadToViewContain(
   };
 }
 
-// Cover (mirror mapBoxToCoverView)
+// Cover (mirror mapBoxToCoverView) - NOT USED ANYMORE
 export function mapQuadToViewCover(
   quad: Quad,
   imgW: number, imgH: number,

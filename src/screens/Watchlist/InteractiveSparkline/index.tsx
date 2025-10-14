@@ -1,8 +1,8 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { View, StyleSheet, LayoutChangeEvent, PanResponder, PanResponderInstance } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, LayoutChangeEvent, PanResponder, PanResponderInstance } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { makeStyles, useTheme } from '../../theme/ThemeProvider';
-import { alpha } from '../../theme/tokens';
+import { alpha } from '../../../theme/tokens';
+import { useStyles } from './styles';
 
 type Point = { x: number; y: number };
 
@@ -21,13 +21,6 @@ type Props = {
   paddingPct?: number;             // 0..0.2 vertical padding in viewBox space
 };
 
-const useStyles = makeStyles(() =>
-  StyleSheet.create({
-    root: { position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 12 },
-    overlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  })
-);
-
 export const InteractiveSparkline: React.FC<Props> = ({
   data,
   dates,
@@ -43,8 +36,6 @@ export const InteractiveSparkline: React.FC<Props> = ({
   paddingPct = 0.12,
 }) => {
   const s = useStyles();
-  const theme = useTheme();
-
   const [size, setSize] = useState({ w: 0, h: 0 });
   const onLayout = (e: LayoutChangeEvent) => {
     const { width: w, height: h } = e.nativeEvent.layout;

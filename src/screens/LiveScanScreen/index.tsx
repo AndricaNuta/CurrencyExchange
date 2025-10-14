@@ -3,9 +3,7 @@ import { View, StyleSheet, Alert } from 'react-native';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import PriceOverlays from '../../components/PriceOverlays';
 import ScanSheet from './ScanSheet';
-import { detectTextInImageLive } from '../../native/PriceOCR';
 import type { OCRResult } from '../../types/PriceOCR';
 
 export default function LiveScanScreen() {
@@ -20,7 +18,6 @@ export default function LiveScanScreen() {
   const [imgH, setImgH] = useState(0);
   const [ocr, setOcr] = useState<OCRResult | null>(null);
 
-  // permissions
   useEffect(() => {
     (async () => {
       const status = await Camera.requestCameraPermission();
@@ -28,30 +25,7 @@ export default function LiveScanScreen() {
     })();
   }, []);
 
-  // Poll ~0.9s
-  useEffect(() => {
-    if (!cameraRef.current) return;
-    let cancelled = false;
-
-    const id = setInterval(async () => {
-      try {
-        const photo = await cameraRef.current!.takePhoto({
-          flash: 'off',
-          enableShutterSound: false,
-          // keep metadata default; remove skipMetadata if typings complain
-          // skipMetadata: true,
-        });
-        const uri = photo.path.startsWith('file://') ? photo.path : `file://${photo.path}`;
-        const res = await detectTextInImageLive(uri);
-        if (!cancelled) setOcr(res);
-      } catch (e) {
-        console.warn('[live ocr]', e);
-      }
-    }, 900);
-
-    return () => { cancelled = true; clearInterval(id); };
-  }, []);
-
+  
   if (!device) return <View style={{ flex: 1, backgroundColor: 'black' }} />;
 
   return (
@@ -74,17 +48,6 @@ export default function LiveScanScreen() {
           // Optional quick wins:
           // zoom={0.15}
           // torch="off"
-        />
-
-        <PriceOverlays
-          ocr={ocr}
-          imgW={imgW}
-          imgH={imgH}
-          from={from}
-          to={to}
-          decimals={decimals}
-          onPick={() => {}}
-          mode="camera"      // ← live uses COVER mapping
         />
       </View>
 

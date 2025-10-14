@@ -99,8 +99,8 @@ export const useScanStyles = makeStyles(t => StyleSheet.create({
 
   rowSelected: {
     borderWidth: 2,
-    borderColor: t.colors.tint, // strong purple highlight
-    shadowOpacity: 0.1, // stronger glow when selected
+    borderColor: t.colors.tint, 
+    shadowOpacity: 0.1, 
   },
 
   close: {

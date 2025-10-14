@@ -50,7 +50,6 @@ export const PickerBottomSheet = React.forwardRef<BottomSheetModal, Props>(
     } = useTranslation();
     const theme = useTheme();
     const backdropComponent = useThemedBackdrop();
-    // convert % → px and ensure we return [small,big]
     const resolvedSnapPoints = useMemo(() => {
       const sp = (snapPoints?.length ? snapPoints : ['45%', '80%']) as Array<
         number | `${number}%`

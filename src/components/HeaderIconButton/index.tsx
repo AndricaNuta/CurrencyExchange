@@ -1,4 +1,3 @@
-// ui/HeaderIconButton.tsx
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
