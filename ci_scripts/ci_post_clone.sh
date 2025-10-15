@@ -1,15 +1,14 @@
 #!/bin/sh
 set -euxo pipefail
 
-# 1) Node deps (needed before pod install because RN generates pod specs)
-if [ -f .nvmrc ]; then
-  export NVM_DIR="$HOME/.nvm"
-  . "$NVM_DIR/nvm.sh"
-  nvm install
-  nvm use
-fi
+echo "🔧 Post-clone START"
+echo "PWD=$(pwd)"
+ls -la
 
+# Node deps
+if command -v node >/dev/null 2>&1; then node -v; else echo "⚠️ node not found"; fi
 if [ -f yarn.lock ]; then
+  yarn --version || true
   yarn install --frozen-lockfile
 elif [ -f pnpm-lock.yaml ]; then
   npm i -g pnpm
@@ -18,14 +17,19 @@ else
   npm ci
 fi
 
-# 2) iOS pods
-cd ios
+# Ensure CocoaPods available (user-install, no sudo)
+export GEM_HOME="$HOME/.gem"
+export PATH="$GEM_HOME/bin:$PATH"
+gem install cocoapods --no-document || true
+pod --version
 
-# If you keep a Gemfile, prefer Bundler (pin Cocoapods):
-if [ -f ../Gemfile ]; then
-  gem install bundler --no-document || true
-  bundle install --path ../.bundle
-  bundle exec pod install --repo-update
-else
-  pod install --repo-update
-fi
+cd ios
+echo "📦 Running pod install in $(pwd)"
+pod repo update --silent || true
+pod install --repo-update
+
+echo "📂 Verify Pods target support files exist"
+ls -la "Pods/Target Support Files" || true
+ls -la "Pods/Target Support Files/Pods-CurrencyCamera" || true
+
+echo "✅ Post-clone DONE"
