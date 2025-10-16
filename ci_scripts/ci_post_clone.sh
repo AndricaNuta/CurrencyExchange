@@ -1,35 +1,24 @@
-#!/bin/sh
-set -euxo pipefail
+#!/bin/bash
+set -euo pipefail
+cd "$CI_WORKSPACE"
 
-echo "🔧 Post-clone START"
-echo "PWD=$(pwd)"
-ls -la
+echo "Node: $(node -v)"
+echo "npm:  $(npm -v)"
 
-# Node deps
-if command -v node >/dev/null 2>&1; then node -v; else echo "⚠️ node not found"; fi
-if [ -f yarn.lock ]; then
-  yarn --version || true
-  yarn install --frozen-lockfile
-elif [ -f pnpm-lock.yaml ]; then
-  npm i -g pnpm
-  pnpm install --frozen-lockfile
+# Make sure devDeps are not pruned by environment defaults
+export NPM_CONFIG_PRODUCTION=false
+
+if [ -f package-lock.json ]; then
+  npm ci --no-audit --no-fund
 else
-  npm ci
+  npm install --no-audit --no-fund
 fi
 
-# Ensure CocoaPods available (user-install, no sudo)
-export GEM_HOME="$HOME/.gem"
-export PATH="$GEM_HOME/bin:$PATH"
-gem install cocoapods --no-document || true
-pod --version
+# Hard fail if worklets-core isn't present
+if [ ! -d node_modules/react-native-worklets-core/cpp ]; then
+  echo "❌ react-native-worklets-core is missing. Is it in dependencies?"
+  ls -la node_modules | sed -n '1,120p' || true
+  exit 1
+fi
 
-cd ios
-echo "📦 Running pod install in $(pwd)"
-pod repo update --silent || true
-pod install --repo-update
-
-echo "📂 Verify Pods target support files exist"
-ls -la "Pods/Target Support Files" || true
-ls -la "Pods/Target Support Files/Pods-CurrencyCamera" || true
-
-echo "✅ Post-clone DONE"
+echo "✅ node_modules installed (react-native-worklets-core present)"
