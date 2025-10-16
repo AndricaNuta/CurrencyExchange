@@ -1,61 +1,66 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+  'require.resolve("react-native/scripts/react_native_pods.rb", {paths: [process.argv[1]]})',
+  __dir__,
+]).strip
 
-  platform :ios, '15.1'
-  prepare_react_native_project!
+platform :ios, '15.1'
+prepare_react_native_project!
 
-  ENV['RCT_NEW_ARCH_ENABLED'] = '1'
-  use_frameworks! :linkage => :static
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+use_frameworks! :linkage => :static
 
-  target 'CurrencyCamera' do
-    config = use_native_modules!
+config = nil
 
-    use_react_native!(
-      :path           => config[:reactNativePath],
-      :app_path       => "#{Pod::Config.instance.installation_root}/..",
-      :hermes_enabled => true,
-      :fabric_enabled => true,
-      :new_arch_enabled => true
-    )
-    pod 'GoogleUtilities', :modular_headers => true
-    pod 'PromisesObjC',    :modular_headers => true
-    pod 'nanopb',          :modular_headers => true
+target 'CurrencyCamera' do
+  config = use_native_modules!
+  use_react_native!(
+    path:             config[:reactNativePath],
+    app_path:         "#{Pod::Config.instance.installation_root}/..",
+    hermes_enabled:   true,
+    fabric_enabled:   true,
+    new_arch_enabled: true
+  )
+  pod 'GoogleUtilities', modular_headers: true
+  pod 'PromisesObjC',    modular_headers: true
+  pod 'nanopb',          modular_headers: true
+end
 
-    post_install do |installer|
-      react_native_post_install(
-        installer,
-        config[:reactNativePath],
-        :mac_catalyst_enabled => false,
-      )
+post_install do |installer|
+  react_native_post_install(installer, config[:reactNativePath], mac_catalyst_enabled: false)
 
-      # Optional: reduce Xcode 16 “non-modular include” noise
-      installer.pods_project.targets.each do |t|
-        t.build_configurations.each do |bc|
-          bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-          bc.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-          bc.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
-        end
-      end
+  # Quiet a few warnings + pin min iOS
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |bc|
+      bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      bc.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      bc.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
     end
-     projects = [installer.pods_project] +
-             installer.aggregate_targets.map(&:user_project) +
-             installer.generated_projects
-  projects.uniq.each do |proj|
+  end
+
+  # Keep project format stable
+  ([installer.pods_project] +
+   installer.aggregate_targets.map(&:user_project) +
+   installer.generated_projects).uniq.each do |proj|
+     if proj.respond_to?(:object_version=)
     proj.object_version = 55
+  else
+    proj.root_object.attributes['objectVersion'] = 55
+  end
+  if proj.root_object.respond_to?(:compatibility_version=)
+    proj.root_object.compatibility_version = 'Xcode 14.0'
+  else
+    proj.root_object.attributes['compatibilityVersion'] = 'Xcode 14.0'
+  end
     proj.save
   end
 
-  # (B) Remove the RNFB Core Configuration script phase (it causes CI flakes)
-  installer.aggregate_targets.each do |agg|
-    agg.user_targets.each do |ut|
-      ut.shell_script_build_phases
-        .select { |p| p.name =~ /\[RNFB\] Core Configuration/ }
-        .each   { |p| ut.build_phases.delete(p) }
-      ut.project.save
+  # Neutralize RNFirebase script (avoid CI flakes)
+  installer.aggregate_targets.flat_map(&:user_targets).compact.each do |ut|
+    ut.shell_script_build_phases.each do |p|
+      next unless p.name&.include?('[RNFB] Core Configuration')
+      p.shell_script = "#!/bin/sh\necho 'Skipping [RNFB] Core Configuration (handled via Info.plist)'\n"
     end
+    ut.project.save
   end
-  end
+end
