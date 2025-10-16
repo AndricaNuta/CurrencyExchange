@@ -1,0 +1,67 @@
+{
+  "name": "react-native-walkthrough-tooltip",
+  "version": "1.6.0",
+  "description": "An inline wrapper for calling out React Native components via tooltip",
+  "main": "src/tooltip.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasongaare/react-native-walkthrough-tooltip.git"
+  },
+  "author": "Jason Gaare",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jasongaare/react-native-walkthrough-tooltip/issues"
+  },
+  "homepage": "https://github.com/jasongaare/react-native-walkthrough-tooltip#readme",
+  "keywords": [
+    "react",
+    "react-native",
+    "walkthrough",
+    "tooltip",
+    "popover"
+  ],
+  "dependencies": {
+    "prop-types": "^15.6.1",
+    "react-fast-compare": "^2.0.4"
+  },
+  "devDependencies": {
+    "@react-native-community/eslint-config": "0.0.5",
+    "babel-core": "6.26.3",
+    "babel-eslint": "8.2.3",
+    "babel-jest": "22.4.4",
+    "enzyme": "3.3.0",
+    "enzyme-adapter-react-16": "1.1.1",
+    "enzyme-to-json": "3.3.4",
+    "eslint": "4.19.1",
+    "jest": "22.4.4",
+    "react": "^16.3.2",
+    "react-dom": "16.3.3",
+    "react-native": "^0.55.3"
+  },
+  "peerDependencies": {
+    "@types/react": ">=16.8.24"
+  },
+  "jest": {
+    "preset": "react-native",
+    "collectCoverageFrom": [
+      "src/**.js"
+    ],
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ],
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ],
+    "setupFiles": [
+      "./jest.setup.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native)"
+    ]
+  }
+}
