@@ -1,13 +1,12 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-# You may use http://rbenv.org/ or https://rvm.io/ to install and use this version
 ruby ">= 2.6.10"
 
-# Exclude problematic versions of cocoapods and activesupport that causes build failures.
-gem 'cocoapods', '>= 1.13', '!= 1.15.0', '!= 1.15.1'
-gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
-gem 'xcodeproj', '< 1.26.0'
-gem 'concurrent-ruby', '< 1.3.4'
+gem "cocoapods",  "1.15.2"   # pick a version and stick to it
+gem "xcodeproj",  "1.24.0"   # stable; doesn’t auto-bump formats on its own
+gem "activesupport", "6.1.7.6"  # if you need this pin, pick a single version
+gem "concurrent-ruby", "1.3.3"  # same idea: pick one
+
 
 # Ruby 3.4.0 has removed some libraries from the standard library.
 gem 'bigdecimal'
