@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -83,7 +83,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A19FA7952E99912E001206E6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		A19FA7952E99912E001206E6 /* Exceptions for "CurrenSeeWidget" folder in "CurrenSeeWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -93,7 +93,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A19FA7842E99912D001206E6 /* CurrenSeeWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A19FA7952E99912E001206E6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CurrenSeeWidget; sourceTree = "<group>"; };
+		A19FA7842E99912D001206E6 /* CurrenSeeWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A19FA7952E99912E001206E6 /* Exceptions for "CurrenSeeWidget" folder in "CurrenSeeWidgetExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = CurrenSeeWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */

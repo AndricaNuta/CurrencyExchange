@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
@@ -13,6 +13,10 @@ import { makeStyles, useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { alpha } from '../theme/tokens';
 import ScanActionsPopover from '../components/ScanActionsPopover';
 import WatchlistScreen from '../screens/Watchlist';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { AppTipContent } from '../components/TipComponents/AppTipContent';
+import { events } from '../utils/events';
+import { setBool } from '../services/mmkv';
 
 const {
   width: SCREEN_W
@@ -26,6 +30,9 @@ export default function TabNavigation() {
   const t = useAppTheme();
   const s = useStyles();
   const [scanOpen, setScanOpen] = useState(false);
+  const anchorBottom = Math.max(insets.bottom, 8) + 60 /* bar height */ + 30; // place the arc above the bar+fab
+  const [showFabTip, setShowFabTip] = useState(false);
+
 
   const onTakePhoto = useCallback(async () => {
     setScanOpen(false);
@@ -54,21 +61,51 @@ export default function TabNavigation() {
       }
     } catch (e) { console.warn('[OCR] pick failed', e); }
   }, [stackNav]);
+  const [watchlistTip, setWatchlistTip] = useState(false);
+
+  useEffect(() => {
+    const sub = () => setWatchlistTip(true);
+    events.on('tour.starToWatchlist.step2', sub);
+    return () => events.off('tour.starToWatchlist.step2', sub);
+  }, []);
 
   const renderTabItem = ({
     routeName, selectedTab, navigate,
-  }: { routeName: TabKey; selectedTab: TabKey; navigate: (name: TabKey) => void; }) => (
-    <TabBarItem
-      label={routeName}
-      selected={selectedTab === routeName}
-      onPress={() => navigate(routeName)}
-    />
-  );
+  }: { routeName: TabKey; selectedTab: TabKey; navigate: (name: TabKey) => void; }) => {
+    const open = () => navigate(routeName);
+
+    if (routeName !== 'Watchlist') {
+      return (
+        <TabBarItem
+          label={routeName}
+          selected={selectedTab === routeName}
+          onPress={open}
+        />
+      );
+    }
+    return (
+      <TabBarItem
+        label="Watchlist"
+        selected={selectedTab === 'Watchlist'}
+        onPress={open}
+        coachmarkVisible={watchlistTip}
+        coachmarkPlacement="top"
+        coachmarkOnClose={() => setWatchlistTip(false)}
+        coachmarkPrimaryPress={() => {
+          // next step should show inside Watchlist
+          setBool('tour_watchlist_step3', true);
+          setWatchlistTip(false);
+          requestAnimationFrame(open);       // switch tab
+        }}
+      />
+    );
+  };
 
   return (
     <View style={[s.container, {
       paddingBottom: Math.max(insets.bottom, 8)
     }]}>
+      {/* <SpotlightProvider>*/}
       <CurvedBottomBar.Navigator
         id="MainTabs"
         type="DOWN"
@@ -88,7 +125,20 @@ export default function TabNavigation() {
           headerShown: false
         }}
         renderCircle={() =>
-          <FAB open={scanOpen} onToggle={() => setScanOpen(v => !v)} />
+          <Tooltip
+            isVisible={showFabTip}
+            placement="top"
+            content={<>{'Tap to scan or upload prices for instant conversion.'}</>}
+            onClose={() => setShowFabTip(false)}
+            backgroundColor="rgba(0,0,0,0.35)"
+            tooltipStyle={{
+              borderRadius: 12,
+              padding: 12
+            }}
+            useInteractionManager
+          >
+            <FAB open={scanOpen} onToggle={() => setScanOpen(v => !v)} />
+          </Tooltip>
         }
         tabBar={renderTabItem}
       >
@@ -116,7 +166,9 @@ export default function TabNavigation() {
         onCamera={onTakePhoto}
         onGallery={onPickImage}
       />
+      {/*} <SpotlightOverlay accent="#E3D095" />
 
+      </SpotlightProvider>*/}
     </View>
   );
 }
@@ -141,3 +193,45 @@ const useStyles = makeStyles((t) => StyleSheet.create({
     elevation: t.scheme === 'dark' ? 8 : 12,
   },
 }));
+function WatchlistTabIconWithTip({
+  children, onOpen,
+}: { children: React.ReactElement; onOpen: () => void }) {
+  const [visible, setVisible] = useState(false);
+  const nav = useNavigation<any>();
+
+  useEffect(() => {
+    const sub = () => setVisible(true);
+    events.on('tour.starToWatchlist.step2', sub);
+    return () => events.off('tour.starToWatchlist.step2', sub);
+  }, []);
+
+  return (
+    <Tooltip
+      isVisible={visible}
+      placement="top"
+      onClose={() => setVisible(false)}
+      backgroundColor="rgba(0,0,0,0.20)"
+      tooltipStyle={{
+        backgroundColor: 'transparent',
+        padding: 0
+      }}
+      content={
+        <AppTipContent
+          title="Your saved pairs"
+          text="Open Watchlist to see them with live updates."
+          primaryLabel="Open Watchlist"
+          onPrimaryPress={() => {
+            setVisible(false);
+            // pass a flag so Watchlist shows Step 3
+            requestAnimationFrame(() => nav.navigate('Watchlist', {
+              fromTour: true
+            }));
+          }}
+          arrowPosition="top"
+        />
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+}

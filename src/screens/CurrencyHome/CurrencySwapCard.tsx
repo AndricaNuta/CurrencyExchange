@@ -1,10 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Platform, Animated, Easing } from 'react-native';
 import { Bell, ChevronDown, RefreshCw, Star } from 'react-native-feather';
 import { makeStyles, useTheme } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
 import { useTranslation } from 'react-i18next';
 import { SwapIcon } from '../../../assets/icons/svg';
+import { SpotlightTarget } from '../onboarding/SpotlightTarget';
+import { shouldShowOnce } from '../../utils/showOnce';
+import * as Haptics from 'expo-haptics';
+import { FirstTimeTipPressable } from '../../components/TipComponents/FirstTimeTipPressable';
+import { AppTipContent } from '../../components/TipComponents/AppTipContent';
+import { useNavigation } from '@react-navigation/native';
+import { events, TOUR_STAR_TO_WATCHLIST_STEP2 } from '../../utils/events';
 
 const useCardStyles = makeStyles((t) => ({
   card:{ backgroundColor:t.colors.card, borderRadius:t.radius.xl, ...t.shadow.ios, ...t.shadow.android },
@@ -51,6 +58,9 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
   const tkn = useTheme();
   const amtNum = Number(amount.replace(',', '.')) || 0;
   const converted = (rate ?? 0) * amtNum;
+  const [showStarTip, setShowStarTip] = useState(false);
+  const navigation = useNavigation<any>();
+
 
   // --- Swap animation ---
   const spin = useRef(new Animated.Value(0)).current;
@@ -93,11 +103,14 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
       <View style={[s.block, s.blockTop]}>
         <View style={s.blockHeader}>
           <Text style={s.blockLabel}>{t('converter.amount')}</Text>
+         {/*} <SpotlightTarget id="fromPicker">*/}
+
           <Pressable style={s.pill} onPress={onOpenFrom} accessibilityRole="button" accessibilityLabel="Change from currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(from) : from}</Text>
             <Text style={s.pillCode}>{from}</Text>
             <ChevronDown color={tkn.colors.iconMuted} width={18} height={18} strokeWidth={2.25} />
           </Pressable>
+             {/* </SpotlightTarget>*/}
         </View>
 
         <TextInput
@@ -126,11 +139,13 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
       <View style={[s.block, s.blockBottom]}>
         <View style={s.blockHeader}>
           <Text style={s.blockLabel}>{t('converter.convertedTo')}</Text>
+          {/*<SpotlightTarget id="toPicker">*/}
           <Pressable style={s.pill} onPress={onOpenTo} accessibilityRole="button" accessibilityLabel="Change to currency">
             <Text style={s.pillFlag}>{renderFlag ? renderFlag(to) : to}</Text>
             <Text style={s.pillCode}>{to}</Text>
             <ChevronDown color={tkn.colors.iconMuted} width={18} height={18} strokeWidth={2.25} />
           </Pressable>
+         {/* </SpotlightTarget>*/}
         </View>
 
         {isFetching ? (
@@ -146,6 +161,27 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
           </>
         )}
         <View style={{flexDirection:'row', gap:10, alignSelf:'flex-end'}}>
+        <FirstTimeTipPressable
+          storageKey="tip_star_seen"
+          placement="top"
+          runActionAfterClose
+          onFirstShow={() => {/* analytics */}}
+          onPress={onToggleFavorite}
+          content={({ close }) => (
+            <AppTipContent
+              title="Save & follow this rate"
+              text="It goes to your Watchlist. Turn on alerts anytime."
+              primaryLabel="View Watchlist"
+              onPrimaryPress={() => {
+                onToggleFavorite();          // ✅ run immediate
+                close();                     // hide coachmark
+                requestAnimationFrame(() => {
+                  events.emit('tour.starToWatchlist.step2'); // continue flow
+                });
+              }}
+            />
+          )}
+        >
             <Pressable  onPress={onToggleFavorite} hitSlop={8} accessibilityLabel="Toggle favorite">
             <Star
               width={24}
@@ -154,6 +190,7 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
               fill={isFavorite ? tkn.colors.iconActive : 'transparent'}
             />
             </Pressable>
+            </FirstTimeTipPressable>
         </View>
 
       </View>

@@ -18,7 +18,9 @@ import { alpha } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { toggleFavorite, updateFavoriteRate } from '../../redux/slices/favoritesSlice';
 import { Bell, Star } from 'react-native-feather';
-import { FloatingSettingsButton } from '../../components/FloatingSettingsButton';
+import { FloatingGear, FloatingSettingsButton } from '../../components/FloatingSettingsButton';
+import { useSpotlight } from '../onboarding/useSpotlight';
+import { delKey } from '../../services/mmkv';
 
 const nowDate = () => {
   const d = new Date();
@@ -43,10 +45,31 @@ export default function CurrencyConverterScreen() {
   useEffect(() => {
     if (!initialized) dispatch(resetToDefaults());
   }, [initialized, dispatch]);
-
   const effFrom = from ?? defaultFrom;
   const effTo   = to   ?? defaultTo;
-
+ /* const { start} = useSpotlight();
+  useEffect(() => {
+    // Example: kick off tour after first render. Prefer gating by persisted flag.
+    const steps = [
+      {
+        id: 'fromPicker',
+        title: 'Your base currency',
+        description: 'Tap to change the currency you convert from.'
+      },
+      {
+        id: 'toPicker',
+        title: 'Target currency',
+        description: 'Choose where you want prices converted to.'
+      },
+      {
+        id: 'watchlist',
+        title: 'Watchlist',
+        description: 'Save favorite pairs and track their rates.'
+      },
+    ];
+    const timer = setTimeout(() => start(steps), 350);
+    return () => clearTimeout(timer);
+  }, [start]);*/
   const {
     data: currencies, isLoading, error
   } = useGetCurrenciesQuery();
@@ -113,7 +136,7 @@ export default function CurrencyConverterScreen() {
     [list, toQ]
   );
 
-
+  delKey('tip_star_seen');
   useEffect(() => {
     const p = route?.params?.preset as {
       from: string;
