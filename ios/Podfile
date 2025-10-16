@@ -17,7 +17,7 @@ target 'CurrencyCamera' do
   use_react_native!(
     path:             config[:reactNativePath],
     app_path:         "#{Pod::Config.instance.installation_root}/..",
-    hermes_enabled:   true,
+    hermes_enabled:   false,
     fabric_enabled:   true,
     new_arch_enabled: true
   )
