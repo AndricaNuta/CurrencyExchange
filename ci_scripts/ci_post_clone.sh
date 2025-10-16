@@ -1,19 +1,11 @@
 #!/bin/bash
-set -euo pipefail
-cd "$CI_WORKSPACE"
+set -euxo pipefail
 
-echo ":: Xcode Cloud - ci_post_clone.sh ::"
-echo "Node: $(node -v)"; echo "npm: $(npm -v)"
+# Xcode Cloud checks out your repo into $CI_WORKSPACE
+cd "$CI_WORKSPACE/ios"
 
-# Install ALL deps (don’t prune devDeps; some native libs are miscategorized)
-export NPM_CONFIG_PRODUCTION=false
+# Avoid Ruby frozen-string bugs we saw earlier
+export RUBYOPT=""
 
-if [ -f package-lock.json ]; then
-  npm ci --no-audit --no-fund
-else
-  npm install --no-audit --no-fund
-fi
-
-# Prove worklets headers exist; fail early if not
-test -d node_modules/react-native-worklets-core/cpp
-echo "✅ node_modules installed (react-native-worklets-core present)"
+# CocoaPods is preinstalled on Xcode Cloud; install Pods
+pod install --repo-update
