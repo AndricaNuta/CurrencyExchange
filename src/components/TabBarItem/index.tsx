@@ -1,10 +1,11 @@
 import React from 'react';
 import {Text, StyleSheet, View, Pressable } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import { makeStyles, useTheme as useAppTheme } from '../../theme/ThemeProvider';
+import { useTheme as useAppTheme } from '../../theme/ThemeProvider';
 import { Activity, Clock, Settings } from 'react-native-feather';
 import { SwapIcon } from '../../../assets/icons/svg';
 import { AppTipContent } from '../TipComponents/AppTipContent'; // adjust if path differs
+import { useStyles } from './styles';
 
 const IconFor = ({
   label, color

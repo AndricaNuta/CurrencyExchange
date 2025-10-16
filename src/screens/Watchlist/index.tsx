@@ -8,6 +8,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { AppTipContent } from '../../components/TipComponents/AppTipContent';
 import { getBool, setBool } from '../../services/mmkv';
+import { makeStyles } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
 const useStyles = makeStyles((t) => StyleSheet.create({
   screen: {

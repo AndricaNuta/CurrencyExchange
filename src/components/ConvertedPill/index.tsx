@@ -1,7 +1,5 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { makeStyles } from '../../theme/ThemeProvider';
-import { alpha } from '../../theme/tokens';
 import { useGetPairRateQuery } from '../../services/currencyApi';
 import { useStyles } from './styles';
 
