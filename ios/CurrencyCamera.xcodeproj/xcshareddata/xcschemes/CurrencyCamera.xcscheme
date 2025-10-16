@@ -10,8 +10,8 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "set -euo pipefail&#10;PROJECT_ROOT=&quot;${PROJECT_DIR}/..&quot;&#10;export NPM_CONFIG_PRODUCTION=false&#10;cd &quot;$PROJECT_ROOT&quot;&#10;&#10;# Install if missing or empty&#10;if [ ! -d node_modules ] || [ -z &quot;$(ls -A node_modules 2&gt;/dev/null)&quot; ]; then&#10;  echo &quot;&#x2699;&#xfe0f; Installing npm deps&#x2026;&quot;&#10;  if [ -f package-lock.json ]; then&#10;    npm ci --no-audit --no-fund&#10;  else&#10;    npm install --no-audit --no-fund&#10;  fi&#10;fi&#10;&#10;# Hard check for the headers that fail on CI&#10;test -f node_modules/react-native-worklets-core/ios/Worklets.h&#10;test -d node_modules/react-native-worklets-core/cpp&#10;echo &quot;&#x2705; worklets-core headers present&quot;&#10;"
-               shellToInvoke = "make sure builds worklets">
+               scriptText = "set -e&#10;&#10;PROJECT_ROOT=&quot;${PROJECT_DIR}/..&quot;&#10;cd &quot;$PROJECT_ROOT&quot;&#10;&#10;# Install deps if missing or empty&#10;if [ ! -d node_modules ] || [ -z &quot;$(ls -A node_modules 2&gt;/dev/null)&quot; ]; then&#10;  export NPM_CONFIG_PRODUCTION=false&#10;  if [ -f package-lock.json ]; then&#10;    npm ci --no-audit --no-fund&#10;  else&#10;    npm install --no-audit --no-fund&#10;  fi&#10;fi&#10;&#10;# Hard checks for the headers Xcode complained about&#10;test -f node_modules/react-native-worklets-core/ios/Worklets.h&#10;test -d node_modules/react-native-worklets-core/cpp&#10;"
+               shellToInvoke = "/bin/bash">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
@@ -108,7 +108,8 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "/bin/bash -lc &apos;&#10;set -euxo pipefail&#10;&#10;# workspace root (one level above ios/)&#10;PROJECT_ROOT=&quot;${PROJECT_DIR}/..&quot;&#10;cd &quot;$PROJECT_ROOT&quot;&#10;&#10;# see what we have&#10;whoami; which node; node -v; which npm; npm -v&#10;&#10;# install ALL deps (incl dev) because some native libs are miscategorized&#10;export NPM_CONFIG_PRODUCTION=false&#10;&#10;if [ ! -d node_modules ] || [ -z &quot;$(ls -A node_modules 2&gt;/dev/null)&quot; ]; then&#10;  echo &quot;&#x2699;&#xfe0f; Installing npm deps&#x2026;&quot;&#10;  if [ -f package-lock.json ]; then&#10;    npm ci --no-audit --no-fund&#10;  else&#10;    npm install --no-audit --no-fund&#10;  fi&#10;else&#10;  echo &quot;&#x2705; node_modules already present&quot;&#10;fi&#10;&#10;# hard checks for the files Xcode Cloud kept missing&#10;test -f node_modules/react-native-worklets-core/ios/Worklets.h&#10;test -d node_modules/react-native-worklets-core/cpp&#10;&#10;echo &quot;&#x2705; worklets-core headers present&quot;&#10;&apos;&#10;">
+               scriptText = "set -e&#10;&#10;PROJECT_ROOT=&quot;${PROJECT_DIR}/..&quot;&#10;cd &quot;$PROJECT_ROOT&quot;&#10;&#10;# Install deps if missing or empty&#10;if [ ! -d node_modules ] || [ -z &quot;$(ls -A node_modules 2&gt;/dev/null)&quot; ]; then&#10;  export NPM_CONFIG_PRODUCTION=false&#10;  if [ -f package-lock.json ]; then&#10;    npm ci --no-audit --no-fund&#10;  else&#10;    npm install --no-audit --no-fund&#10;  fi&#10;fi&#10;&#10;# Hard checks for the headers Xcode complained about&#10;test -f node_modules/react-native-worklets-core/ios/Worklets.h&#10;test -d node_modules/react-native-worklets-core/cpp&#10;"
+               shellToInvoke = "/bin/bash">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
