@@ -41,4 +41,21 @@ require Pod::Executable.execute_command('node', ['-p',
         end
       end
     end
+     projects = [installer.pods_project] +
+             installer.aggregate_targets.map(&:user_project) +
+             installer.generated_projects
+  projects.uniq.each do |proj|
+    proj.object_version = 55
+    proj.save
+  end
+
+  # (B) Remove the RNFB Core Configuration script phase (it causes CI flakes)
+  installer.aggregate_targets.each do |agg|
+    agg.user_targets.each do |ut|
+      ut.shell_script_build_phases
+        .select { |p| p.name =~ /\[RNFB\] Core Configuration/ }
+        .each   { |p| ut.build_phases.delete(p) }
+      ut.project.save
+    end
+  end
   end
