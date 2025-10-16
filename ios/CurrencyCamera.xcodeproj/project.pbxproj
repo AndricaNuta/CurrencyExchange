@@ -208,8 +208,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CurrencyCamera" */;
 			buildPhases = (
-				2F8F3782DBF7659264D039F8 /* [CP] Check Pods Manifest.lock */,
 				A10AE5EE2EA1170300928547 /* ShellScript */,
+				2F8F3782DBF7659264D039F8 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
