@@ -13,7 +13,6 @@ if ! command -v pod > /dev/null; then
   gem install cocoapods -v 1.15.2 --no-document
 fi
 
-echo "📦 Running pod install..."
 pod install --repo-update
 
-echo "✅ CocoaPods install complete"
+echo "✅ Pods installed successfully"
