@@ -89,7 +89,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "set -euo pipefail&#10;&#10;PROJECT_ROOT=&quot;${PROJECT_DIR}/..&quot;&#10;export PATH=&quot;/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH&quot;&#10;&#10;# (node is needed by RN codegen; print version if present)&#10;node -v || true&#10;&#10;cd &quot;$PROJECT_ROOT/ios&quot;&#10;pod install --repo-update&#10;&#10;# verify codegen output exists&#10;test -f &quot;$PROJECT_ROOT/ios/build/generated/ios/RCTAppDependencyProvider.h&quot;&#10;"
+               scriptText = "#!/bin/sh&#10;set -euo pipefail&#10;&#10;echo &quot;&#x1f527; Running pod install for Archive...&quot;&#10;cd &quot;$PROJECT_DIR/..&quot;&#10;export GEM_HOME=&quot;$HOME/.gem&quot;&#10;export PATH=&quot;$GEM_HOME/bin:$PATH&quot;&#10;&#10;if ! command -v pod &gt;/dev/null; then&#10;  echo &quot;Installing CocoaPods...&quot;&#10;  gem install cocoapods --no-document&#10;fi&#10;&#10;cd ios&#10;pod install --repo-update&#10;echo &quot;&#x2705; Pods installed&quot;&#10;"
                shellToInvoke = "/bin/bash">
                <EnvironmentBuildable>
                   <BuildableReference
