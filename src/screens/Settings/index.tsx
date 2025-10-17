@@ -21,6 +21,8 @@ import { useCurrencyPicker } from '../../hooks/useCurrencyPicker';
 import { LegalDialog } from './LegalModal.tsx';
 import { useNotifPermission } from '../../hooks/useNotifPermission';
 import { aboutText, privacyPolicyText, termsOfUseText } from '../../constants/text.ts';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'react-native-feather';
 
 type RowProps = {
   title: string;
@@ -69,6 +71,7 @@ export default function SettingsScreen() {
   const currentLang = (i18n.language?.split('-')[0] ?? 'en') as LanguageCode;
   const styles = useStyles();
   const tkn = useTheme();
+  const navigation = useNavigation();
   const [rateAlerts, setRateAlerts] = useState(true);
   const dispatch = useDispatch();
   const notif = useNotifPermission();
@@ -214,7 +217,13 @@ export default function SettingsScreen() {
                   : 'Unknown';
   return (
     <View style={styles.container}>
-      <Text style={styles.screenTitle}>{t('settings.title')}</Text>
+      <View style={styles.headerRow}>
+  <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
+    <ChevronLeft color={tkn.colors.tint} width={24} height={24} />
+  </Pressable>
+  <Text style={styles.screenTitle}>{t('settings.title')}</Text>
+</View>
+
 
       {/* General */}
       <Text style={styles.sectionHeader}>{t('settings.section.general')}</Text>

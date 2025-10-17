@@ -9,12 +9,18 @@ export const useStyles = makeStyles((t) => ({
     paddingTop: t.spacing(15+3),
     paddingHorizontal: t.spacing(4),
   },
+  headerRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingTop: 16,
+  paddingBottom: 8,
+  gap: 12, 
+},
   screenTitle: {
     fontSize: t.typography.h1.size,
     fontWeight: t.typography.h1.weight as any,
     lineHeight: t.typography.h1.lineHeight,
     color: t.colors.text,
-    marginBottom: t.spacing(2)
   },
   sectionHeader: {
     fontSize: t.typography.caption.size,

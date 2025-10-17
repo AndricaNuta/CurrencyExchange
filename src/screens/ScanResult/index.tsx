@@ -310,9 +310,15 @@ export default function ScanPreviewScreen() {
               });
             }}
           >
-            <Image source={{
-              uri
-            }} style={styles.img} resizeMode="contain" />
+           <Image
+              source={{ uri }}
+              resizeMode="contain"
+              style={[styles.img, { width: '100%', height: '100%' }]}
+              onLayout={(e) => {
+                const { width, height } = e.nativeEvent.layout;
+                setImgLayout({ w: width, h: height });
+              }}
+            />
 
             {/* Overlays */}
             {!showOriginal && ocr &&

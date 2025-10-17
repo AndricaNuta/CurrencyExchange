@@ -38,7 +38,7 @@ export default function ScanActionsPopover(props: {
   ] as const;
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose} presentationStyle="fullScreen">
       <Pressable style={s.backdrop} onPress={onClose}>
         <View />
       </Pressable>

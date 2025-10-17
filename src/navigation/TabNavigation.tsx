@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,33 +34,57 @@ export default function TabNavigation() {
   const [showFabTip, setShowFabTip] = useState(false);
 
 
-  const onTakePhoto = useCallback(async () => {
-    setScanOpen(false);
-    await new Promise(r => setTimeout(r, 80));
-    try {
-      const res = await captureWithCamera(8);
-      if (res?.asset?.uri && res.candidates?.length) {
-        stackNav.navigate('ScanPreview', {
-          uri: res.asset.uri!,
-          candidates: res.candidates!
-        });
-      }
-    } catch (e) { console.warn('[OCR] camera failed', e); }
-  }, [stackNav]);
+const onTakePhoto = useCallback(async () => {
+  setScanOpen(false);
+  await new Promise(r => setTimeout(r, 80));
+  try {
+    const res = await captureWithCamera(8);
+    if (res?.asset?.uri && res.candidates?.length) {
+      stackNav.navigate('ScanPreview', {
+        uri: res.asset.uri!,
+        candidates: res.candidates!
+      });
+    } else {
+      Alert.alert(
+        'Scan Failed',
+        'We couldn’t detect a price in this photo. Try again with better lighting or focus.'
+      );
+    }
+  } catch (e: any) {
+    console.warn('[OCR] camera failed', e);
+    Alert.alert(
+      'Camera Error',
+      'Something went wrong while capturing the image. Please try again.'
+    );
+  }
+}, [stackNav]);
 
-  const onPickImage = useCallback(async () => {
-    setScanOpen(false);
-    await new Promise(r => setTimeout(r, 80));
-    try {
-      const res = await pickFromGallery(8);
-      if (res?.asset?.uri && res.candidates?.length) {
-        stackNav.navigate('ScanPreview', {
-          uri: res.asset.uri!,
-          candidates: res.candidates!
-        });
-      }
-    } catch (e) { console.warn('[OCR] pick failed', e); }
-  }, [stackNav]);
+
+const onPickImage = useCallback(async () => {
+  setScanOpen(false);
+  await new Promise(r => setTimeout(r, 80));
+  try {
+    const res = await pickFromGallery(8);
+    if (res?.asset?.uri && res.candidates?.length) {
+      stackNav.navigate('ScanPreview', {
+        uri: res.asset.uri!,
+        candidates: res.candidates!
+      });
+    } else {
+      Alert.alert(
+        'No Price Found',
+        'We couldn’t detect a price in this image. Please pick another photo.'
+      );
+    }
+  } catch (e: any) {
+    console.warn('[OCR] pick failed', e);
+    Alert.alert(
+      'Upload Error',
+      'Something went wrong while uploading the image. Please try again.'
+    );
+  }
+}, [stackNav]);
+
   const [watchlistTip, setWatchlistTip] = useState(false);
 
   useEffect(() => {
