@@ -5,7 +5,6 @@ echo "🔧 Installing CocoaPods..."
 
 cd ios
 
-# Ensure RubyGems can install pods
 export GEM_HOME="$HOME/.gem"
 export PATH="$GEM_HOME/bin:$PATH"
 
@@ -14,6 +13,7 @@ if ! command -v pod > /dev/null; then
   gem install cocoapods -v 1.15.2 --no-document
 fi
 
+echo "📦 Running pod install..."
 pod install --repo-update
 
-echo "✅ Pods installed successfully"
+echo "✅ CocoaPods install complete"
