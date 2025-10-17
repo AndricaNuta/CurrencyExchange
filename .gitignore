@@ -73,3 +73,20 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# React Native
+ios/Pods/
+ios/build/
+android/.gradle/
+android/build/
+*.log
+
+# Ruby/CocoaPods
+Gemfile.lock
+Podfile.lock
+*.xcuserstate
+
+# Xcode
+*.xcworkspace
+xcuserdata/
+DerivedData/
