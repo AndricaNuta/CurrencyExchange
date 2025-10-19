@@ -33,7 +33,7 @@ export default function ScanActionsPopover({
     },
     {
       key: 'gallery',
-      label: 'Upload image',
+      label: 'Upload menu ',
       onPress: onGallery,
       Icon: ImageIcon
     },

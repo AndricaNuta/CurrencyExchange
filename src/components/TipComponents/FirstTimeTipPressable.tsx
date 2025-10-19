@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useState, forwardRef, useImperativeHandle, useEffect,} from 'react';
-import { GestureResponderEvent, Animated, Easing, InteractionManager } from 'react-native';
+import { GestureResponderEvent, Animated, Easing, InteractionManager, useWindowDimensions } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { getBool, setBool, delKey } from '../../services/mmkv';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -34,6 +34,7 @@ export type FirstTimeTipPressableProps = {
   childContentSpacing?: number;
   displayInsets?: { top: number; left: number; right: number; bottom: number };
   onAfterClose?: () => void;
+  recalcKey?: any;
 };
 
 export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, FirstTimeTipPressableProps>(({
@@ -51,6 +52,7 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
   blockActionOnFirstPress = true,
   runActionAfterClose = false,
   backdrop,
+  recalcKey,
   enableAnchorPulse = true,
   autoOpenOnFirstPress = true,
   interceptPress = true,
@@ -138,6 +140,13 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
     },
   }), [openUI, closeUI, seen, markSeen, storageKey]);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  const {
+    width: winW, height: winH
+  } = useWindowDimensions();
+  useEffect(() => { setSize(null); }, [winW, winH]);
+
+  // ❷ allow parent to request a re-measure (e.g., after expand)
+  useEffect(() => { if (recalcKey != null) setSize(null); }, [recalcKey]);
 
   const node = useMemo(
     () => (typeof content === 'function' ? (content as ContentFactory)({

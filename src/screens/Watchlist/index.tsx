@@ -25,7 +25,7 @@ function FirstCardWithTip({
   onCreateAlert: (base: string, quote: string) => void;
 }) {
   const tipRef = useRef<FirstTimeTipPressableHandle>(null);
-
+  const [recalcKey, setRecalcKey] = useState(0);
   useEffect(() => {
     if (show) requestAnimationFrame(() => tipRef.current?.open());
     else tipRef.current?.close();
@@ -34,6 +34,7 @@ function FirstCardWithTip({
   return (
     <FirstTimeTipPressable
       ref={tipRef}
+      recalcKey={recalcKey}
       placement="bottom"
       interceptPress={false}
       showAnchorClone

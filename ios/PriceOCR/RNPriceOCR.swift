@@ -255,7 +255,9 @@ for i in 0..<prices.count {
   if prices[i]["currencyCode"] == nil {
     let t = (prices[i]["text"] as? String) ?? ""
     let line = (prices[i]["lineText"] as? String) ?? ""
-    if let raw = currencyAnywhere(in: t) ?? currencyAnywhere(in: line) {
+    if let raw = currencyAnywhere(in: t) ??
+                 currencyNear(in: line, around: NSRange(location: 0, length: (line as NSString).length), window: 0) ??
+                 currencyAnywhereSafely(in: line) {
       prices[i]["rawCurrency"]  = raw
       prices[i]["currencyCode"] = normalizeCurrency(raw)
     }
@@ -263,16 +265,13 @@ for i in 0..<prices.count {
 }
 
 // 2) Decide once: are there currencies on the page?
-let pageHasCurrency = prices.contains { $0["currencyCode"] != nil }
-
-// 3) Branch the policy
- if pageHasCurrency {
-  // We have currency on the page → keep currency hits and allow aligned/leader/decimal bare ones.
+let currencyHits = prices.filter { $0["currencyCode"] != nil }
+if currencyHits.count >= 2 {
   gateBareNumbersWhenCurrencyPresent(lines: lines, prices: &prices)
- } else {
-  // No currency anywhere → find right-side price columns across one or more clusters.
-   keepBareNumbersWhenNoCurrencyPresent_V2(lines: lines, prices: &prices)
- }
+} else {
+  // treat as “no currency on page” (or not enough evidence)
+  keepBareNumbersWhenNoCurrencyPresent_V2(lines: lines, prices: &prices)
+}
 }
       // Post-pair orphan labels (pass 1: strict thresholds)
       postPairOrphanLabels(lines: &lines, prices: &prices,
@@ -420,7 +419,9 @@ private func gateBareNumbersWhenCurrencyPresent(lines: [[String: Any]],
 
     // obvious keeps for bare numbers
     let hasDec2 = text.range(of: #"[.,]\d{2}\b"#, options: .regularExpression) != nil
-    let leaderOnLine = lineText.range(of: #"\.{2,}|[–-]"#, options: .regularExpression) != nil
+    let leaderOnLine = lineText.range(of: #"(?:\.{2,}|[·•∙⋅]{2,}|[\p{Pd}])"#, options: .regularExpression) != nil
+
+
 
     // NEW: kill if a currency price shares the row and sits to the right
     let hasCurrencyToRightOnSameRow = currencyByRow.contains {
@@ -540,7 +541,7 @@ if (unitRight || pctRight || abvL || abvR) && !unitSlashBeforePrice(left) {
   guard bare.count >= 3 else { return }
 
   // --- Cluster by horizontal midX (multiple columns supported) ---
-let eps: CGFloat = 0.040
+let eps: CGFloat = 0.060
 let sorted = bare.sorted { $0.mx < $1.mx }
 var clusters: [[Item]] = []
 var cur: [Item] = []
@@ -580,21 +581,24 @@ func unitish(_ b: Item) -> Bool {
 
 var keepIdx = Set<Int>()
 
-
+for b in bare {
+  if looksLikeMenuTail(b.lineText) {
+    keepIdx.insert(b.idx)
+  }
+}
 for cluster in splitClusters {
   let n = cluster.count
   if n < 3 { continue }
 
-  let decimals = cluster.filter { $0.text.range(of: #"[.,]\d{1,2}\b"#, options: .regularExpression) != nil }.count
-  let leaders  = cluster.filter { $0.lineText.range(of: #"\.{2,}|[–-]"#, options: .regularExpression) != nil }.count
-  let labelish = cluster.filter { $0.hasInlineLabel || $0.hasLeftTextNeighbor }.count
-
+let decimals = cluster.filter { $0.text.range(of: #"[.,]\d{1,2}\b"#, options: .regularExpression) != nil }.count
+let leaders  = cluster.filter { $0.lineText.range(of: #"(?:\.{2,}|[·•∙⋅]{2,}|[\p{Pd}])"#, options: .regularExpression) != nil }.count
+let labelish = cluster.filter { $0.hasInlineLabel || $0.hasLeftTextNeighbor }.count
   let mids = cluster.map { $0.mx }.sorted()
   let medianMx = mids[mids.count/2]
   let rightColumnish = medianMx >= 0.54  // slightly looser
 
-  let signals = decimals + leaders + labelish
-  let signalsOk = signals >= max(1, n/5)
+let signals  = decimals + leaders + labelish
+let signalsOk = signals >= max(1, Int(ceil(Double(cluster.count) * 0.25))) // 25% of rows is enough
 
   // NEW: don’t accept columns that are mostly units/ABV
   let unitishCnt   = cluster.filter(unitish).count
@@ -1005,6 +1009,12 @@ private func isQuantitySegment(leftContext: String, rightContext: String) -> Boo
 
     return CIContext().createCGImage(boosted, from: boosted.extent)
   }
+func looksLikeMenuTail(_ t: String) -> Bool {
+  // letters … dash … number at end (7 or 7.5)
+  return t.range(of: #".*[A-Za-z].*[\p{Pd}]\s*\d{1,3}(?:[.,]\d{1,2})?\s*$"#,
+                 options: .regularExpression) != nil
+}
+
 
   /// Converts a Vision rectangle observation to a top-left normalized quad dict.
   private func rectObsToQuadDict(_ obs: VNRectangleObservation) -> [String: Any] {
@@ -1207,9 +1217,21 @@ return keep
     }
     return t
   }
+private func currencyAnywhereSafely(in s: String) -> String? {
+  guard !s.isEmpty else { return nil }
+  let ns = s as NSString
+  let r  = NSRange(location: 0, length: ns.length)
+  guard let m = CURRENCY_NEARBY_REGEX.firstMatch(in: s, options: [], range: r) else { return nil }
 
+  // Reject tokens embedded in longer words (paranoia)
+  if m.range.location > 0 {
+    let prev = ns.substring(with: NSRange(location: m.range.location-1, length: 1))
+    if prev.rangeOfCharacter(from: .letters) != nil { return nil }
+  }
+  return ns.substring(with: m.range)
+}
   /// Prioritized language list: user preferred first, then allowlist, capped to ~10.
-  private func preferredVisionLanguages(maxCount: Int = 10) -> [String] {
+  private func preferredVisionLanguages(maxCount: Int = 3) -> [String] {
     var langs = Locale.preferredLanguages.map(normalizeBCP47ForVision)
     for l in VISION_LANG_ALLOWLIST {
       let norm = normalizeBCP47ForVision(l)
@@ -1421,7 +1443,7 @@ private let CURRENCY_ALIASES: [String: String] = [
   "let":"RON","le1":"RON","lel":"RON",
   "usd": "USD", "$": "USD", "us$": "USD",
   "gbp": "GBP", "£": "GBP",
-
+  "eur": "EUR", "euro": "EUR", "€": "EUR",
   "chf": "CHF", "fr": "CHF", "sfr": "CHF",
   "pln": "PLN", "zł": "PLN", "zl": "PLN",
   "czk": "CZK", "kč": "CZK", "kc": "CZK", "kč.": "CZK",
