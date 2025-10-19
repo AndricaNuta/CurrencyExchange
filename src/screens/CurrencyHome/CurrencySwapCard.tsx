@@ -100,7 +100,6 @@ export const CurrencySwapCard: React.FC<Props> = (props) => {
       events.on('tour.runGuided', ask);
       return () => events.off('tour.runGuided', ask);
     }, []);
-delKey(OB_KEYS.STAR_TIP);
     // Open exactly once, after layout + interactions; retry a couple of times.
     useEffect(() => {
       if (!wantOpen || !starReady || openedRef.current) return;

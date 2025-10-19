@@ -1,6 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, Platform } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 export type NotifState = 'authorized' | 'provisional' | 'denied' | 'blocked' | 'unknown';
 
@@ -35,7 +35,6 @@ export function useNotifPermission() {
   }, [refresh]);
 
   const requestEnable = useCallback(async () => {
-    // (iOS + Android 13+)
     const status = await messaging().requestPermission();
     const next = decode(status);
     setState(next);
@@ -78,10 +77,10 @@ export function useNotifPermission() {
 
   return {
     enabled,
-    state,           
-    checking,       
+    state,
+    checking,
     refresh,
-    requestEnable,   
-    openSettingsToDisable, 
+    requestEnable,
+    openSettingsToDisable,
   };
 }

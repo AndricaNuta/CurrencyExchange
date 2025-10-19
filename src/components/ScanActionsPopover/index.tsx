@@ -1,18 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { GestureResponderEvent, Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { Camera, Image as ImageIcon } from 'react-native-feather';
 import { useStyles } from './styles';
 import { AppTipContent } from '../TipComponents/AppTipContent';
-import { FirstTimeTipAnchor, FirstTimeTipAnchorHandle } from '../TipComponents/FirstTimeTipAnchor';
-import { FirstTimeTipPressable } from '../TipComponents/FirstTimeTipPressable';
+import { FirstTimeTipPressable, FirstTimeTipPressableHandle } from '../TipComponents/FirstTimeTipPressable';
 
 export default function ScanActionsPopover({
   visible,
   onClose,
-  onLive,
   onCamera,
   onGallery,
-  showCoachmark = false,   // parent decides if this is the first guided open
+  showCoachmark = false,
   onCoachmarkSeen,
 }: {
   visible: boolean;
@@ -41,12 +39,10 @@ export default function ScanActionsPopover({
     },
   ] as const;
 
-  const tipRef = useRef<FirstTimeTipAnchorHandle>(null);
+  const tipRef = useRef<FirstTimeTipPressableHandle>(null);
 
-  // When modal shows (content rendered & measurable), open the tip immediately.
   const handleModalShow = () => {
     if (showCoachmark) {
-      // same frame as visibility → no visible lag
       requestAnimationFrame(() => tipRef.current?.open());
     } else {
       tipRef.current?.close();
@@ -63,7 +59,6 @@ export default function ScanActionsPopover({
     onCoachmarkSeen?.();
   };
 
-  // Disable Modal fade ONLY on the first guided open to avoid ~300ms delay
   const animationType = visible && showCoachmark ? 'none' : 'fade';
 
   return (
@@ -81,7 +76,6 @@ export default function ScanActionsPopover({
       </Pressable>
 
       <View style={s.cardWrap} pointerEvents="box-none">
-        {/* Anchor the tip to the card (no press interception) */}
         <FirstTimeTipPressable
           ref={tipRef}
           placement="top"
@@ -90,10 +84,10 @@ export default function ScanActionsPopover({
             text="Choose Camera or Upload to convert instantly."
             primaryLabel="OK"
             onPrimaryPress={acknowledge}
-            arrowPosition="top" />}
-
-            interceptPress={false}
-           >
+            arrowPosition="top" />
+          }
+          interceptPress={false}
+        >
           <View style={s.card}>
             {actions.map(({
               key, label, onPress, Icon

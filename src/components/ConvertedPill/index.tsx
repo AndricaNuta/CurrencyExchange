@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View } from 'react-native';
 import { useGetPairRateQuery } from '../../services/currencyApi';
 import { useStyles } from './styles';
 
@@ -38,11 +38,7 @@ export function ConvertedPill({
     <View
       style={[
         s.pill,
-        variant === 'overlay' && {
-          borderRadius: 18,
-          paddingVertical: 6,
-          paddingHorizontal: 12,
-        },
+        variant === 'overlay' && s.pilloverlay,
         fixedWidth  != null && {
           width: Math.round(fixedWidth)
         },

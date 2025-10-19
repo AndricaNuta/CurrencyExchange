@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, Platform, UIManager, StyleSheet, Animated, Easing, LayoutAnimation } from 'react-native';
 import { Star, Bell, ChevronDown } from 'react-native-feather';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,13 +15,23 @@ import { useStyles } from './styles';
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+export type FavoriteCardHandle = {
+  openAlerts: () => void;
+};
 
-type Props = { base: string; quote: string };
+type Props = {
+  base: string;
+  quote: string;
+  onHeightChange?: (h: number) => void;
+  onExpandedChange?: (expanded: boolean) => void;
+};
 
 const MIN_H = 48;
 const MAX_H = 110;
 
-export default function FavoriteCard({ base, quote }: Props) {
+const FavoriteCard = forwardRef<FavoriteCardHandle, Props>(function FavoriteCard(
+  { base, quote, onHeightChange, onExpandedChange }, ref
+) {
   const s = useStyles();
   const t = useTheme();
   const dispatch = useDispatch();
@@ -42,13 +52,25 @@ export default function FavoriteCard({ base, quote }: Props) {
   const toggleExpand = () => {
     const open = !expanded;
     setExpanded(open);
-    LayoutAnimation.configureNext(LayoutAnimation.create(280, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+    onExpandedChange?.(open);
     Animated.parallel([
-      Animated.timing(aHeight, { toValue: open ? MAX_H : MIN_H, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(aUI, { toValue: open ? 1 : 0, duration: 240, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(aHeight, {
+        toValue: open ? MAX_H : MIN_H,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(aUI, {
+        toValue: open ? 1 : 0,
+        duration: open ? 220 : 160,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
     ]).start();
   };
-
+  useImperativeHandle(ref, () => ({
+    openAlerts: () => setShowModal(true),
+  }), []);
   const [range, setRange] = useState<'1W' | '1M'>('1W');
   const iso = (d: Date) => d.toISOString().slice(0, 10);
   const end = iso(new Date());
@@ -67,7 +89,10 @@ export default function FavoriteCard({ base, quote }: Props) {
   const [chartW, setChartW] = useState(0);
 
   return (
-    <View style={s.card}>
+       <View
+         style={s.card}
+          onLayout={e => onHeightChange?.(e.nativeEvent.layout.height)}  // ✅ report live height
+        >
       {/* header press toggles expand */}
       <Pressable onPress={toggleExpand} accessibilityRole="button">
         <View style={s.topRow}>
@@ -102,27 +127,30 @@ export default function FavoriteCard({ base, quote }: Props) {
       </Pressable>
 
       <View style={s.chartSection}>
-        <Animated.View onLayout={(e) => setChartW(e.nativeEvent.layout.width)} style={[s.chartBox, { height: aHeight }]}>
-          <View style={s.innerChart}>
-            {(!spark.length || histLoading) ? (
-              <View style={{ flex: 1 }} />
-            ) : (
-              <InteractiveSparkline
-                data={spark}
-                dates={labels}
-                tint={t.colors.tint}
-                smooth
-                showFill
-                showGlow
-                paddingPct={0.12}
-                interactive={expanded} // gestures only when expanded
-                onPointHover={(i, v, d, px, py) => {
-                  if (i < 0 || !Number.isFinite(v)) setHover(null);
-                  else setHover({ i, v, d, px: px ?? 0, py: py ?? 0 });
-                }}
-              />
-            )}
-          </View>
+  <Animated.View
+    onLayout={(e) => setChartW(e.nativeEvent.layout.width)}
+    style={[s.chartBox, { height: aHeight }]}   // <- layout-driven height
+  >
+    <View style={s.innerChart}>
+      {(!spark.length || histLoading) ? (
+        <View style={{ flex: 1 }} />
+      ) : (
+        <InteractiveSparkline
+          data={spark}
+          dates={labels}
+          tint={t.colors.tint}
+          smooth
+          showFill
+          showGlow
+          paddingPct={0.12}
+          interactive={expanded} // gestures only when expanded
+          onPointHover={(i, v, d, px, py) => {
+            if (i < 0 || !Number.isFinite(v)) setHover(null);
+            else setHover({ i, v, d, px: px ?? 0, py: py ?? 0 });
+          }}
+        />
+      )}
+    </View>
 
           {hover && Number.isFinite(hover.v) && (
             <>
@@ -150,36 +178,36 @@ export default function FavoriteCard({ base, quote }: Props) {
             </>
           )}
 
-          {expanded && (
-            <Animated.View style={[s.rangeOverlay, { opacity: aUI }]} pointerEvents="box-none">
-              {(['1W', '1M'] as const).map((opt) => {
-                const active = range === opt;
-                return (
-                  <Pressable
-                    key={opt}
-                    onPress={(e) => { e.stopPropagation(); setRange(opt); }}
-                    style={s.rangeChip(active)}
-                    hitSlop={8}
-                    accessibilityLabel={`Range ${opt}`}
-                    pointerEvents="auto"
-                  >
-                    <Text style={s.rangeTxt(active)}>{opt}</Text>
-                  </Pressable>
-                );
-              })}
-            </Animated.View>
-          )}
-        </Animated.View>
+{expanded && (
+      <Animated.View style={[s.rangeOverlay, { opacity: aUI }]} pointerEvents="box-none">
+        {(['1W', '1M'] as const).map((opt) => {
+          const active = range === opt;
+          return (
+            <Pressable
+              key={opt}
+              onPress={(e) => { e.stopPropagation(); setRange(opt); }}
+              style={[s.rangeChip, active ? s.rangeChipActive : s.rangeChipInactive]}
+              hitSlop={8}
+              accessibilityLabel={`Range ${opt}`}
+              pointerEvents="auto"
+            >
+              <Text style={[s.rangeTxt, active ? s.rangeTxtActive : s.rangeTxtInactive]}>{opt}</Text>
+            </Pressable>
+          );
+        })}
+      </Animated.View>
+    )}
+  </Animated.View>
 
-        {expanded && (
-          <>
-            <Animated.View style={[s.axisRow, { opacity: aUI }]}>
-              {labels.length ? [labels[0], labels[Math.floor(labels.length / 2)], labels[labels.length - 1]].map((ds, idx) => (
-                <Text key={idx} style={s.axisTxt}>
-                  {new Date(ds).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </Text>
-              )) : null}
-            </Animated.View>
+  {expanded && (
+    <>
+      <Animated.View style={[s.axisRow, { opacity: aUI }]}>
+        {labels.length ? [labels[0], labels[Math.floor(labels.length / 2)], labels[labels.length - 1]].map((ds, idx) => (
+          <Text key={idx} style={s.axisTxt}>
+            {new Date(ds).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+          </Text>
+        )) : null}
+      </Animated.View>
 
             <View style={s.statsRow}>
               <View style={s.statPill}><Text style={s.statTxt}>High: {hi ? hi.toFixed(4) : '—'}</Text></View>
@@ -217,4 +245,7 @@ export default function FavoriteCard({ base, quote }: Props) {
       />
     </View>
   );
-}
+});
+FavoriteCard.displayName = 'FavoriteCard';
+
+export default FavoriteCard;

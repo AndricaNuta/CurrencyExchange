@@ -72,7 +72,7 @@ export const radius = {
   lg: 20,
   xl: 24,
   sheet: 28,
-  pill: 999,         
+  pill: 999,
 };
 
 export const typography = {

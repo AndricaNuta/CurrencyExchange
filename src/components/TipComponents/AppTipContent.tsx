@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, Animated, Easing } from 'react-native';
+import { View, Text, Pressable, Animated, Easing, Platform } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
+import { useStyles } from './styles';
 
 export type AppTipContentProps = {
   title?: string;
@@ -10,7 +12,7 @@ export type AppTipContentProps = {
   secondaryLabel?: string;
   onSecondaryPress?: () => void;
   maxWidth?: number;
-  width?:number;
+  width?: number;
   showArrow?: boolean;
   arrowPosition?: 'top' | 'bottom' | 'left' | 'right';
 };
@@ -23,10 +25,12 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
   secondaryLabel,
   onSecondaryPress,
   maxWidth = 300,
+  width,
   showArrow = true,
   arrowPosition = 'bottom',
 }) => {
   const t = useTheme();
+  const s = useStyles();
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.98)).current;
 
@@ -38,170 +42,179 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
         easing: Easing.out(Easing.quad),
         useNativeDriver: true
       }),
-      Animated.timing(scale, {
+      Animated.timing(scale,   {
         toValue: 1,
         duration: 160,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true
       }),
     ]).start();
-  }, []);
+  }, [opacity, scale]);
 
-  const bg = t.scheme === 'dark' ? 'rgba(20,20,26,0.98)' : t.colors.surface;
-  const border = t.colors.border;
-  const textColor = t.colors.text;
-  const subColor = t.colors.subtext;
+  const bg       = t.colors.card;
+  const border   = t.colors.border;
+  const titleCol = t.colors.text;
+  const textCol  = t.colors.subtext;
+  const tint     = t.colors.tint;
+  const onTint   = t.colors.onTint;
 
   const Arrow = () => {
     if (!showArrow) return null;
+    const TRI_W = 10, TRI_H = 8;
 
-    // triangle sizes (tweak if you like)
-    const TRI_W = 10;
-    const TRI_H = 8;
-
-    const wrappers = {
+    const wrap: Record<'top'|'bottom'|'left'|'right', object> = {
       bottom: {
         position: 'absolute',
         bottom: -TRI_H,
-        alignSelf: 'center' as const
+        alignSelf: 'center'
       },
       top:    {
         position: 'absolute',
         top:    -TRI_H,
-        alignSelf: 'center' as const
+        alignSelf: 'center'
       },
       left:   {
         position: 'absolute',
         left:   -TRI_H,
-        top: 14
+        top: 16
       },
       right:  {
         position: 'absolute',
         right:  -TRI_H,
-        top: 14
+        top: 16
       },
     };
 
-    if (arrowPosition === 'bottom') {
+    if (arrowPosition === 'bottom' || arrowPosition === 'top') {
+      const isBottom = arrowPosition === 'bottom';
       return (
-        <View style={wrappers.bottom}>
-          {/* border triangle (slightly bigger, behind) */}
-          <View style={{
-            position: 'absolute',
-            bottom: -1, // tiny offset to create a crisp border seam
-            width: 0,
-            height: 0,
-            borderLeftWidth: TRI_W + 1,
-            borderRightWidth: TRI_W + 1,
-            borderTopWidth: TRI_H + 1,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderTopColor: border,
-          }} />
-          {/* fill triangle (front) */}
-          <View style={{
-            width: 0,
-            height: 0,
-            borderLeftWidth: TRI_W,
-            borderRightWidth: TRI_W,
-            borderTopWidth: TRI_H,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderTopColor: bg,
-          }} />
+        <View style={wrap[arrowPosition]}>
+          {/* border seam */}
+          <View
+            style={{
+              position: 'absolute',
+              [isBottom ? 'bottom' : 'top']: -1,
+              width: 0,
+              height: 0,
+              borderLeftWidth: TRI_W + 1,
+              borderRightWidth: TRI_W + 1,
+              [isBottom ? 'borderTopWidth' : 'borderBottomWidth']: TRI_H + 1,
+              borderLeftColor: 'transparent',
+              borderRightColor: 'transparent',
+              [isBottom ? 'borderTopColor' : 'borderBottomColor']: border,
+            } as any}
+          />
+          {/* fill */}
+          <View
+            style={{
+              width: 0,
+              height: 0,
+              borderLeftWidth: TRI_W,
+              borderRightWidth: TRI_W,
+              [isBottom ? 'borderTopWidth' : 'borderBottomWidth']: TRI_H,
+              borderLeftColor: 'transparent',
+              borderRightColor: 'transparent',
+              [isBottom ? 'borderTopColor' : 'borderBottomColor']: bg,
+            } as any}
+          />
         </View>
       );
     }
 
-    if (arrowPosition === 'top') {
-      return (
-        <View style={wrappers.top}>
-          <View style={{
+    // left / right
+    const isRight = arrowPosition === 'right';
+    return (
+      <View style={wrap[arrowPosition]}>
+        {/* border */}
+        <View
+          style={{
             position: 'absolute',
-            top: -1,
+            [isRight ? 'right' : 'left']: -1,
             width: 0,
             height: 0,
-            borderLeftWidth: TRI_W + 1,
-            borderRightWidth: TRI_W + 1,
-            borderBottomWidth: TRI_H + 1,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderBottomColor: border,
-          }} />
-          <View style={{
+            borderTopWidth: TRI_W + 1,
+            borderBottomWidth: TRI_W + 1,
+            [isRight ? 'borderLeftWidth' : 'borderRightWidth']: TRI_H + 1,
+            borderTopColor: 'transparent',
+            borderBottomColor: 'transparent',
+            [isRight ? 'borderLeftColor' : 'borderRightColor']: border,
+          } as any}
+        />
+        {/* fill */}
+        <View
+          style={{
             width: 0,
             height: 0,
-            borderLeftWidth: TRI_W,
-            borderRightWidth: TRI_W,
-            borderBottomWidth: TRI_H,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderBottomColor: bg,
-          }} />
-        </View>
-      );
-    }
-
-    // left/right (optional)
-    // Similar idea with borderTopWidth/borderBottomWidth and borderRight/LeftColor.
-
-    return null;
+            borderTopWidth: TRI_W,
+            borderBottomWidth: TRI_W,
+            [isRight ? 'borderLeftWidth' : 'borderRightWidth']: TRI_H,
+            borderTopColor: 'transparent',
+            borderBottomColor: 'transparent',
+            [isRight ? 'borderLeftColor' : 'borderRightColor']: bg,
+          } as any}
+        />
+      </View>
+    );
   };
 
   return (
     <Animated.View
-      style={{
-        opacity,
-        transform: [{
-          scale
-        }],
-        maxWidth,
-        backgroundColor: bg,
-        borderRadius: 22,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOpacity: 0.18,
-        shadowRadius: 16,
-        shadowOffset: {
-          width: 0,
-          height: 10
-        },
-        elevation: 8,
-      }}
       accessibilityRole="alert"
+      style={[
+        s.container,
+        Platform.select({
+          ios: t.shadow.ios,
+          android: t.shadow.android
+        }),
+        {
+          opacity,
+          transform: [{
+            scale
+          }],
+          maxWidth,
+          ...(width ? {
+            width
+          } : null),
+          backgroundColor: bg
+        },
+      ]}
     >
       <Arrow />
-      <View style={{
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderRadius: 22,
-        borderWidth: 1,
+      <View style={[s.inner, {
         borderColor: border
-      }}>
+      }]}>
         {!!title && (
-          <Text style={{
-            color: textColor,
-            fontSize: 16,
-            fontWeight: '800',
-            marginBottom: 6
-          }}>
+          <Text
+            style={[
+              s.title,
+              {
+                color: titleCol,
+                fontSize: t.typography.title.size,
+                lineHeight: t.typography.title.lineHeight,
+                fontWeight: t.typography.title.weight as any
+              },
+            ]}
+          >
             {title}
           </Text>
         )}
-        <Text style={{
-          color: subColor,
-          fontSize: 14,
-          lineHeight: 20
-        }}>
+
+        <Text
+          style={[
+            s.text,
+            {
+              color: textCol,
+              fontSize: t.typography.body.size,
+              lineHeight: t.typography.body.lineHeight,
+              fontWeight: t.typography.body.weight as any
+            },
+          ]}
+        >
           {text}
         </Text>
 
         {(primaryLabel || secondaryLabel) && (
-          <View style={{
-            flexDirection: 'row',
-            gap: 10,
-            marginTop: 12
-          }}>
+          <View style={s.actions}>
             {!!primaryLabel && (
               <Pressable
                 onPress={onPrimaryPress}
@@ -209,23 +222,23 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
                 accessibilityLabel={primaryLabel}
                 style={({
                   pressed
-                }) => ({
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  backgroundColor: pressed ? t.colors.primaryMuted : t.colors.primary,
-                })}
+                }) => [
+                  s.primaryBtn,
+                  {
+                    backgroundColor: pressed ? alpha(tint, 0.85) : tint
+                  },
+                ]}
                 android_ripple={{
-                  color: t.colors.primaryMuted
+                  color: alpha(tint, 0.2)
                 }}
                 hitSlop={6}
               >
-                <Text style={{
-                  color: t.colors.onPrimary,
-                  fontWeight: '800'
-                }}>{primaryLabel}</Text>
+                <Text style={[s.primaryLabel, {
+                  color: onTint
+                }]}>{primaryLabel}</Text>
               </Pressable>
             )}
+
             {!!secondaryLabel && (
               <Pressable
                 onPress={onSecondaryPress}
@@ -233,22 +246,20 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
                 accessibilityLabel={secondaryLabel}
                 style={({
                   pressed
-                }) => ({
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: border,
-                  backgroundColor: pressed
-                    ? (t.scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')
-                    : 'transparent',
-                })}
+                }) => [
+                  s.secondaryBtn,
+                  {
+                    borderColor: border,
+                    backgroundColor: pressed
+                      ? (t.scheme === 'dark' ? alpha('#FFFFFF', 0.06) : alpha('#000000', 0.04))
+                      : 'transparent',
+                  },
+                ]}
                 hitSlop={6}
               >
-                <Text style={{
-                  color: textColor,
-                  fontWeight: '700'
-                }}>{secondaryLabel}</Text>
+                <Text style={[s.secondaryLabel, {
+                  color: titleCol
+                }]}>{secondaryLabel}</Text>
               </Pressable>
             )}
           </View>

@@ -126,7 +126,9 @@ export default function AlertsCenterModal({
             {/* Header */}
             <View style={s.head}>
               <View style={s.headLeft}>
-                <View style={s.bellBadge}><Bell width={16} height={16} color={t.colors.tint} /></View>
+                <View style={s.bellBadge}>
+                  <Bell width={16} height={16} color={t.colors.tint} />
+                </View>
                 <View style={s.titleWrap}>
                   <Text style={s.title}>Rate alerts</Text>
                   <View style={s.pairPill}>

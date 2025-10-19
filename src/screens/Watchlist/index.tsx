@@ -1,90 +1,36 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Pressable } from 'react-native';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 import FavoriteCard from './FavoriteCard';
 import { ChevronDown } from 'react-native-feather';
-import { useNavigation, useRoute } from '@react-navigation/native';
-// ❌ remove Tooltip import
-// import Tooltip from 'react-native-walkthrough-tooltip';
+import { useRoute } from '@react-navigation/native';
 import { AppTipContent } from '../../components/TipComponents/AppTipContent';
 import { getBool, setBool } from '../../services/mmkv';
-import { makeStyles } from '../../theme/ThemeProvider';
-import { alpha } from '../../theme/tokens';
 import { OB_KEYS } from '../onboarding/onboardingKeys';
-
-// ✅ add this import
 import {FirstTimeTipPressable,
   FirstTimeTipPressableHandle} from '../../components/TipComponents/FirstTimeTipPressable';
+import { useStyles } from './styles';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useGetPairRateQuery } from '../../services/currencyApi';
+import AlertsCenterModal from './AlertsCenterModal';
 
-const useStyles = makeStyles((t) => StyleSheet.create({
-  screen: {
-    flex: 1,
-    paddingTop: 60
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: t.colors.bg,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: t.colors.text
-  },
-  sub: {
-    color: t.colors.subtext
-  },
-  sortBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    height: 32,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: alpha(t.colors.border, 0.9),
-    backgroundColor: t.scheme === 'dark' ? alpha('#fff', 0.04) : alpha('#111827', 0.03),
-  },
-  sortTxt: {
-    color: t.colors.text,
-    fontWeight: '700',
-    fontSize: 12
-  },
-  emptyWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24
-  },
-  emptyTxt: {
-    color: t.colors.subtext,
-    textAlign: 'center'
-  },
-  list: {
-    paddingBottom: 24
-  },
-}));
 
-// --- Helper row that owns the tip (anchor mode; no press interception)
 function FirstCardWithTip({
-  base, quote, defaultAmount,
-  show, onDismiss, onCreateAlert,
+  base, quote, show, onCreateAlert,
 }: {
-  base: string; quote: string; defaultAmount: number;
-  show: boolean; onDismiss: () => void; onCreateAlert: () => void;
+  base: string;
+  quote: string;
+  show: boolean;
+  onCreateAlert: (base: string, quote: string) => void;
 }) {
   const tipRef = useRef<FirstTimeTipPressableHandle>(null);
-  const [anchorW, setAnchorW] = useState<number | null>(null);
 
   useEffect(() => {
     if (show) requestAnimationFrame(() => tipRef.current?.open());
     else tipRef.current?.close();
   }, [show]);
+
   return (
     <FirstTimeTipPressable
       ref={tipRef}
@@ -106,20 +52,21 @@ function FirstCardWithTip({
           title="Get notified"
           text="Create an alert when the rate changes."
           primaryLabel="Create alert"
-          onPrimaryPress={() => { close(); onCreateAlert(); }}
+          onPrimaryPress={() => {
+            close();                                     // close tip first
+            requestAnimationFrame(() => onCreateAlert(base, quote)); // then open modal at parent
+          }}
           arrowPosition="bottom"
         />
       )}
     >
-      <FavoriteCard base={base} quote={quote} defaultAmount={defaultAmount} />
-
+      <FavoriteCard base={base} quote={quote} />
     </FirstTimeTipPressable>
   );
 }
 
 export default function WatchlistScreen() {
   const s = useStyles();
-  const nav = useNavigation<any>();
   const route = useRoute<any>();
   const fromTour = !!route.params?.fromTour;
   const items = useSelector((st: RootState) => st.favorites.items);
@@ -140,10 +87,25 @@ export default function WatchlistScreen() {
       requestAnimationFrame(() => setShowStep3(true));
     }
   }, []);
+  const [alertsFor, setAlertsFor] = useState<{ base: string; quote: string } | null>(null);
 
-  const openCreateAlert = () => {
+  const {
+    data: selectedPair
+  } = useGetPairRateQuery(
+    alertsFor ? {
+      from: alertsFor.base,
+      to: alertsFor.quote
+    } : skipToken as any,
+    {
+      skip: !alertsFor
+    } );
+  const currentRate = selectedPair?.rate;
+  const openCreateAlert = (b: string, q: string) => {
     setShowStep3(false);
-    // TODO: open your alerts UI (sheet/modal/nav) here
+    setAlertsFor({
+      base: b,
+      quote: q
+    });
   };
 
   if (!pairs.length) {
@@ -181,17 +143,27 @@ export default function WatchlistScreen() {
               <FirstCardWithTip
                 base={item.base}
                 quote={item.quote}
-                defaultAmount={1000}
                 show={showStep3}
-                onDismiss={() => setShowStep3(false)}
-                onCreateAlert={openCreateAlert}
+                onCreateAlert={openCreateAlert}  // 👈 pass parent opener
               />
             );
           }
           return (
-            <FavoriteCard base={item.base} quote={item.quote} defaultAmount={1000} />
+            <FavoriteCard
+              base={item.base}
+              quote={item.quote} />
           );
         }}
+      />
+      <AlertsCenterModal
+        visible={!!alertsFor}
+        onClose={() => setAlertsFor(null)}
+        base={alertsFor?.base}
+        quote={alertsFor?.quote}
+        currentRate={currentRate}
+        hasAlerts={false}  // or compute from store if you want
+        step={0.01}
+        decimals={4}
       />
     </View>
   );

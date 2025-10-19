@@ -1,46 +1,39 @@
-// src/components/TipComponents/FirstTimeTipPressable.tsx
-/* eslint-disable max-len */
-import React, {useCallback, useMemo, useRef, useState, forwardRef, useImperativeHandle,} from 'react';
-import { GestureResponderEvent, Pressable, ViewStyle, Animated, Easing } from 'react-native';
+import React, {useCallback, useMemo, useRef, useState, forwardRef, useImperativeHandle, useEffect,} from 'react';
+import { GestureResponderEvent, Animated, Easing, InteractionManager } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { getBool, setBool, delKey } from '../../services/mmkv';
+import { useTheme } from '../../theme/ThemeProvider';
+import { alpha } from '../../theme/tokens';
 
 export type Placement = 'top' | 'bottom' | 'left' | 'right';
 export type ContentFactory = (api: { close: () => void }) => React.ReactNode;
 
 export type FirstTimeTipPressableHandle = {
-  /** Open the tip now (ignores "seen" state) */
   open: () => void;
-  /** Close the tip now */
   close: () => void;
-  /** Has the tip been seen (persisted)? */
   isSeen: () => boolean;
-  /** Mark as seen/unseen */
   setSeen: (v: boolean) => void;
-  /** Clear persistence entirely */
   resetSeen: () => void;
-  /** Mark as seen AND open now (useful for “show once now”) */
   forceShowOnce: () => void;
 };
 
 export type FirstTimeTipPressableProps = {
-  storageKey?: string;                               // "show once" key
-  content: React.ReactNode | ContentFactory;         // node or factory({close})
+  storageKey?: string;
+  content: React.ReactNode | ContentFactory;
   placement?: Placement;
-  onPress?: (e?: GestureResponderEvent) => void;      // original action
-  children: React.ReactElement;                      // anchor
-  tooltipStyle?: ViewStyle;
-  blockActionOnFirstPress?: boolean;                 // default: true
-  runActionAfterClose?: boolean;                     // if first-time, run after closing
-  backdrop?: string;                                 // dimmer
+  onPress?: (e?: GestureResponderEvent) => void;
+  children: React.ReactElement;
+  blockActionOnFirstPress?: boolean;
+  runActionAfterClose?: boolean;
+  backdrop?: string;
   enableAnchorPulse?: boolean;
-  fallbackPlacement?: Placement;
   onFirstShow?: () => void;
   autoOpenOnFirstPress?: boolean;
   interceptPress?: boolean;
-  showAnchorClone?: boolean;      // NEW: default false
+  showAnchorClone?: boolean;
   childContentSpacing?: number;
-  displayInsets?: { top: number; left: number; right: number; bottom: number }; // NEW        // analytics hook
+  displayInsets?: { top: number; left: number; right: number; bottom: number };
+  onAfterClose?: () => void;
 };
 
 export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, FirstTimeTipPressableProps>(({
@@ -57,24 +50,25 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
   },
   blockActionOnFirstPress = true,
   runActionAfterClose = false,
-  backdrop = 'rgba(0,0,0,0.20)',
+  backdrop,
   enableAnchorPulse = true,
   autoOpenOnFirstPress = true,
   interceptPress = true,
   onFirstShow,
   showAnchorClone = false,
   childContentSpacing = 8,
+  onAfterClose
 }, ref) => {
+  const t = useTheme();
   const [visible, setVisible] = useState(false);
-  const [currentPlacement, setCurrentPlacement] = useState<Placement>(placement);
   const scale = useRef(new Animated.Value(1)).current;
-  const pendingRunRef = useRef(false); // run action after close if requested
+  const pendingRunRef = useRef(false);
+  const closedFlag = useRef(false);
 
   const seen = useCallback(() => (storageKey ? getBool(storageKey) : false), [storageKey]);
   const markSeen = useCallback((v: boolean) => {
     if (!storageKey) return;
-    if (v) setBool(storageKey, true);
-    else delKey(storageKey);
+    v ? setBool(storageKey, true) : delKey(storageKey);
   }, [storageKey]);
 
   const pulse = useCallback(() => {
@@ -84,37 +78,44 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
       toValue: 1,
       duration: 140,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
   }, [enableAnchorPulse, scale]);
 
   const openUI = useCallback(() => {
     requestAnimationFrame(() => {
-      setCurrentPlacement(placement);
       setVisible(true);
       pulse();
       onFirstShow?.();
     });
-  }, [placement, pulse, onFirstShow]);
+  }, [pulse, onFirstShow]);
 
   const closeUI = useCallback(() => {
+    closedFlag.current = true;
     setVisible(false);
   }, []);
+  useEffect(() => {
+    if (!visible && closedFlag.current) {
+      closedFlag.current = false;
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => onAfterClose?.());
+      });
+    }
+  }, [visible, onAfterClose]);
 
   const handlePress = useCallback(
     (e?: GestureResponderEvent) => {
       const alreadySeen = seen();
 
       if (!alreadySeen && autoOpenOnFirstPress) {
-        if (storageKey) setBool(storageKey, true);
+        markSeen(true);
         openUI();
         if (runActionAfterClose) pendingRunRef.current = true;
         if (blockActionOnFirstPress) return;
       }
-
       onPress?.(e);
     },
-    [seen, storageKey, autoOpenOnFirstPress, openUI, runActionAfterClose, blockActionOnFirstPress, onPress],
+    [seen, autoOpenOnFirstPress, markSeen, openUI, runActionAfterClose, blockActionOnFirstPress, onPress],
   );
 
   const close = useCallback(() => {
@@ -125,18 +126,18 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
     }
   }, [closeUI, onPress]);
 
-  // imperative controller
   useImperativeHandle(ref, () => ({
     open: openUI,
     close: closeUI,
     isSeen: seen,
     setSeen: markSeen,
-    resetSeen: () => storageKey && delKey(storageKey),
+    resetSeen: () => storageKey,
     forceShowOnce: () => {
-      if (storageKey) setBool(storageKey, true);
+      markSeen(true);
       openUI();
     },
   }), [openUI, closeUI, seen, markSeen, storageKey]);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
 
   const node = useMemo(
     () => (typeof content === 'function' ? (content as ContentFactory)({
@@ -144,11 +145,9 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
     }) : content),
     [content, close],
   );
-  const [size, setSize] = useState<{w:number; h:number} | null>(null);
 
-  // compose child's onPress (don’t clobber)
   const composedChild = useMemo(() => {
-    if (!interceptPress) return children; // anchor mode: don't inject onPress
+    if (!interceptPress) return children;
     const childOnPress = (children.props as any).onPress as ((e?: any) => void) | undefined;
     const merged = (e?: GestureResponderEvent) => {
       handlePress(e);
@@ -156,27 +155,29 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
     };
     return React.cloneElement(children, {
       onPress: merged,
-      accessibilityRole: (children.props as any).accessibilityRole ?? 'button'
+      accessibilityRole: (children.props as any).accessibilityRole ?? 'button',
     });
   }, [children, interceptPress, handlePress, visible, blockActionOnFirstPress]);
+
+  const backdropColor =
+    backdrop ?? (t.scheme === 'dark' ? alpha('#000000', 0.55) : alpha('#000000', 0.20));
 
   return (
     <Tooltip
       isVisible={visible}
-      placement={currentPlacement}
+      placement={placement}
       onClose={close}
-      backgroundColor={backdrop}
+      backgroundColor={backdropColor}
       displayInsets={displayInsets}
       useInteractionManager
-      showChildInTooltip={showAnchorClone}   // ✅ hide the “ghost” by default
+      showChildInTooltip={showAnchorClone}
       childContentSpacing={childContentSpacing}
       tooltipStyle={{
         backgroundColor: 'transparent',
         padding: 0,
         borderWidth: 0,
-        shadowColor: 'transparent',
         shadowOpacity: 0,
-        elevation: 0,
+        elevation: 0
       }}
       contentStyle={{
         backgroundColor: 'transparent',
@@ -185,25 +186,24 @@ export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, Fir
       arrowSize={{
         width: 0,
         height: 0
-      }} // <- hides library arrow
+      }}
       content={node}
     >
-
-      <Animated.View  onLayout={e => setSize({
-        w: e.nativeEvent.layout.width,
-        h: e.nativeEvent.layout.height
-      })}
-      style={[
-        {
-          transform: [{
-            scale
-          }]
-        },
-        size && {
-          width: size.w,
-          height: size.h
-        }
-      ]}
+      <Animated.View
+        onLayout={e => setSize({
+          w: e.nativeEvent.layout.width,
+          h: e.nativeEvent.layout.height
+        })}
+        style={[
+          {
+            transform: [{
+              scale
+            }]
+          },
+          size && {
+            width: size.w
+          }                    // ✅ lock width only
+        ]}
       >
         {composedChild}
       </Animated.View>

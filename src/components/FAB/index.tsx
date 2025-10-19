@@ -4,11 +4,11 @@ import { useStyles } from './styles';
 type FABProps = {
   open: boolean;
   onToggle?: () => void;
-  onPress?: (e?: any) => void; // ✅ add this
+  onPress?: (e?: any) => void;
   style?: any;
 };
 export default function FAB({
-  open, onToggle, onPress, style
+  open, onToggle, onPress
 }: FABProps) {
 
   const s = useStyles();
@@ -19,9 +19,7 @@ export default function FAB({
     outputRange: ['0deg', '45deg']
   });
   const handlePress = (e?: any) => {
-    // First let wrappers (tips) run their logic
-    onPress?.(e);          // ✅ allows FirstTimeTipPressable to hook in
-    // Then keep existing behavior
+    onPress?.(e);
     onToggle?.();
   };
   useEffect(() => {

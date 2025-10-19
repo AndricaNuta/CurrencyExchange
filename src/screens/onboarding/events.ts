@@ -1,9 +1,9 @@
 import mitt from 'mitt';
 
 export type TourEvents = {
-  'tour.starToWatchlist.step2': undefined;   // show tab tooltip
+  'tour.starToWatchlist.step2': undefined;
   'tour.starToWatchlist.clear': undefined;
-  'tour.runGuided': undefined;               // 👈 NEW: open the first step now
+  'tour.runGuided': undefined;
   'alerts.open.forPair': { base: string; quote: string; fromTour?: boolean };
 };
 
