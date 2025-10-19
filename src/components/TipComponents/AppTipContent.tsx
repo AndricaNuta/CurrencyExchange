@@ -10,6 +10,7 @@ export type AppTipContentProps = {
   secondaryLabel?: string;
   onSecondaryPress?: () => void;
   maxWidth?: number;
+  width?:number;
   showArrow?: boolean;
   arrowPosition?: 'top' | 'bottom' | 'left' | 'right';
 };
@@ -53,56 +54,98 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
 
   const Arrow = () => {
     if (!showArrow) return null;
-    const base = {
-      width: 14,
-      height: 14,
-      backgroundColor: bg,
-      borderColor: border
-    } as const;
-    const map = {
+
+    // triangle sizes (tweak if you like)
+    const TRI_W = 10;
+    const TRI_H = 8;
+
+    const wrappers = {
       bottom: {
-        transform: [{
-          rotate: '45deg'
-        }],
         position: 'absolute',
-        bottom: -7,
-        alignSelf: 'center',
-        borderLeftWidth: 1,
-        borderBottomWidth: 1
+        bottom: -TRI_H,
+        alignSelf: 'center' as const
       },
-      top: {
-        transform: [{
-          rotate: '45deg'
-        }],
+      top:    {
         position: 'absolute',
-        top: -7,
-        alignSelf: 'center',
-        borderTopWidth: 1,
-        borderRightWidth: 1
+        top:    -TRI_H,
+        alignSelf: 'center' as const
       },
-      left: {
-        transform: [{
-          rotate: '45deg'
-        }],
+      left:   {
         position: 'absolute',
-        left: -7,
-        top: 14,
-        borderLeftWidth: 1,
-        borderTopWidth: 1
+        left:   -TRI_H,
+        top: 14
       },
-      right: {
-        transform: [{
-          rotate: '45deg'
-        }],
+      right:  {
         position: 'absolute',
-        right: -7,
-        top: 14,
-        borderRightWidth: 1,
-        borderBottomWidth: 1
+        right:  -TRI_H,
+        top: 14
       },
-    } as const;
-    // @ts-ignore
-    return <View style={[base, map[arrowPosition]]} />;
+    };
+
+    if (arrowPosition === 'bottom') {
+      return (
+        <View style={wrappers.bottom}>
+          {/* border triangle (slightly bigger, behind) */}
+          <View style={{
+            position: 'absolute',
+            bottom: -1, // tiny offset to create a crisp border seam
+            width: 0,
+            height: 0,
+            borderLeftWidth: TRI_W + 1,
+            borderRightWidth: TRI_W + 1,
+            borderTopWidth: TRI_H + 1,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderTopColor: border,
+          }} />
+          {/* fill triangle (front) */}
+          <View style={{
+            width: 0,
+            height: 0,
+            borderLeftWidth: TRI_W,
+            borderRightWidth: TRI_W,
+            borderTopWidth: TRI_H,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderTopColor: bg,
+          }} />
+        </View>
+      );
+    }
+
+    if (arrowPosition === 'top') {
+      return (
+        <View style={wrappers.top}>
+          <View style={{
+            position: 'absolute',
+            top: -1,
+            width: 0,
+            height: 0,
+            borderLeftWidth: TRI_W + 1,
+            borderRightWidth: TRI_W + 1,
+            borderBottomWidth: TRI_H + 1,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderBottomColor: border,
+          }} />
+          <View style={{
+            width: 0,
+            height: 0,
+            borderLeftWidth: TRI_W,
+            borderRightWidth: TRI_W,
+            borderBottomWidth: TRI_H,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderBottomColor: bg,
+          }} />
+        </View>
+      );
+    }
+
+    // left/right (optional)
+    // Similar idea with borderTopWidth/borderBottomWidth and borderRight/LeftColor.
+
+    return null;
   };
 
   return (
@@ -115,6 +158,7 @@ export const AppTipContent: React.FC<AppTipContentProps> = ({
         maxWidth,
         backgroundColor: bg,
         borderRadius: 22,
+        overflow: 'hidden',
         shadowColor: '#000',
         shadowOpacity: 0.18,
         shadowRadius: 16,

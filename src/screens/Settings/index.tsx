@@ -23,6 +23,8 @@ import { useNotifPermission } from '../../hooks/useNotifPermission';
 import { aboutText, privacyPolicyText, termsOfUseText } from '../../constants/text.ts';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from 'react-native-feather';
+import { runGuidedTour } from '../onboarding/events.ts';
+import { markGuidedTourPending, restartTips } from '../onboarding/onboardingKeys.ts';
 
 type RowProps = {
   title: string;
@@ -218,11 +220,11 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-  <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
-    <ChevronLeft color={tkn.colors.tint} width={24} height={24} />
-  </Pressable>
-  <Text style={styles.screenTitle}>{t('settings.title')}</Text>
-</View>
+        <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
+          <ChevronLeft color={tkn.colors.tint} width={24} height={24} />
+        </Pressable>
+        <Text style={styles.screenTitle}>{t('settings.title')}</Text>
+      </View>
 
 
       {/* General */}
@@ -334,6 +336,20 @@ export default function SettingsScreen() {
               <Moon color={tkn.colors[tkn.roles.settings.darkModeIcon.fg]} />
             </View>
           }
+        />
+      </View>
+      <Text style={styles.sectionHeader}>Tips & tutorial</Text>
+      <View style={styles.card}>
+        <View style={styles.divider} />
+        <Row
+          title="Run guided tour"
+          subtitle="Quick walkthrough of saving a pair and alerts"
+          onPress={() => {
+            restartTips();
+            markGuidedTourPending();
+            navigation.navigate('TabNavigation' as never);
+            setTimeout(() => runGuidedTour(), 150);
+          }}
         />
       </View>
       <Text style={styles.sectionHeader}>{t('Legal')}</Text>

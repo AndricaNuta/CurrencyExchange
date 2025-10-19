@@ -18,6 +18,15 @@ export const useStyles = makeStyles((t) => ({
     ...t.shadow.android,
     overflow: 'visible',
   },
+  settingsAnchor: {
+    position: 'absolute',
+    right: 16,        // ⬅️ match where your FloatingSettingsButton renders
+    bottom: 48,       // ⬅️ align with bottomGuardPx or your button’s offset
+    width: 56,        // ⬅️ roughly the size of your floating button
+    height: 56,
+    borderRadius: 28,
+    // backgroundColor: 'rgba(255,0,0,0.1)', // uncomment briefly to verify alignment
+  },
   block: {
     padding: t.spacing(5),
   },

@@ -1,20 +1,26 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
-import  FavoriteCard  from './FavoriteCard';
+import FavoriteCard from './FavoriteCard';
 import { ChevronDown } from 'react-native-feather';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import Tooltip from 'react-native-walkthrough-tooltip';
+// ❌ remove Tooltip import
+// import Tooltip from 'react-native-walkthrough-tooltip';
 import { AppTipContent } from '../../components/TipComponents/AppTipContent';
 import { getBool, setBool } from '../../services/mmkv';
 import { makeStyles } from '../../theme/ThemeProvider';
 import { alpha } from '../../theme/tokens';
+import { OB_KEYS } from '../onboarding/onboardingKeys';
+
+// ✅ add this import
+import {FirstTimeTipPressable,
+  FirstTimeTipPressableHandle} from '../../components/TipComponents/FirstTimeTipPressable';
 
 const useStyles = makeStyles((t) => StyleSheet.create({
   screen: {
     flex: 1,
-    paddingTop:60,
+    paddingTop: 60
   },
   header: {
     paddingHorizontal: 16,
@@ -64,6 +70,53 @@ const useStyles = makeStyles((t) => StyleSheet.create({
   },
 }));
 
+// --- Helper row that owns the tip (anchor mode; no press interception)
+function FirstCardWithTip({
+  base, quote, defaultAmount,
+  show, onDismiss, onCreateAlert,
+}: {
+  base: string; quote: string; defaultAmount: number;
+  show: boolean; onDismiss: () => void; onCreateAlert: () => void;
+}) {
+  const tipRef = useRef<FirstTimeTipPressableHandle>(null);
+  const [anchorW, setAnchorW] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (show) requestAnimationFrame(() => tipRef.current?.open());
+    else tipRef.current?.close();
+  }, [show]);
+  return (
+    <FirstTimeTipPressable
+      ref={tipRef}
+      placement="bottom"
+      interceptPress={false}
+      showAnchorClone
+      displayInsets={{
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
+      childContentSpacing={10}
+      backdrop="rgba(0,0,0,0.20)"
+      content={({
+        close
+      }) => (
+        <AppTipContent
+          title="Get notified"
+          text="Create an alert when the rate changes."
+          primaryLabel="Create alert"
+          onPrimaryPress={() => { close(); onCreateAlert(); }}
+          arrowPosition="bottom"
+        />
+      )}
+    >
+      <FavoriteCard base={base} quote={quote} defaultAmount={defaultAmount} />
+
+    </FirstTimeTipPressable>
+  );
+}
+
 export default function WatchlistScreen() {
   const s = useStyles();
   const nav = useNavigation<any>();
@@ -79,18 +132,20 @@ export default function WatchlistScreen() {
     else arr.sort((a, b) => b.id.localeCompare(a.id));
     return arr;
   }, [pairs, sort]);
+
   const [showStep3, setShowStep3] = useState(fromTour);
   useEffect(() => {
-    if (getBool('tour_watchlist_step3')) {
-      setShowStep3(true);
-      setBool('tour_watchlist_step3', false); // clear so it doesn't retrigger
+    if (getBool(OB_KEYS.WATCHLIST_STEP3)) {
+      setBool(OB_KEYS.WATCHLIST_STEP3, false);   // consume flag
+      requestAnimationFrame(() => setShowStep3(true));
     }
   }, []);
 
   const openCreateAlert = () => {
     setShowStep3(false);
-    // open your alerts UI here (sheet/modal/nav)
+    // TODO: open your alerts UI (sheet/modal/nav) here
   };
+
   if (!pairs.length) {
     return (
       <View style={s.emptyWrap}>
@@ -121,37 +176,20 @@ export default function WatchlistScreen() {
         renderItem={({
           item, index
         }) => {
-          const card = (
-            <FavoriteCard
-              base={item.base}
-              quote={item.quote}
-              defaultAmount={1000} />
-          );
-
-          if (index !== 0) return card; // tip only on first card
-
+          if (index === 0) {
+            return (
+              <FirstCardWithTip
+                base={item.base}
+                quote={item.quote}
+                defaultAmount={1000}
+                show={showStep3}
+                onDismiss={() => setShowStep3(false)}
+                onCreateAlert={openCreateAlert}
+              />
+            );
+          }
           return (
-            <Tooltip
-              isVisible={showStep3}
-              placement="bottom"
-              onClose={() => setShowStep3(false)}
-              backgroundColor="rgba(0,0,0,0.20)"
-              tooltipStyle={{
-                backgroundColor: 'transparent',
-                padding: 0
-              }}
-              content={
-                <AppTipContent
-                  title="Stay in the loop"
-                  text="Create an alert to get notified when this rate moves."
-                  primaryLabel="Create alert"
-                  onPrimaryPress={openCreateAlert}
-                  arrowPosition="bottom"
-                />
-              }
-            >
-              {card}
-            </Tooltip>
+            <FavoriteCard base={item.base} quote={item.quote} defaultAmount={1000} />
           );
         }}
       />

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Linking, InteractionManager } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../redux/store';
@@ -21,6 +21,9 @@ import { Bell, Star } from 'react-native-feather';
 import { FloatingGear, FloatingSettingsButton } from '../../components/FloatingSettingsButton';
 import { useSpotlight } from '../onboarding/useSpotlight';
 import { delKey } from '../../services/mmkv';
+import { FirstTimeTipPressableHandle } from '../../components/TipComponents/FirstTimeTipPressable';
+import { events } from '../onboarding/events';
+import { consumeGuidedTourPending } from '../onboarding/onboardingKeys';
 
 const nowDate = () => {
   const d = new Date();
@@ -135,8 +138,36 @@ export default function CurrencyConverterScreen() {
       })),
     [list, toQ]
   );
+  const starTipHandle = useRef<FirstTimeTipPressableHandle>(null);
+  const [starReady, setStarReady] = useState(false);
+  const [wantOpen, setWantOpen] = useState(false);
+  const openedRef = useRef(false);
 
-  delKey('tip_star_seen');
+  // 1) if Settings queued the tour earlier, request open
+  useEffect(() => {
+    if (consumeGuidedTourPending()) setWantOpen(true);
+  }, []);
+
+  // 2) also react to the event as a fallback
+  useEffect(() => {
+    const ask = () => setWantOpen(true);
+    events.on('tour.runGuided', ask);
+    return () => events.off('tour.runGuided', ask);
+  }, []);
+
+  // 3) open exactly once after layout & interactions settle
+  useEffect(() => {
+    if (!wantOpen || !starReady || openedRef.current) return;
+    const task = InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
+        openedRef.current = true;
+        setWantOpen(false);
+        starTipHandle.current?.forceShowOnce(); // mark seen + open now
+      });
+    });
+    return () => task.cancel();
+  }, [wantOpen, starReady]);
+
   useEffect(() => {
     const p = route?.params?.preset as {
       from: string;
@@ -235,6 +266,8 @@ export default function CurrencyConverterScreen() {
           isFavorite={isFav}
           onToggleFavorite={onToggleFav}
           onOpenAlerts={openAlerts}
+          starTipExternalRef={starTipHandle}           // 👈 pass the handle down
+  onStarAnchorReady={() => setStarReady(true)}
         />
         <FloatingSettingsButton onPress={() => nav.navigate('Settings')} bottomGuardPx={48}/>
 

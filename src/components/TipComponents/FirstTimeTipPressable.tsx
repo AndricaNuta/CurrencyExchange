@@ -1,56 +1,81 @@
+// src/components/TipComponents/FirstTimeTipPressable.tsx
 /* eslint-disable max-len */
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {useCallback, useMemo, useRef, useState, forwardRef, useImperativeHandle,} from 'react';
 import { GestureResponderEvent, Pressable, ViewStyle, Animated, Easing } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import { getBool, setBool } from '../../services/mmkv';
+import { getBool, setBool, delKey } from '../../services/mmkv';
 
 export type Placement = 'top' | 'bottom' | 'left' | 'right';
 export type ContentFactory = (api: { close: () => void }) => React.ReactNode;
 
-export type FirstTimeTipPressableProps = {
-  /** Persist key. If omitted, behaves like a normal tip (no "show once"). */
-  storageKey?: string;
-  /** Static node or factory receiving { close } */
-  content: React.ReactNode | ContentFactory;
-  placement?: Placement;
-  /** Original action for the control */
-  onPress: (e?: GestureResponderEvent) => void;
-  /** The anchored control (icon/button) */
-  children: React.ReactElement;
-  /** Extra styling for the tooltip's container (outer) */
-  tooltipStyle?: ViewStyle;
-  /** Block the first tap to show the tip (default true). */
-  blockActionOnFirstPress?: boolean;
-  /** If true, runs the original action automatically when the user closes the first tip. */
-  runActionAfterClose?: boolean;
-  /** Dimmer color */
-  backdrop?: string;
-  /** Small pulse on anchor when showing the tip */
-  enableAnchorPulse?: boolean;
-  /** If placement overflows, switch to this once */
-  fallbackPlacement?: Placement;
-  /** Called the very first time the tip shows (analytics hook) */
-  onFirstShow?: () => void;
+export type FirstTimeTipPressableHandle = {
+  /** Open the tip now (ignores "seen" state) */
+  open: () => void;
+  /** Close the tip now */
+  close: () => void;
+  /** Has the tip been seen (persisted)? */
+  isSeen: () => boolean;
+  /** Mark as seen/unseen */
+  setSeen: (v: boolean) => void;
+  /** Clear persistence entirely */
+  resetSeen: () => void;
+  /** Mark as seen AND open now (useful for “show once now”) */
+  forceShowOnce: () => void;
 };
 
-export const FirstTimeTipPressable: React.FC<FirstTimeTipPressableProps> = ({
+export type FirstTimeTipPressableProps = {
+  storageKey?: string;                               // "show once" key
+  content: React.ReactNode | ContentFactory;         // node or factory({close})
+  placement?: Placement;
+  onPress?: (e?: GestureResponderEvent) => void;      // original action
+  children: React.ReactElement;                      // anchor
+  tooltipStyle?: ViewStyle;
+  blockActionOnFirstPress?: boolean;                 // default: true
+  runActionAfterClose?: boolean;                     // if first-time, run after closing
+  backdrop?: string;                                 // dimmer
+  enableAnchorPulse?: boolean;
+  fallbackPlacement?: Placement;
+  onFirstShow?: () => void;
+  autoOpenOnFirstPress?: boolean;
+  interceptPress?: boolean;
+  showAnchorClone?: boolean;      // NEW: default false
+  childContentSpacing?: number;
+  displayInsets?: { top: number; left: number; right: number; bottom: number }; // NEW        // analytics hook
+};
+
+export const FirstTimeTipPressable = forwardRef<FirstTimeTipPressableHandle, FirstTimeTipPressableProps>(({
   storageKey,
   content,
   placement = 'top',
   onPress,
   children,
-  tooltipStyle,
+  displayInsets = {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  },
   blockActionOnFirstPress = true,
   runActionAfterClose = false,
   backdrop = 'rgba(0,0,0,0.20)',
   enableAnchorPulse = true,
-  fallbackPlacement = 'bottom',
+  autoOpenOnFirstPress = true,
+  interceptPress = true,
   onFirstShow,
-}) => {
+  showAnchorClone = false,
+  childContentSpacing = 8,
+}, ref) => {
   const [visible, setVisible] = useState(false);
   const [currentPlacement, setCurrentPlacement] = useState<Placement>(placement);
   const scale = useRef(new Animated.Value(1)).current;
   const pendingRunRef = useRef(false); // run action after close if requested
+
+  const seen = useCallback(() => (storageKey ? getBool(storageKey) : false), [storageKey]);
+  const markSeen = useCallback((v: boolean) => {
+    if (!storageKey) return;
+    if (v) setBool(storageKey, true);
+    else delKey(storageKey);
+  }, [storageKey]);
 
   const pulse = useCallback(() => {
     if (!enableAnchorPulse) return;
@@ -63,7 +88,7 @@ export const FirstTimeTipPressable: React.FC<FirstTimeTipPressableProps> = ({
     }).start();
   }, [enableAnchorPulse, scale]);
 
-  const openTip = useCallback(() => {
+  const openUI = useCallback(() => {
     requestAnimationFrame(() => {
       setCurrentPlacement(placement);
       setVisible(true);
@@ -72,34 +97,46 @@ export const FirstTimeTipPressable: React.FC<FirstTimeTipPressableProps> = ({
     });
   }, [placement, pulse, onFirstShow]);
 
+  const closeUI = useCallback(() => {
+    setVisible(false);
+  }, []);
+
   const handlePress = useCallback(
     (e?: GestureResponderEvent) => {
-      const seen = storageKey ? getBool(storageKey) : false;
+      const alreadySeen = seen();
 
-      if (!seen) {
+      if (!alreadySeen && autoOpenOnFirstPress) {
         if (storageKey) setBool(storageKey, true);
-        openTip();
-
-        // auto-run after close (only for first-time)
+        openUI();
         if (runActionAfterClose) pendingRunRef.current = true;
-
-        if (blockActionOnFirstPress) return; // block first action
+        if (blockActionOnFirstPress) return;
       }
 
-      // otherwise (or not blocking), run now
       onPress?.(e);
     },
-    [storageKey, openTip, runActionAfterClose, blockActionOnFirstPress, onPress],
+    [seen, storageKey, autoOpenOnFirstPress, openUI, runActionAfterClose, blockActionOnFirstPress, onPress],
   );
 
   const close = useCallback(() => {
-    setVisible(false);
+    closeUI();
     if (pendingRunRef.current) {
       pendingRunRef.current = false;
-      // give the modal a frame to close before firing action
       requestAnimationFrame(() => onPress?.());
     }
-  }, [onPress]);
+  }, [closeUI, onPress]);
+
+  // imperative controller
+  useImperativeHandle(ref, () => ({
+    open: openUI,
+    close: closeUI,
+    isSeen: seen,
+    setSeen: markSeen,
+    resetSeen: () => storageKey && delKey(storageKey),
+    forceShowOnce: () => {
+      if (storageKey) setBool(storageKey, true);
+      openUI();
+    },
+  }), [openUI, closeUI, seen, markSeen, storageKey]);
 
   const node = useMemo(
     () => (typeof content === 'function' ? (content as ContentFactory)({
@@ -107,42 +144,69 @@ export const FirstTimeTipPressable: React.FC<FirstTimeTipPressableProps> = ({
     }) : content),
     [content, close],
   );
+  const [size, setSize] = useState<{w:number; h:number} | null>(null);
 
-  // compose child's onPress instead of clobbering it
+  // compose child's onPress (don’t clobber)
   const composedChild = useMemo(() => {
+    if (!interceptPress) return children; // anchor mode: don't inject onPress
     const childOnPress = (children.props as any).onPress as ((e?: any) => void) | undefined;
     const merged = (e?: GestureResponderEvent) => {
       handlePress(e);
-      // only call child's original if we didn't block the action
       if (!visible || !blockActionOnFirstPress) childOnPress?.(e);
     };
     return React.cloneElement(children, {
       onPress: merged,
       accessibilityRole: (children.props as any).accessibilityRole ?? 'button'
     });
-  }, [children, handlePress, visible, blockActionOnFirstPress]);
+  }, [children, interceptPress, handlePress, visible, blockActionOnFirstPress]);
 
   return (
     <Tooltip
       isVisible={visible}
-      content={node}
       placement={currentPlacement}
       onClose={close}
-      tooltipStyle={[{
+      backgroundColor={backdrop}
+      displayInsets={displayInsets}
+      useInteractionManager
+      showChildInTooltip={showAnchorClone}   // ✅ hide the “ghost” by default
+      childContentSpacing={childContentSpacing}
+      tooltipStyle={{
+        backgroundColor: 'transparent',
+        padding: 0,
+        borderWidth: 0,
+        shadowColor: 'transparent',
+        shadowOpacity: 0,
+        elevation: 0,
+      }}
+      contentStyle={{
         backgroundColor: 'transparent',
         padding: 0
-      }, tooltipStyle]}
-      backgroundColor={backdrop}
-      useInteractionManager
-      onOpen={() => setCurrentPlacement(placement)} // reset preferred on each open
-      // NOTE: library doesn't expose overflow callbacks; if you ever need to force-flip,
-      // toggle a key here or drive via state using `fallbackPlacement`.
+      }}
+      arrowSize={{
+        width: 0,
+        height: 0
+      }} // <- hides library arrow
+      content={node}
     >
-      <Animated.View style={{
-        transform: [{
-          scale
-        }]
-      }}>{composedChild}</Animated.View>
+
+      <Animated.View  onLayout={e => setSize({
+        w: e.nativeEvent.layout.width,
+        h: e.nativeEvent.layout.height
+      })}
+      style={[
+        {
+          transform: [{
+            scale
+          }]
+        },
+        size && {
+          width: size.w,
+          height: size.h
+        }
+      ]}
+      >
+        {composedChild}
+      </Animated.View>
     </Tooltip>
   );
-};
+});

@@ -1,10 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, Animated, Easing } from 'react-native';
 import { useStyles } from './styles';
-
+type FABProps = {
+  open: boolean;
+  onToggle?: () => void;
+  onPress?: (e?: any) => void; // ✅ add this
+  style?: any;
+};
 export default function FAB({
-  open, onToggle
-}: { open: boolean; onToggle: () => void }) {
+  open, onToggle, onPress, style
+}: FABProps) {
+
   const s = useStyles();
   const rot = useRef(new Animated.Value(0)).current;
 
@@ -12,7 +18,12 @@ export default function FAB({
     inputRange: [0, 1],
     outputRange: ['0deg', '45deg']
   });
-  
+  const handlePress = (e?: any) => {
+    // First let wrappers (tips) run their logic
+    onPress?.(e);          // ✅ allows FirstTimeTipPressable to hook in
+    // Then keep existing behavior
+    onToggle?.();
+  };
   useEffect(() => {
     Animated.timing(rot, {
       toValue: open ? 1 : 0,
@@ -23,7 +34,7 @@ export default function FAB({
   }, [open, rot]);
 
   return (
-    <Pressable onPress={onToggle} style={({
+    <Pressable onPress={handlePress} style={({
       pressed
     }) => [s.btn, pressed && s.btnPressed]} hitSlop={10}>
       <Animated.View style={{

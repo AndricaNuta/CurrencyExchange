@@ -16,8 +16,8 @@ type Props = {
   quote: string;
   currentRate?: number;
   hasAlerts?: boolean;
-  step?: number;     
-  decimals?: number; 
+  step?: number;
+  decimals?: number;
 };
 
 const toNum = (s: string) => {

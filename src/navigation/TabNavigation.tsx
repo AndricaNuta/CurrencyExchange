@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Alert, Dimensions, StyleSheet, View } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,8 +15,10 @@ import ScanActionsPopover from '../components/ScanActionsPopover';
 import WatchlistScreen from '../screens/Watchlist';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { AppTipContent } from '../components/TipComponents/AppTipContent';
-import { events } from '../utils/events';
-import { setBool } from '../services/mmkv';
+import { events } from '../screens/onboarding/events';
+import { delKey, getBool, setBool } from '../services/mmkv';
+import { OB_KEYS, triggerTipOnce } from '../screens/onboarding/onboardingKeys';
+import { FirstTimeTipPressable, FirstTimeTipPressableHandle } from '../components/TipComponents/FirstTimeTipPressable';
 
 const {
   width: SCREEN_W
@@ -30,61 +32,80 @@ export default function TabNavigation() {
   const t = useAppTheme();
   const s = useStyles();
   const [scanOpen, setScanOpen] = useState(false);
-  const anchorBottom = Math.max(insets.bottom, 8) + 60 /* bar height */ + 30; // place the arc above the bar+fab
-  const [showFabTip, setShowFabTip] = useState(false);
+  const fabTipRef = useRef<FirstTimeTipPressableHandle>(null);
+  const seenRef = useRef(getBool(OB_KEYS.FAB_TIP));
+  const [showFabCoach, setShowFabCoach] = useState(false);
+  const handleFabPress = () => {
+    const first = !seenRef.current;
+    setScanOpen(v => !v);
+    if (first) setShowFabCoach(true);
+  };
 
+  const markFabTipSeen = () => {
+    if (!seenRef.current) {
+      seenRef.current = true;
+      setBool(OB_KEYS.FAB_TIP, true);
+    }
+    setShowFabCoach(false);
+  };
 
-const onTakePhoto = useCallback(async () => {
-  setScanOpen(false);
-  await new Promise(r => setTimeout(r, 80));
-  try {
-    const res = await captureWithCamera(8);
-    if (res?.asset?.uri && res.candidates?.length) {
-      stackNav.navigate('ScanPreview', {
-        uri: res.asset.uri!,
-        candidates: res.candidates!
-      });
-    } else {
+  const onTakePhoto = useCallback(async () => {
+    setScanOpen(false);
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const res = await captureWithCamera(8);
+      if (res?.asset?.uri && res.candidates?.length) {
+        stackNav.navigate('ScanPreview', {
+          uri: res.asset.uri!,
+          candidates: res.candidates!
+        });
+      } else {
+        Alert.alert(
+          'Scan Failed',
+          'We couldn’t detect a price in this photo. Try again with better lighting or focus.'
+        );
+      }
+    } catch (e: any) {
+      console.warn('[OCR] camera failed', e);
       Alert.alert(
-        'Scan Failed',
-        'We couldn’t detect a price in this photo. Try again with better lighting or focus.'
+        'Camera Error',
+        'Something went wrong while capturing the image. Please try again.'
       );
     }
-  } catch (e: any) {
-    console.warn('[OCR] camera failed', e);
-    Alert.alert(
-      'Camera Error',
-      'Something went wrong while capturing the image. Please try again.'
-    );
-  }
-}, [stackNav]);
+  }, [stackNav]);
 
+  useEffect(() => {
+    const handler = () => {
+      triggerTipOnce(OB_KEYS.WATCHLIST_STEP2, () => setWatchlistTip(true));
+    };
+    events.on('tour.starToWatchlist.step2', handler);
+    return () => events.off('tour.starToWatchlist.step2', handler);
+  }, []);
 
-const onPickImage = useCallback(async () => {
-  setScanOpen(false);
-  await new Promise(r => setTimeout(r, 80));
-  try {
-    const res = await pickFromGallery(8);
-    if (res?.asset?.uri && res.candidates?.length) {
-      stackNav.navigate('ScanPreview', {
-        uri: res.asset.uri!,
-        candidates: res.candidates!
-      });
-    } else {
+  const onPickImage = useCallback(async () => {
+    setScanOpen(false);
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const res = await pickFromGallery(8);
+      if (res?.asset?.uri && res.candidates?.length) {
+        stackNav.navigate('ScanPreview', {
+          uri: res.asset.uri!,
+          candidates: res.candidates!
+        });
+      } else {
+        Alert.alert(
+          'No Price Found',
+          'We couldn’t detect a price in this image. Please pick another photo.'
+        );
+      }
+    } catch (e: any) {
+      console.warn('[OCR] pick failed', e);
       Alert.alert(
-        'No Price Found',
-        'We couldn’t detect a price in this image. Please pick another photo.'
+        'Upload Error',
+        'Something went wrong while uploading the image. Please try again.'
       );
     }
-  } catch (e: any) {
-    console.warn('[OCR] pick failed', e);
-    Alert.alert(
-      'Upload Error',
-      'Something went wrong while uploading the image. Please try again.'
-    );
-  }
-}, [stackNav]);
-
+  }, [stackNav]);
   const [watchlistTip, setWatchlistTip] = useState(false);
 
   useEffect(() => {
@@ -116,8 +137,8 @@ const onPickImage = useCallback(async () => {
         coachmarkPlacement="top"
         coachmarkOnClose={() => setWatchlistTip(false)}
         coachmarkPrimaryPress={() => {
-          // next step should show inside Watchlist
-          setBool('tour_watchlist_step3', true);
+          setWatchlistTip(false);
+          setBool(OB_KEYS.WATCHLIST_STEP3, true);
           setWatchlistTip(false);
           requestAnimationFrame(open);       // switch tab
         }}
@@ -149,20 +170,28 @@ const onPickImage = useCallback(async () => {
           headerShown: false
         }}
         renderCircle={() =>
-          <Tooltip
-            isVisible={showFabTip}
+          <FirstTimeTipPressable
+            ref={fabTipRef}
+            storageKey={OB_KEYS.FAB_TIP}
             placement="top"
-            content={<>{'Tap to scan or upload prices for instant conversion.'}</>}
-            onClose={() => setShowFabTip(false)}
-            backgroundColor="rgba(0,0,0,0.35)"
-            tooltipStyle={{
-              borderRadius: 12,
-              padding: 12
-            }}
-            useInteractionManager
+            backdrop="rgba(0,0,0,0.12)"
+            blockActionOnFirstPress={false}
+            autoOpenOnFirstPress={false}
+            onPress={handleFabPress}
+            content={({
+              close
+            }) => (
+              <AppTipContent
+                title="Scan prices"
+                text="Use Camera or Upload to convert prices of menus and tags in your."
+                primaryLabel="Open scanner"
+                onPrimaryPress={() => { close(); handleFabPress(); }}
+                arrowPosition="top"
+              />
+            )}
           >
-            <FAB open={scanOpen} onToggle={() => setScanOpen(v => !v)} />
-          </Tooltip>
+            <FAB open={scanOpen} />
+          </FirstTimeTipPressable>
         }
         tabBar={renderTabItem}
       >
@@ -189,6 +218,8 @@ const onPickImage = useCallback(async () => {
         onLive={() => { setScanOpen(false); stackNav.navigate('LiveScan'); }}
         onCamera={onTakePhoto}
         onGallery={onPickImage}
+        showCoachmark={showFabCoach}
+        onCoachmarkSeen={markFabTipSeen}
       />
       {/*} <SpotlightOverlay accent="#E3D095" />
 
@@ -217,9 +248,7 @@ const useStyles = makeStyles((t) => StyleSheet.create({
     elevation: t.scheme === 'dark' ? 8 : 12,
   },
 }));
-function WatchlistTabIconWithTip({
-  children, onOpen,
-}: { children: React.ReactElement; onOpen: () => void }) {
+function WatchlistTabIconWithTip({ children }: { children: React.ReactElement; }) {
   const [visible, setVisible] = useState(false);
   const nav = useNavigation<any>();
 
@@ -235,10 +264,7 @@ function WatchlistTabIconWithTip({
       placement="top"
       onClose={() => setVisible(false)}
       backgroundColor="rgba(0,0,0,0.20)"
-      tooltipStyle={{
-        backgroundColor: 'transparent',
-        padding: 0
-      }}
+      tooltipStyle={{ backgroundColor: 'transparent', padding: 0 }}
       content={
         <AppTipContent
           title="Your saved pairs"
@@ -246,10 +272,8 @@ function WatchlistTabIconWithTip({
           primaryLabel="Open Watchlist"
           onPrimaryPress={() => {
             setVisible(false);
-            // pass a flag so Watchlist shows Step 3
-            requestAnimationFrame(() => nav.navigate('Watchlist', {
-              fromTour: true
-            }));
+            setBool(OB_KEYS.WATCHLIST_STEP3, true); // signal Step 3
+            requestAnimationFrame(() => nav.navigate('Watchlist', { fromTour: true }));
           }}
           arrowPosition="top"
         />

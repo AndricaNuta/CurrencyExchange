@@ -1,11 +1,13 @@
-import React from 'react';
-import {Text, StyleSheet, View, Pressable } from 'react-native';
-import Tooltip from 'react-native-walkthrough-tooltip';
+import React, { useEffect, useRef } from 'react';
+import { Text, View, Pressable } from 'react-native';
 import { useTheme as useAppTheme } from '../../theme/ThemeProvider';
 import { Activity, Clock, Settings } from 'react-native-feather';
 import { SwapIcon } from '../../../assets/icons/svg';
-import { AppTipContent } from '../TipComponents/AppTipContent'; // adjust if path differs
+import { AppTipContent } from '../TipComponents/AppTipContent';
 import { useStyles } from './styles';
+
+import {FirstTimeTipPressable,
+  FirstTimeTipPressableHandle,} from '../TipComponents/FirstTimeTipPressable';
 
 const IconFor = ({
   label, color
@@ -20,7 +22,6 @@ const IconFor = ({
 
 export const TabBarItem = ({
   label, selected, onPress, style,
-  // NEW optional coachmark props
   coachmarkVisible,
   coachmarkPlacement = 'top',
   coachmarkOnClose,
@@ -46,39 +47,51 @@ export const TabBarItem = ({
   const color = selected ? t.colors.tint : t.colors.muted;
 
   const button = (
-    <Pressable
-      onPress={onPress}
-      style={[s.tabItem, style]}
-    >
+    <Pressable onPress={onPress} style={[s.tabItem, style]}>
       <IconFor label={label} color={color} />
       <Text style={[s.tabLabel, selected && s.active]}>{label}</Text>
     </Pressable>
   );
 
+  const tipRef = useRef<FirstTimeTipPressableHandle>(null);
+
+  useEffect(() => {
+    if (coachmarkVisible) tipRef.current?.open();
+    else tipRef.current?.close();
+  }, [coachmarkVisible]);
+
+  // No coachmark requested → just render the button
   if (!coachmarkVisible) return button;
 
-  // Anchor tooltip INSIDE the button — keeps CurvedBottomBar layout intact
+  // Coachmark: wrap the button with FirstTimeTipPressable.
+  // We do NOT want first-tap interception here, so:
+  // - blockActionOnFirstPress = false (let tab press still work)
+  // - autoOpenOnFirstPress   = false (we open via ref)
   return (
-    <Tooltip
-      isVisible
+    <FirstTimeTipPressable
+      ref={tipRef}
       placement={coachmarkPlacement}
-      onClose={coachmarkOnClose}
-      backgroundColor="rgba(0,0,0,0.20)"
-      tooltipStyle={{
-        backgroundColor: 'transparent',
-        padding: 0
-      }}
-      content={
+      backdrop="rgba(0,0,0,0.20)"
+      blockActionOnFirstPress={false}
+      autoOpenOnFirstPress={false}
+      onPress={onPress}
+      content={({
+        close
+      }) => (
         <AppTipContent
           title={coachmarkTitle}
           text={coachmarkText}
           primaryLabel={coachmarkPrimaryLabel}
-          onPrimaryPress={coachmarkPrimaryPress}
+          onPrimaryPress={() => {
+            coachmarkPrimaryPress?.();
+            close();
+            coachmarkOnClose?.();
+          }}
           arrowPosition={coachmarkPlacement}
         />
-      }
+      )}
     >
       <View>{button}</View>
-    </Tooltip>
+    </FirstTimeTipPressable>
   );
 };
