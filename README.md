@@ -1,97 +1,292 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# CurrenSee
 
-# Getting Started
+Scan prices on menus/receipts, detect amounts on‑device, and convert them with live FX rates. Built with React Native + TypeScript, offline‑first storage, and an iOS native OCR bridge.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## Get the app
+- **iOS**: Available on the App Store → [Download] - SOON
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Table of contents
+1. Features
+2. Tech stack
+3. How it works (end‑to‑end)
+4. Architecture
+5. Project structure
+6. Tech decisions & React Native practices
+7. Configuration (.env)
+8. Build notes (iOS & Android)
+9. Privacy & security
+10. Roadmap
 
-```sh
-# Using npm
-npm start
+---
 
-# OR using Yarn
-yarn start
+## 1) Features
+- **Scan & Convert**: live camera or photo → detect price amounts → convert to selected pair.
+- **Quick pairs**: EU/US style favorites, swap, copy to clipboard.
+- **Watchlist**: pin currency pairs, view current rate (optionally mini sparkline).
+- **Rate alerts (optional)**: threshold notifications.
+- **Offline‑friendly**: rates cached locally; last known rate available.
+- **Widgets (iOS)**: small/medium Home Screen + Lock Screen accessories for quick glance.
+- **Theming**: light/dark with a lilac/purple accent, accessible contrast.
+
+---
+
+## 2) Tech stack — how & why
+
+### App runtime
+- **React Native 0.74+ · TypeScript · Hermes**
+  **How**: strict TS across `src/*`; Hermes enabled in release/debug.
+  **Why**: type‑safety for refactors; Hermes improves start‑up time and memory vs JSC.
+
+### Navigation
+- **React Navigation** (stack + tabs)
+  **How**: typed route params; deep‑link configuration ready (no deferred DL).
+  **Why**: ubiquitous, battle‑tested, good TypeScript story.
+
+### State — Redux Toolkit
+- **How**: `src/redux/store.ts` with slices: `exchange`, `favorites`, `settings`; typed selectors; thin thunks for side‑effects.
+  **Why**: predictable global state across screens; minimal boilerplate; easier debugging and time‑travel. Keeps components lean by moving logic to slices/services.
+
+### Storage — MMKV
+- **How**: `src/storage/mmkv.ts` helpers; persists cached FX rates, watchlist, user prefs, and one‑time flags (onboarding/tooltips).
+  **Why**: ultra‑fast synchronous reads for cold start; better UX than AsyncStorage for frequently‑read values.
+
+### Native & platform
+- **Native module (Swift + Apple Vision)** for on‑device OCR; SwiftUI + **WidgetKit** for iOS widgets.
+  **How**: `ios/RNPriceOCR/*` bridged via a typed wrapper `src/native/priceOcr.ts`; widgets in a separate target share formatting utils.
+  **Why**: private, low‑latency OCR (no network); widgets provide glanceable rates without opening the app.
+
+### UI/UX
+- **Reanimated 3**, **react‑native‑gesture‑handler**, **@gorhom/bottom‑sheet**, custom **ThemeProvider**.
+  **How**: 60 fps interactions for FAB/bottom‑sheet, swipe gestures, and subtle screen transitions; tokens in `src/theme/*`.
+  **Why**: modern, smooth UI with clear hierarchy and accessible contrast.
+
+### Networking
+- **fetch → Frankfurter API** with a small caching layer.
+  **How**: `src/services/exchange.ts` does SWR‑style fetch: return cached rate immediately, then refresh and update store.
+  **Why**: reliable public source; simple surface area; works well with offline cache.
+
+### Build
+- **iOS**: Xcode + CocoaPods; **Android**: Gradle (bare RN).
+  **How**: pod install script for CI; ensure `NODE_BINARY=node`; align Gradle/NDK with RN version.
+  **Why**: reproducible builds locally and in CI/CD.
+
+### Notifications *(optional)*
+- **FCM** for rate alerts when thresholds are crossed.
+  **How**: schedule or trigger from app/edge; respects user consent.
+  **Why**: timely updates even when the app is closed.
+
+### Rate comparison & timing *(optional)*
+- **Cloudflare Workers (Cron Triggers)** to snapshot rates and compute deltas server‑side.
+  **How**: daily jobs pull Frankfurter, store last value (e.g., KV/DO), and notify when thresholds hit.
+  **Why**: off‑device timing avoids battery drain and makes alerts predictable.
+
+## 3) How price‑from‑images processing works
+ How price‑from‑images processing works
+
+```
+[Camera / Image Picker]
+       │
+       ▼
+[iOS Native OCR (Apple Vision)]  ──►  [RN Bridge]  ──►  [JS Parser: extract & validate prices]
+       │                                    │
+       │                                    ▼
+       └─────────> (bounding boxes)   [Redux Toolkit store]
+                                            │
+                                            ▼
+                                 [Exchange Service]
+                               (Frankfurter API + cache)
+                                            │
+                                            ▼
+                                      [UI Components]
+                                            │
+                                            └──► [MMKV persist]
 ```
 
-## Step 2: Build and run your app
+### 3.1 Image acquisition & metadata
+- **Source**: live camera or gallery picker returns a file URI (`file://…` or `ph://…`) + width/height + EXIF orientation.
+- **Why file URI (not base64)**: avoids giant strings across the bridge → lower memory, faster.
+- **Pre‑normalize**: we fix orientation on the native side so Vision gets an upright `CGImage`.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 3.2 Native module (Swift + Apple Vision)
+- **Module name**: `RNPriceOCR` (Swift) exposed to JS as `NativeModules.RNPriceOCR` (wrapped in `src/native/priceOcr.ts`).
+- **Public API** (Promise):
+  - `detectPrices({ uri, width, height, crop?: Rect, languages?: string[] }) -> Promise<OCRResult[]>`
+- **Threading**: work runs on a background queue; only the final resolve/reject touches the JS thread.
+- **Vision setup**:
+  - `VNRecognizeTextRequest` with `.accurate` (fallback to `.fast` if low memory).
+  - `recognitionLanguages`: configurable (e.g., `en-US`, `ro-RO`, `es-ES`, `de-DE`, `fr-FR`).
+  - `usesLanguageCorrection = false` (reduces "auto-fixes" that can break prices).
+  - Optional `regionOfInterest` if the caller passes a `crop` (speeds up scanning receipts where prices are in a column).
+- **Preprocessing**:
+  - Downscale very large images to a safe max dimension (e.g., 2048 px) to reduce Vision time & memory.
+  - Convert to grayscale where helpful (Vision is robust, so this is optional).
+- **Output**: for each recognized line we emit:
+  ```ts
+  type OCRResult = {
+    text: string;            // raw recognized text for the line
+    confidence: number;      // 0..1 average confidence
+    bbox: { x: number; y: number; width: number; height: number; }; // normalized (0..1) in image space
+  }
+  ```
 
-### Android
+### 3.3 Bounding boxes → JS overlay
+- Vision provides **normalized** boxes in the image’s coordinate space; we convert to **view space** on JS:
+  1) de‑normalize: `px = bbox * imagePixelSize`
+  2) account for orientation + any downscale ratio applied in native
+  3) map to the displayed image size (fit/contain); we use the same scale/offset as the `<Image>` element
+- Result: drawn rectangles align with what the user sees, enabling **tap to select a price**.
 
-```sh
-# Using npm
-npm run android
+### 3.4 JS parser & heuristics (turn OCR text into prices)
+We parse each line using locale‑aware rules and filter out false positives.
 
-# OR using Yarn
-yarn android
+**Patterns accepted** (examples):
+- Prefix symbol: `€12,50`, `$9.99`, `£7.95`
+- Suffix code/symbol: `12.50 EUR`, `9,99 RON`, `7.95 lei`
+- Spaced variants: `€ 12,50`, `12,50 €`, `12.50  EUR`
+
+**Normalization**:
+- Detect decimal mark: if both `,` and `.` exist, the right‑most one is the decimal separator; the other is thousands.
+- Remove thin/non‑breaking spaces and group separators; unify decimals to `.` internally.
+- Keep 0–3 decimals; clamp weird cases (e.g., `12,9999`).
+
+**False‑positive filters**:
+- Phone numbers / long IDs: reject if ≥7 consecutive digits or matches `+XX …` formats.
+- Weights/volumes: reject tokens followed by `g`, `kg`, `ml`, `cl`, `l`, `pcs`.
+- Ranges: `12–15` treated as non‑price unless a currency marker is present.
+- Time: `12:30`, `08.00` rejected unless currency present.
+
+Each accepted candidate is emitted as:
+```ts
+{
+  amount: number;          // normalized numeric value
+  currencyHint?: string;   // e.g., "EUR", "RON", inferred from symbol/code if present
+  sourceText: string;      // original OCR line
+  bbox: Rect;              // mapped to view space for highlighting
+}
 ```
 
-### iOS
+### 3.5 Rates & caching
+- The **Exchange Service** checks MMKV for a cached rate for `base→quote` (with TTL). If stale or missing, it fetches fresh data from Frankfurter and updates the cache.
+- UI shows the cached conversion immediately (SWR), then updates if a newer rate arrives.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### 3.6 State updates & UI
+- Accepted price candidates are stored in Redux (slice: `exchange` or a dedicated `scan` slice).
+- The **Scan screen** renders bounding boxes; tapping one selects it, updates the conversion card, and allows Copy/Share.
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+### 3.7 Errors & fallbacks
+- If OCR fails (e.g., image unreadable), we still allow manual input conversion.
+- For missing network, last known rate is used with a small "cached" badge.
 
-```sh
-bundle install
+### 3.8 Performance tips
+- Use **file URIs** over base64; apply downscaling natively for huge photos.
+- Batch results across the bridge (one resolve with an array).
+- Debounce re‑runs when users switch photos quickly.
+- Keep the Vision request alive if scanning multiple shots in a session to reuse internal models.
+
+### 3.9 Privacy
+- Images never leave the device during OCR. Only numeric prices chosen by the user are stored (locally) for recent history.
+
+## 4) Architecture
+
+**Layers & responsibilities**
+- **UI layer** (`/src/screens`, `/src/components`) – screens, presentational components, theming.
+- **State layer** (`/src/redux`) – Redux Toolkit slices for exchange, favorites, settings.
+- **Domain/services** (`/src/services`) – currency rates, caching, parsing & formatting utilities.
+- **Native integration** (`/ios/RNPriceOCR`) – Swift + Apple Vision, exposed via a typed JS wrapper.
+- **Persistence** (`/src/storage`) – MMKV for fast key‑value storage (rates, preferences, flags).
+
+**Data flow**
+- UI dispatches actions → slices update state → selectors feed UI.
+- Side‑effects (fetch rates, read cache) live in thunks/hooks/services to keep components lean.
+
+---
+
+## 5) Project structure
+
 ```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
+.
+├── src
+│   ├── components/
+│   ├── hooks/
+│   ├── redux/
+│   │   ├── store.ts
+│   │   ├── slices/
+│   │   │   ├── exchangeSlice.ts
+│   │   │   ├── favoritesSlice.ts
+│   │   │   └── settingsSlice.ts
+│   ├── screens/
+│   │   ├── ScanScreen/
+│   │   ├── WatchlistScreen/
+│   │   └── SettingsScreen/
+│   ├── services/
+│   │   ├── exchange.ts         // network + caching
+│   │   ├── priceParser.ts      // extract/validate prices
+│   │   └── format.ts           // number & currency formatting
+│   ├── storage/
+│   │   └── mmkv.ts             // keys + helpers
+│   ├── theme/
+│   │   ├── ThemeProvider.tsx
+│   │   └── tokens.ts
+│   └── native/
+│       └── priceOcr.ts         // typed wrapper around native module
+├── ios/RNPriceOCR/             // Swift + Apple Vision bridge
+├── android/                    // Android project (camera + build configs)
+├── .env.example
+└── README.md
 ```
+---
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## 6) Tech decisions & React Native practices
 
-```sh
-# Using npm
-npm run ios
+**TypeScript (strict)**
+- Safer refactors and better DX; typed module boundaries for OCR outputs, rate responses, and Redux state.
 
-# OR using Yarn
-yarn ios
-```
+**Redux Toolkit for state**
+- Co‑locates reducers/actions; immutable updates without boilerplate. Slices: `exchange`, `favorites`, `settings`.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+**MMKV for persistence**
+- Low‑latency storage for cached FX rates, watchlist, user prefs, and one‑time flags (e.g., onboarding tips).
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+**Native iOS module (Swift + Apple Vision)**
+- Exposes `detectPrices(image)` with bounding boxes via RN bridge. Keeps OCR private & fast.
 
-## Step 3: Modify your app
+**Networking & caching**
+- Frankfurter API client with stale‑while‑revalidate pattern: immediate cached rate, then refresh in background.
 
-Now that you have successfully run the app, let's make changes!
+**Performance**
+- Hermes engine, memoized selectors, FlatList virtualization, batched updates, and minimal re‑renders.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+**UI & UX**
+- Custom theme (light/dark), curved bottom bar + radial FAB, bottom sheets (Gorhom), first‑time tooltips.
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+**Platform features**
+- iOS WidgetKit widgets (Small/Medium + accessory variants). Optional push notifications for rate alerts.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+**Build/CI notes**
+- iOS: CocoaPods post‑clone script to ensure `pod install` in CI. Android: Gradle version alignment + NDK notes.
 
-## Congratulations! :tada:
+---
 
-You've successfully run and modified your React Native App. :partying_face:
+## 7) Build notes *(for contributors)*
 
-### Now what?
+**iOS**
+- Open `ios/*.xcworkspace` in Xcode for local releases.
+- If Archive fails on CI, ensure the post‑clone script installs pods and that `NODE_BINARY` is set (e.g., `export NODE_BINARY=node`).
+- Widgets: target `CurrenSeeWidget` with shared code for rate formatting.
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+**Android**
+- Ensure Java, Gradle, and NDK versions match RN requirements.
+- Clear builds if low‑disk errors occur: `cd android && ./gradlew clean`.
 
-# Troubleshooting
+---
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## 8) Privacy & security
+- OCR runs **on‑device**; images never leave the device for recognition.
+- Rates are fetched from a public API; no user PII is sent.
+- Local cache is stored with MMKV.
 
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+---

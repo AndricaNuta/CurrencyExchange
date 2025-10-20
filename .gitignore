@@ -1,10 +1,36 @@
-# OSX
-#
+# ------------------------
+# OS
+# ------------------------
 .DS_Store
 
-# Xcode
-#
-build/
+# ------------------------
+# Node / logs
+# ------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ------------------------
+# Env files
+# ------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------
+# iOS / Xcode
+# ------------------------
+ios/Pods/
+ios/build/
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.hmap
+*.ipa
+*.xcarchive
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -13,60 +39,78 @@ build/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
-xcuserdata
-*.xccheckout
 *.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
+*.xccheckout
 **/.xcode.env.local
 
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
+# ------------------------
+# Android / IntelliJ
+# ------------------------
+android/.gradle/
+android/build/
+android/.cxx/
+.gradle/
+.idea/
 local.properties
 *.iml
 *.hprof
-.cxx/
 *.keystore
 !debug.keystore
+*.jks
 .kotlin/
 
-# node.js
-#
-node_modules/
-npm-debug.log
-yarn-error.log
+# ------------------------
+# Bundles / artifacts
+# ------------------------
+*.jsbundle
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/assets/index.android.map
+**/*.apk
+**/*.aab
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# ------------------------
+# Firebase configs (keep out of public repos)
+# ------------------------
+android/app/google-services.json
+ios/**/GoogleService-Info.plist
 
+# ------------------------
+# Signing / certs
+# ------------------------
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+*.key
+*.pem
+
+# ------------------------
+# Fastlane
+# ------------------------
 **/fastlane/report.xml
 **/fastlane/Preview.html
 **/fastlane/screenshots
 **/fastlane/test_output
 
-# Bundle artifact
-*.jsbundle
-
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
+# ------------------------
+# Metro
+# ------------------------
 .metro-health-check*
 
-# testing
-/coverage
+# ------------------------
+# Tests / coverage
+# ------------------------
+coverage/
 
-# Yarn
+# ------------------------
+# Ruby / Bundler
+# ------------------------
+.bundle/
+vendor/bundle/
+
+# ------------------------
+# Yarn PnP (keep only whitelisted)
+# ------------------------
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -74,19 +118,9 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 
-# React Native
-ios/Pods/
-ios/build/
-android/.gradle/
-android/build/
-*.log
-
-# Ruby/CocoaPods
-Gemfile.lock
-Podfile.lock
-*.xcuserstate
-
-# Xcode
-*.xcworkspace
-xcuserdata/
-DerivedData/
+# ------------------------
+# VS Code (allow shared settings if you want)
+# ------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
