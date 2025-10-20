@@ -73,6 +73,8 @@ android/app/src/main/assets/index.android.map
 # ------------------------
 android/app/google-services.json
 ios/**/GoogleService-Info.plist
+.bundle/
+vendor/bundle/
 
 # ------------------------
 # Signing / certs
