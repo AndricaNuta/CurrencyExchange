@@ -6,7 +6,7 @@ Scan prices on menus/receipts, detect amounts on‑device, and convert them with
 
 ## Get the app
 - **iOS**: Available on the App Store → [Download] - SOON
-
+ ![Home screen](docs/screenshots/home.png)
 ---
 
 ## Table of contents
@@ -31,6 +31,9 @@ Scan prices on menus/receipts, detect amounts on‑device, and convert them with
 - **Offline‑friendly**: rates cached locally; last known rate available.
 - **Widgets (iOS)**: small/medium Home Screen + Lock Screen accessories for quick glance.
 - **Theming**: light/dark with a lilac/purple accent, accessible contrast.
+
+![FAB](docs/screenshots/FAB.png)
+![Watchlist](docs/screenshots/chart.png)
 
 ---
 
