@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -62,8 +62,6 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CurrencyCamera/AppDelegate.swift; sourceTree = "<group>"; };
 		7F5D0BCA31014CA795FF29C5 /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = CurrencyCamera/BootSplash.storyboard; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CurrencyCamera/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A10AE6EB2EA14F3300928547 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
-		A10AE6ED2EA14F6300928547 /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		A19FA7792E992369001206E6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A19FA77F2E99912C001206E6 /* CurrenSeeWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CurrenSeeWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A19FA7802E99912C001206E6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -85,7 +83,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A19FA7952E99912E001206E6 /* Exceptions for "CurrenSeeWidget" folder in "CurrenSeeWidgetExtension" target */ = {
+		A19FA7952E99912E001206E6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -95,18 +93,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A19FA7842E99912D001206E6 /* CurrenSeeWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A19FA7952E99912E001206E6 /* Exceptions for "CurrenSeeWidget" folder in "CurrenSeeWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = CurrenSeeWidget;
-			sourceTree = "<group>";
-		};
+		A19FA7842E99912D001206E6 /* CurrenSeeWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A19FA7952E99912E001206E6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CurrenSeeWidget; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,8 +154,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				A10AE6ED2EA14F6300928547 /* main.jsbundle */,
-				A10AE6EB2EA14F3300928547 /* assets */,
 				A19FA7EB2E9998D9001206E6 /* CurrenseeWidgetReload.m */,
 				A19FA7E82E9998C2001206E6 /* CurrenseeWidgetReload.swift */,
 				A19FA7AD2E99952B001206E6 /* BackgroundRefresh.swift */,
@@ -396,7 +381,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "set -e\nexport NODE_BINARY=\"/Users/andrica/.nvm/versions/node/v20.19.0/bin/node\"\n\"$SRCROOT/../node_modules/react-native/scripts/react-native-xcode.sh\"\n";
 		};
 		A924F2549A04D85E96635C2F /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -459,7 +444,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CurrencyCamera/CurrencyCamera.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63L26RX435;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = CurrencyCamera/Info.plist;
@@ -469,7 +454,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -495,7 +480,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CurrencyCamera/CurrencyCamera.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63L26RX435;
 				INFOPLIST_FILE = CurrencyCamera/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CurenSee;
@@ -504,7 +489,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
