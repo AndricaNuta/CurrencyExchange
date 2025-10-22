@@ -182,9 +182,9 @@ export default function TabNavigation() {
               close
             }) => (
               <AppTipContent
-                title="Scan prices"
-                text="Use Camera or Upload to convert prices of menus and tags in your."
-                primaryLabel="Open scanner"
+                title="Tip: Scan prices"
+                text="Use Camera or Upload to convert prices from your own menu photos."
+                primaryLabel="Continue"
                 onPrimaryPress={() => { close(); handleFabPress(); }}
                 arrowPosition="top"
               />
