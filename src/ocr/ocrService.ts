@@ -1,5 +1,5 @@
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
-import TextRecognition from 'react-native-text-recognition';
+import { recognize } from '@react-native-ml-kit/text-recognition';
 import { detectPriceCandidatesWithLabels, normalizeForOCR, type Candidate } from './ocrShared';
 import { Platform } from 'react-native';
 
@@ -21,8 +21,18 @@ export async function pickFromGallery(limit = 8): Promise<OCRPickResult | null>{
     width: asset.width,
     height: asset.height
   });
-  const rawLines = await TextRecognition.recognize(norm.uri);
-  const lines = (rawLines ?? []).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  // ML Kit expects a file path on Android (no "file://")
+  const imagePath = Platform.OS === 'android'
+    ? norm.uri.replace('file://', '')
+    : norm.uri;
+
+  const {
+    blocks = []
+  } = await recognize(imagePath);
+  const lines = blocks
+    .flatMap(b => b.lines ?? [])
+    .map(l => (l.text ?? '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
   const candidates = detectPriceCandidatesWithLabels(lines).slice(0, limit);
   return {
     candidates,
