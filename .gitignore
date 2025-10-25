@@ -58,7 +58,12 @@ local.properties
 !debug.keystore
 *.jks
 .kotlin/
-
+android/**/build/
+android/**/intermediates/
+android/**/generated/
+android/**/outputs/
+android/**/obj/
+android/**/.cxx/
 # ------------------------
 # Bundles / artifacts
 # ------------------------
