@@ -14,7 +14,12 @@ ext {
   ndkVersion = "26.1.10909125"
   kotlinVersion     = "2.0.21"
 }
-
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+  }
+}
 /* Optional: force old RN libraries to modern SDK/Java (helps many libs) */
 subprojects { sub ->
   sub.plugins.withId('com.android.library') {

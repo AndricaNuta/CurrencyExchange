@@ -20,6 +20,7 @@ dependencies {
   implementation("com.facebook.fbjni:fbjni:0.7.0")
   implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
   implementation("com.google.firebase:firebase-analytics")
+    implementation "com.google.mlkit:text-recognition:16.0.0" // or latest
   if (hermesEnabled.toBoolean()) implementation("com.facebook.react:hermes-android") else implementation 'io.github.react-native-community:jsc-android:2026004.+'
 }
 apply plugin: 'com.google.gms.google-services'

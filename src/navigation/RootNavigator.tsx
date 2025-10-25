@@ -16,6 +16,7 @@ import { useTheme as useAppTheme } from '../theme/ThemeProvider';
 import { RootStackParamList } from './RootStackParamList';
 import SettingsScreen from '../screens/Settings';
 import { initPush, useAlertsCloudSync } from '../services/pushInit';
+import {NativeEventEmitter, NativeModules} from 'react-native';
 
 export const navRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -26,6 +27,14 @@ export default function RootNavigator() {
   const t = useAppTheme();
   useEffect(() => { initPush(); }, []);
   useAlertsCloudSync();
+  useEffect(() => {
+    const emitter = new NativeEventEmitter(NativeModules.RNPriceOCR);
+    const sub = emitter.addListener('RNPriceOCR_DEBUG', (e) => {
+      // e = { step, msg, data? }
+      console.log('[RNPriceOCR]', e.step, e.msg, e.data ?? '');
+    });
+    return () => sub.remove();
+  }, []);
   return (
     <>
       <StatusBar
